@@ -120,7 +120,7 @@
 
 ; define Tox struct
 ;(define-cstruct _Tox ([x _int] [y _int]))
-(define-cstruct _Tox ([Tox _pointer]))
+(define-cstruct _Tox ([Tox (_cpointer 'Tox)]))
 
 
 #|##########################
@@ -198,11 +198,11 @@
  # function definitions #
  ###################### |#
 
-#| NOTE: Strings in Tox are all UTF-8, also the last byte in all strings must be NULL (0).
+#| /* NOTE: Strings in Tox are all UTF-8, (This means that there is no terminating NULL character.)
  #
- # The length when passing those strings to the core includes that NULL character.
+ # The exact buffer you send will be received at the other end without modification.
  #
- # If you send non NULL terminated strings Tox will force NULL terminates them when it receives them.
+ # Do not treat Tox strings as C strings.
  |#
 
 #| return TOX_FRIEND_ADDRESS_SIZE byte address to give to others.
