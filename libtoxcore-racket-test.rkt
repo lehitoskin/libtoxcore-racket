@@ -3,6 +3,4 @@
 (require racket/include)
 (include "libtoxcore-racket.rkt")
 
-(define Tox _pointer)
-
-(tox_get_self_user_status Tox)
+(tox_get_client_id _Tox-pointer "someaddress")

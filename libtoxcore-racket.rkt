@@ -1,4 +1,3 @@
-#lang racket
 ; libtoxcore-racket.rkt
 ; FFI implementation of libtoxcore
 (require ffi/unsafe
@@ -111,7 +110,7 @@
 (define _uint8_t-pointer (_cpointer 'uint8_t))
 (define _uint16_t-pointer (_cpointer 'uint16_t))
 (define _uint32_t-pointer (_cpointer 'uint32_t))
-(define _voidptr _void)
+(define _voidptr (_cpointer 'void))
 ; The _string type supports conversion between Racket strings
 ; and char* strings using a parameter-determined conversion.
 ; instead of using _bytes, which is unnatural, use _string
@@ -758,7 +757,7 @@
  #
  # int tox_file_send_data(Tox *tox, int friendnumber, uint8_t filenumber, uint8_t *data, uint16_t length);
  |#
-(define-tox tox_file_send_ata (_fun _Tox-pointer _int _uint8_t
+(define-tox tox_file_send_data (_fun _Tox-pointer _int _uint8_t
                                     _uint8_t-pointer _uint16_t -> _int))
 
 #| Returns the recommended/maximum size of the filedata you send with tox_file_send_data()
