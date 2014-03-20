@@ -5,15 +5,15 @@
 
 (define-ffi-definer define-tox (ffi-lib "/usr/lib/libtoxcore"))
 
-#| the problem remains that racket won't deal with empty structs
- # at least as far as I can tell
+#| the problem remains that racket won't deal with empty cstructs
+ # at least as far as I can tell. a "fix" is in the form of a
+ # cpointer to 'Tox, which works and even looks nice.
  #
  # this code is verbose, messy, and probably doesn't work at all.
  # DEAL WITH IT
  #
  # TODO:
- # figure out how to make an empty cstruct
- # add the rest of the API functions
+ # testing!
  |#
 
 #|
@@ -130,8 +130,8 @@
 (define _char-pointer _string)
 
 ; define Tox struct
-;(define-cstruct _Tox ([x _int] [y _int]))
-(define-cstruct _Tox ([Tox (_cpointer 'Tox)]))
+;(define-cstruct _Tox ([Tox (_cpointer 'Tox)]))
+(define _Tox-pointer (_cpointer 'Tox))
 
 
 #|##########################
@@ -183,7 +183,7 @@
 #| will replace IP_Port as soon as the complete infrastructure is in place
  # removed the unused union and padding also |#
 (define-cstruct _tox_IP_PORT ([ip _tox_IP] [port _uint16_t]))
-
+#|THE ABOVE ARE DEPRECATED, DO NOT USE|#
 
 (define TOX_ENABLE_IPV6_DEFAULT 1)
 
@@ -216,7 +216,7 @@
  # function definitions #
  ###################### |#
 
-#| /* NOTE: Strings in Tox are all UTF-8, (This means that there is no terminating NULL character.)
+#| NOTE: Strings in Tox are all UTF-8, (This means that there is no terminating NULL character.)
  #
  # The exact buffer you send will be received at the other end without modification.
  #
