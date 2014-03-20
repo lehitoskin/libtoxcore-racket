@@ -23,6 +23,7 @@
     ;tox_get_address
     ;tox_add_friend
     ;tox_add_friend_norequest
+    ;tox_get_friend_number
     ;tox_get_client_id
     ;tox_del_friend
     ;tox_get_friend_connection_status
@@ -34,13 +35,17 @@
     ;tox_set_name
     ;tox_get_self_name
     ;tox_get_name
+    ;tox_get_name_size
+    ;tox_get_self_name_size
     ;tox_set_status_message
     ;tox_set_user_status
     ;tox_get_status_message_size
+    ;tox_get_self_status_message_size
     ;tox_get_status_message
     ;tox_get_self_status_message
     ;tox_get_user_status
     ;tox_get_self_user_status
+    ;tox_get_last_online
     ;tox_set_user_is_typing
     ;tox_get_is_typing
     ;tox_set_sends_receipts
@@ -85,6 +90,10 @@
     ;tox_new
     ;tox_kill
     ;tox_do
+    ;tox_wait_data_size
+    ;tox_wait_prepare
+    ;tox_wait_execute
+    ;tox_wait_cleanup
     ;tox_size
     ;tox_save
     ;tox_load
@@ -101,12 +110,14 @@
 (define _sa_family_t _ushort)
 (define _mmask_t _ulong)
 (define _size_t _uint)
+(define _int32_t _int32)
 (define _uint8_t _uint8)
 (define _uint16_t _uint16)
 (define _uint32_t _uint32)
 (define _uint64_t _uint64)
 
 ; pointer definitions
+(define _int32_t-pointer (_cpointer 'int32_t))
 (define _uint8_t-pointer (_cpointer 'uint8_t))
 (define _uint16_t-pointer (_cpointer 'uint16_t))
 (define _uint32_t-pointer (_cpointer 'uint32_t))
@@ -130,7 +141,7 @@
 
 
 (define TOX_MAX_NAME_LENGTH 128)
-(define TOX_MAX_STATUSMESSAGE_LENGTH 128)
+(define TOX_MAX_STATUSMESSAGE_LENGTH 1007)
 (define TOX_CLIENT_ID_SIZE 32)
 
 (define TOX_FRIEND_ADDRESS_SIZE (+ TOX_CLIENT_ID_SIZE
@@ -142,6 +153,12 @@
 
 ; UNIONS ARE ALWAYS TREATED LIKE STRUCTS
 ; http://docs.racket-lang.org/foreign/C_Union_Types.html
+
+#|
+####################################
+# THESE ARE DEPRECATED, DO NOT USE #
+####################################
+|#
 
 ; pulled in from netinet/in.h
 #| IPv6 address |#
@@ -166,6 +183,7 @@
 #| will replace IP_Port as soon as the complete infrastructure is in place
  # removed the unused union and padding also |#
 (define-cstruct _tox_IP_PORT ([ip _tox_IP] [port _uint16_t]))
+
 
 (define TOX_ENABLE_IPV6_DEFAULT 1)
 
@@ -207,8 +225,9 @@
 
 #| return TOX_FRIEND_ADDRESS_SIZE byte address to give to others.
  # format: [client_id (32 bytes)][nospam number (4 bytes)][checksum (2 bytes)]
+ #
+ # void tox_get_address(Tox *tox, uint8_t *address);
  |#
-; void tox_get_address(Tox *tox, uint8_t *address);
 (define-tox tox_get_address (_fun _Tox-pointer _uint8_t-pointer -> _void))
 
 #| Add a friend.
@@ -226,51 +245,63 @@
  #  return TOX_FAERR_SETNEWNOSPAM if the friend was already there but the nospam was different.
  #  (the nospam for that friend was set to the new one).
  #  return TOX_FAERR_NOMEM if increasing the friend list size fails.
+ #
+ # int32_t tox_add_friend(Tox *tox, uint8_t *address, uint8_t *data, uint16_t length);
  |#
-; int tox_add_friend(Tox *tox, uint8_t *address, uint8_t *data, uint16_t length);
-(define-tox tox_add_friend (_fun _Tox-pointer _uint8_t-pointer _uint8_t-pointer _uint16_t -> _int))
+(define-tox tox_add_friend (_fun _Tox-pointer _uint8_t-pointer _uint8_t-pointer _uint16_t -> _int32_t))
 
 #| Add a friend without sending a friendrequest.
  #  return the friend number if success.
  #  return -1 if failure.
+ #
+ # int32_t tox_add_friend_norequest(Tox *tox, uint8_t *client_id);
  |#
-; int tox_add_friend_norequest(Tox *tox, uint8_t *client_id);
-(define-tox tox_add_friend_norequest (_fun _Tox-pointer _uint8_t-pointer -> _int))
+(define-tox tox_add_friend_norequest (_fun _Tox-pointer _uint8_t-pointer -> _int32_t))
 
-#|  return the friend id associated to that client id.
- #  return -1 if no such friend
- |#
-; int tox_get_friend_id(Tox *tox, uint8_t *client_id);
-(define-tox tox_get_friend_id (_fun _Tox-pointer _uint8_t-pointer -> _int))
+#|
+ #  return the friend number associated to that client id.
+ #  return -1 if no such friend */
+ # int32_t tox_get_friend_number(Tox *tox, uint8_t *client_id);
+|#
+(define-tox tox_get_friend_number (_fun _Tox-pointer _uint8_t -> _int32_t))
 
-#| Copies the public key associated to that friend id into client_id buffer.
+#|
+ # Copies the public key associated to that friend id into client_id buffer.
  # Make sure that client_id is of size CLIENT_ID_SIZE.
  #  return 0 if success.
  #  return -1 if failure.
+ #
+ # int tox_get_client_id(Tox *tox, int32_t friend_id, uint8_t *client_id);
  |#
-; int tox_get_client_id(Tox *tox, int friend_id, uint8_t *client_id);
-(define-tox tox_get_client_id (_fun _Tox-pointer _int _uint8_t-pointer -> _int))
+(define-tox tox_get_client_id (_fun _Tox-pointer _int32_t _uint8_t-pointer -> _int))
 
-#| Remove a friend. |#
-; int tox_del_friend(Tox *tox, int friendnumber);
-(define-tox tox_del_friend (_fun _Tox-pointer _int -> _int))
+#| Remove a friend.
+ # 
+ # return 0 if success.
+ # return -1 if failure.
+ #
+ # int tox_del_friend(Tox *tox, int32_t friendnumber);
+ |#
+(define-tox tox_del_friend (_fun _Tox-pointer _int32_t -> _int))
 
 #| Checks friend's connecting status.
  #
  #  return 1 if friend is connected to us (Online).
  #  return 0 if friend is not connected to us (Offline).
  #  return -1 on failure.
+ #
+ # int tox_get_friend_connection_status(Tox *tox, int friendnumber);
  |#
-; int tox_get_friend_connection_status(Tox *tox, int friendnumber);
-(define-tox tox_get_friend_connection_status (_fun _Tox-pointer _int -> _int))
+(define-tox tox_get_friend_connection_status (_fun _Tox-pointer _int32_t -> _int))
 
 #| Checks if there exists a friend with given friendnumber.
  #
  #  return 1 if friend exists.
  #  return 0 if friend doesn't exist.
+ #
+ # int tox_friend_exists(Tox *tox, int32_t friendnumber);
  |#
-; int tox_friend_exists(Tox *tox, int friendnumber);
-(define-tox tox_friend_exists (_fun _Tox-pointer _int -> _int))
+(define-tox tox_friend_exists (_fun _Tox-pointer _int32_t -> _int))
 
 #| Send a text chat message to an online friend.
  #
@@ -281,11 +312,12 @@
  # if one is received.
  # m_sendmessage_withid will send a message with the id of your choosing,
  # however we can generate an id for you by calling plain m_sendmessage.
+ #
+ # uint32_t tox_send_message(Tox *tox, int32_t friendnumber, uint8_t *message, uint32_t length);
+ # uint32_t tox_send_message_withid(Tox *tox, int32_t friendnumber, uint32_t theid, uint8_t *message, uint32_t length);
  |#
-; uint32_t tox_send_message(Tox *tox, int friendnumber, uint8_t *message, uint32_t length);
-; uint32_t tox_send_message_withid(Tox *tox, int friendnumber, uint32_t theid, uint8_t *message, uint32_t length);
-(define-tox tox_send_message (_fun _Tox-pointer _int _uint8_t-pointer _uint32_t -> _uint32_t))
-(define-tox tox_send_message_withid (_fun _Tox-pointer _int _uint32_t _uint8_t-pointer _uint32_t -> _uint32_t))
+(define-tox tox_send_message (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint32_t -> _uint32_t))
+(define-tox tox_send_message_withid (_fun _Tox-pointer _int32_t _uint32_t _uint8_t-pointer _uint32_t -> _uint32_t))
 
 #| Send an action to an online friend.
  #
@@ -296,11 +328,12 @@
  #  if one is received.
  #  m_sendaction_withid will send an action message with the id of your choosing,
  #  however we can generate an id for you by calling plain m_sendaction.
+ #
+ # uint32_t tox_send_action(Tox *tox, int32_t friendnumber, uint8_t *action, uint32_t length);
+ # uint32_t tox_send_action_withid(Tox *tox, int32_t friendnumber, uint32_t theid, uint8_t *action, uint32_t length);
  |#
-; uint32_t tox_send_action(Tox *tox, int friendnumber, uint8_t *action, uint32_t length);
-; uint32_t tox_send_action_withid(Tox *tox, int friendnumber, uint32_t theid, uint8_t *action, uint32_t length);
-(define-tox tox_send_action (_fun _Tox-pointer _int _uint8_t-pointer _uint32_t -> _uint32_t))
-(define-tox tox_send_action_withid (_fun _Tox-pointer _int _uint32_t _uint8_t-pointer _uint32_t -> _uint32_t))
+(define-tox tox_send_action (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint32_t -> _uint32_t))
+(define-tox tox_send_action_withid (_fun _Tox-pointer _int32_t _uint32_t _uint8_t-pointer _uint32_t -> _uint32_t))
 
 #| Set our nickname.
  # name must be a string of maximum MAX_NAME_LENGTH length.
@@ -309,47 +342,64 @@
  #
  #  return 0 if success.
  #  return -1 if failure.
+ #
+ # int tox_set_name(Tox *tox, uint8_t *name, uint16_t length);
  |#
-; int tox_set_name(Tox *tox, uint8_t *name, uint16_t length);
 (define-tox tox_set_name (_fun _Tox-pointer _uint8_t-pointer _uint16_t -> _int))
 
 #|
  # Get your nickname.
  # m - The messanger context to use.
- # name - Pointer to a string for the name.
- # nlen - The length of the string buffer.
+ # name - needs to be a valid memory location with a size of
+ # at least MAX_NAME_LENGTH (128) bytes.
  #
  #  return length of name.
  #  return 0 on error.
+ #
+ # uint16_t tox_get_self_name(Tox *tox, uint8_t *name);
  |#
-; uint16_t tox_get_self_name(Tox *tox, uint8_t *name, uint16_t nlen);
-(define-tox tox_get_self_name (_fun _Tox-pointer _uint8_t-pointer _uint16_t -> _uint16_t))
+(define-tox tox_get_self_name (_fun _Tox-pointer _uint8_t-pointer -> _uint16_t))
 
 #| Get name of friendnumber and put it in name.
  # name needs to be a valid memory location with a size of at least MAX_NAME_LENGTH (128) bytes.
  #
- #  return length of name (with the NULL terminator) if success.
+ #  return length of name if success.
  #  return -1 if failure.
+ #
+ # int tox_get_name(Tox *tox, int32_t friendnumber, uint8_t *name);
  |#
-; int tox_get_name(Tox *tox, int friendnumber, uint8_t *name);
-(define-tox tox_get_name (_fun _Tox-pointer _int _uint8_t-pointer -> _int))
+(define-tox tox_get_name (_fun _Tox-pointer _int32_t _uint8_t-pointer -> _int))
+
+#|  returns the length of name on success.
+ #  returns -1 on failure.
+ #
+ # int tox_get_name_size(Tox *tox, int32_t friendnumber);
+ # int tox_get_self_name_size(Tox *tox);
+ |#
+(define-tox tox_get_name_size (_fun _Tox-pointer _int32_t -> _int))
+(define-tox tox_get_self_name_size (_fun _Tox-pointer -> _int))
 
 #| Set our user status.
- # You are responsible for freeing status after.
+ #
+ # userstatus must be one of TOX_USERSTATUS values.
  #
  #  returns 0 on success.
  #  returns -1 on failure.
+ #
+ # int tox_set_status_message(Tox *tox, uint8_t *status, uint16_t length);
+ # int tox_set_user_status(Tox *tox, uint8_t userstatus);
  |#
-; int tox_set_status_message(Tox *tox, uint8_t *status, uint16_t length);
-; int tox_set_user_status(Tox *tox, TOX_USERSTATUS status);
 (define-tox tox_set_status_message (_fun _Tox-pointer _uint8_t-pointer _uint16_t -> _int))
-(define-tox tox_set_user_status (_fun _Tox-pointer TOX_USERSTATUS -> _int))
+(define-tox tox_set_user_status (_fun _Tox-pointer _uint8_t -> _int))
 
-#|  return the length of friendnumber's status message, including null.
- #  Pass it into malloc
+#|  returns the length of status message on success.
+ #  returns -1 on failure.
+ #
+ # int tox_get_status_message_size(Tox *tox, int32_t friendnumber);
+ # int tox_get_self_status_message_size(Tox *tox);
  |#
-; int tox_get_status_message_size(Tox *tox, int friendnumber);
-(define-tox tox_get_status_message_size (_fun _Tox-pointer _int -> _int))
+(define-tox tox_get_status_message_size (_fun _Tox-pointer _int32_t -> _int))
+(define-tox tox_get_self_status_message_size (_fun _Tox-pointer -> _int))
 
 #| Copy friendnumber's status message into buf, truncating if size is over maxlen.
  # Get the size you need to allocate from m_get_statusmessage_size.
@@ -357,142 +407,161 @@
  #
  # returns the length of the copied data on success
  # retruns -1 on failure.
+ #
+ # int tox_get_status_message(Tox *tox, int32_t friendnumber, uint8_t *buf, uint32_t maxlen);
+ # int tox_get_self_status_message(Tox *tox, uint8_t *buf, uint32_t maxlen);
  |#
-; int tox_get_status_message(Tox *tox, int friendnumber, uint8_t *buf, uint32_t maxlen);
-; int tox_get_self_status_message(Tox *tox, uint8_t *buf, uint32_t maxlen);
-(define-tox tox_get_status_message (_fun _Tox-pointer _int _uint8_t-pointer _uint32_t -> _int))
+(define-tox tox_get_status_message (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint32_t -> _int))
 (define-tox tox_get_self_status_message (_fun _Tox-pointer _uint8_t-pointer _uint32_t -> _int))
 
-#|  return one of USERSTATUS values.
- #  Values unknown to your application should be represented as USERSTATUS_NONE.
- #  As above, the self variant will return our own USERSTATUS.
- #  If friendnumber is invalid, this shall return USERSTATUS_INVALID.
+#|  return one of TOX_USERSTATUS values.
+ #  Values unknown to your application should be represented as TOX_USERSTATUS_NONE.
+ #  As above, the self variant will return our own TOX_USERSTATUS.
+ #  If friendnumber is invalid, this shall return TOX_USERSTATUS_INVALID.
+ #
+ # uint8_t tox_get_user_status(Tox *tox, int32_t friendnumber);
+ # uint8_t tox_get_self_user_status(Tox *tox);
  |#
-; TOX_USERSTATUS tox_get_user_status(Tox *tox, int friendnumber);
-; TOX_USERSTATUS tox_get_self_user_status(Tox *tox);
-(define-tox tox_get_user_status (_fun _Tox-pointer _int -> TOX_USERSTATUS))
-(define-tox tox_get_self_user_status (_fun _Tox-pointer -> TOX_USERSTATUS))
+(define-tox tox_get_user_status (_fun _Tox-pointer _int32_t -> _uint8_t))
+(define-tox tox_get_self_user_status (_fun _Tox-pointer -> _uint8_t))
+
+#| returns timestamp of last time friendnumber was seen online, or 0 if never seen.
+ # returns -1 on error.
+ #
+ # uint64_t tox_get_last_online(Tox *tox, int32_t friendnumber);
+ |#
+(define-tox tox_get_last_online (_fun _Tox-pointer _int32_t -> _uint64_t))
 
 #| Set our typing status for a friend.
  # You are responsible for turning it on or off.
  #
  # returns 0 on success.
  # returns -1 on failure.
+ #
+ # int tox_set_user_is_typing(Tox *tox, int32_t friendnumber, uint8_t is_typing);
  |#
-; int tox_set_user_is_typing(Tox *tox, int friendnumber, uint8_t is_typing);
-(define-tox tox_set_user_is_typing (_fun _Tox-pointer _int _uint8_t -> _int))
+(define-tox tox_set_user_is_typing (_fun _Tox-pointer _int32_t _uint8_t -> _int))
 
 #| Get the typing status of a friend.
  #
  # returns 0 if friend is not typing.
  # returns 1 if friend is typing.
+ #
+ # int tox_get_is_typing(Tox *tox, int32_t friendnumber);
  |#
-; int tox_get_is_typing(Tox *tox, int friendnumber);
-(define-tox tox_get_is_typing (_fun _Tox-pointer _int -> _int))
+(define-tox tox_get_is_typing (_fun _Tox-pointer _int32_t -> _int))
 
 #| Sets whether we send read receipts for friendnumber.
  # This function is not lazy, and it will fail if yesno is not (0 or 1).
+ #
+ # void tox_set_sends_receipts(Tox *tox, int32_t friendnumber, int yesno);
  |#
-; void tox_set_sends_receipts(Tox *tox, int friendnumber, int yesno);
-(define-tox tox_set_sends_receipts (_fun _Tox-pointer _int _int -> _void))
+(define-tox tox_set_sends_receipts (_fun _Tox-pointer _int32_t _int -> _void))
 
 #| Return the number of friends in the instance m.
  # You should use this to determine how much memory to allocate
- # for copy_friendlist. |#
-; uint32_t tox_count_friendlist(Tox *tox);
+ # for copy_friendlist.
+ # uint32_t tox_count_friendlist(Tox *tox);
+ |#
 (define-tox tox_count_friendlist (_fun _Tox-pointer -> _uint32_t))
 
-#| Return the number of online friends in the instance m. |#
-; uint32_t tox_get_num_online_friends(Tox *tox);
+#| Return the number of online friends in the instance m.
+ # uint32_t tox_get_num_online_friends(Tox *tox);
+ |#
 (define-tox tox_get_num_online_friends (_fun _Tox-pointer -> _uint32_t))
 
 #| Copy a list of valid friend IDs into the array out_list.
  # If out_list is NULL, returns 0.
  # Otherwise, returns the number of elements copied.
  # If the array was too small, the contents
- # of out_list will be truncated to list_size. |#
-; uint32_t tox_get_friendlist(Tox *tox, int *out_list, uint32_t list_size);
-(define-tox tox_get_friendlist (_fun _Tox-pointer _intptr _uint32_t -> _uint32_t))
+ # of out_list will be truncated to list_size.
+ # uint32_t tox_get_friendlist(Tox *tox, int32_t *out_list, uint32_t list_size);
+ |#
+(define-tox tox_get_friendlist (_fun _Tox-pointer _int32_t-pointer _uint32_t -> _uint32_t))
 
 #| Set the function that will be executed when a friend request is received.
- #  Function format is function(uint8_t * public_key, uint8_t * data, uint16_t length)
+ #  Function format is function(Tox *tox, uint8_t * public_key, uint8_t * data, uint16_t length, void *userdata)
  #
  #
  # I wonder if this is done correctly...
  #
- # void tox_callback_friend_request(Tox *tox, void (*function)(uint8_t *, uint8_t *, uint16_t, void *), void *userdata);
+ # void tox_callback_friend_request(Tox *tox, void (*function)(Tox *tox, uint8_t *, uint8_t *, uint16_t, void *),
+ #                                 void *userdata);
  |#
 (define-tox tox_callback_friend_request (_fun _Tox-pointer
-                                              (_fun _uint8_t-pointer _uint8_t-pointer _uint16_t _voidptr -> _voidptr)
+                                              (_fun _Tox-pointer _uint8_t-pointer _uint8_t-pointer
+                                                    _uint16_t _voidptr -> _voidptr)
                                               _voidptr -> _void))
 
 #| Set the function that will be executed when a message from a friend is received.
- #  Function format is: function(int friendnumber, uint8_t * message, uint32_t length)
+ #  Function format is: function(Tox *tox, int friendnumber, uint8_t * message, uint32_t length, void *userdata)
  #
  # I wonder if this is done correctly...
  #
  # void tox_callback_friend_message(Tox *tox, void (*function)(Tox *tox, int, uint8_t *, uint16_t, void *),
- #                               void *userdata);
+ #                                  void *userdata);
  |#
 (define-tox tox_callback_friend_message (_fun _Tox-pointer
-                                              (_fun _Tox-pointer _int _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                              (_fun _Tox-pointer _int _uint8_t-pointer _uint16_t
+                                                    _voidptr -> _void)
                                               _voidptr -> _void))
 
 #| Set the function that will be executed when an action from a friend is received.
- #  Function format is: function(int friendnumber, uint8_t * action, uint32_t length)
+ #  Function format is: function(Tox *tox, int32_t friendnumber, uint8_t * action, uint32_t length, void *userdata)
  #
  # I wonder if this is done correctly...
  #
- # void tox_callback_friend_action(Tox *tox, void (*function)(Tox *tox, int, uint8_t *, uint16_t, void *), void *userdata);
+ # void tox_callback_friend_action(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t *, uint16_t, void *),
+ #                                void *userdata);
  |#
 (define-tox tox_callback_friend_action (_fun _Tox-pointer
-                                             (_fun _Tox-pointer _int _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                             (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint16_t _voidptr -> _void)
                                              _voidptr -> _void))
 
 #| Set the callback for name changes.
- #  function(int friendnumber, uint8_t *newname, uint16_t length)
+ #  function(Tox *tox, int32_t friendnumber, uint8_t *newname, uint16_t length, void *userdata)
  #  You are not responsible for freeing newname
  #
  # Jesus Christ, this never ends.
  #
- # void tox_callback_name_change(Tox *tox, void (*function)(Tox *tox, int, uint8_t *, uint16_t, void *),
+ # void tox_callback_name_change(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t *, uint16_t, void *),
  #                               void *userdata);
  |#
 (define-tox tox_callback_name_change (_fun _Tox-pointer
-                                           (_fun _Tox-pointer _int _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                           (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint16_t _voidptr -> _void)
                                            _voidptr -> _void))
 
 #| Set the callback for status message changes.
- #  function(int friendnumber, uint8_t *newstatus, uint16_t length)
+ #  function(Tox *tox, int32_t friendnumber, uint8_t *newstatus, uint16_t length, void *userdata)
  #  You are not responsible for freeing newstatus.
  #
- # void tox_callback_status_message(Tox *tox, void (*function)(Tox *tox, int, uint8_t *, uint16_t, void *),
+ # void tox_callback_status_message(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t *, uint16_t, void *),
  #                                  void *userdata);
  |#
 (define-tox tox_callback_status_message (_fun _Tox-pointer
-                                              (_fun _Tox-pointer _int _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                              (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint16_t _voidptr -> _void)
                                               _voidptr -> _void))
 
 #| Set the callback for status type changes.
- #  function(int friendnumber, USERSTATUS kind)
+ #  function(Tox *tox, int32_t friendnumber, uint8_t TOX_USERSTATUS, void *userdata)
  #
- # void tox_callback_user_status(Tox *tox, void (*function)(Tox *tox, int, TOX_USERSTATUS, void *), void *userdata);
+ # void tox_callback_user_status(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t, void *), void *userdata);
  |#
 (define-tox tox_callback_user_status (_fun _Tox-pointer
-                                           (_fun _Tox-pointer _int TOX_USERSTATUS _voidptr -> _void)
+                                           (_fun _Tox-pointer _int32_t _uint8_t _voidptr -> _void)
                                            _voidptr -> _void))
 
 #| Set the callback for typing changes.
- #  function (int friendnumber, int is_typing)
+ #  function (Tox *tox, int32_t friendnumber, int is_typing, void *userdata)
  #
- # void tox_callback_typing_change(Tox *tox, void (*function)(Tox *tox, int, int, void *), void *userdata);
+ # void tox_callback_typing_change(Tox *tox, void (*function)(Tox *tox, int32_t, int, void *), void *userdata);
  |#
 (define-tox tox_callback_typing_change (_fun _Tox-pointer
-                                             (_fun _Tox-pointer _int _int _voidptr -> _void)
+                                             (_fun _Tox-pointer _int32_t _int _voidptr -> _void)
                                              _voidptr -> _void))
 
 #| Set the callback for read receipts.
- #  function(int friendnumber, uint32_t receipt)
+ #  function(Tox *tox, int32_t friendnumber, uint32_t status, void *userdata)
  #
  #  If you are keeping a record of returns from m_sendmessage;
  #  receipt might be one of those values, meaning the message
@@ -500,14 +569,14 @@
  #  Since core doesn't track ids for you, receipt may not correspond to any message.
  #  In that case, you should discard it.
  #
- # void tox_callback_read_receipt(Tox *tox, void (*function)(Tox *tox, int, uint32_t, void *), void *userdata);
+ # void tox_callback_read_receipt(Tox *tox, void (*function)(Tox *tox, int32_t, uint32_t, void *), void *userdata);
  |#
 (define-tox tox_callback_read_receipt (_fun _Tox-pointer
-                                            (_fun _Tox-pointer _int _uint32_t _voidptr -> _void)
+                                            (_fun _Tox-pointer _int32_t _uint32_t _voidptr -> _void)
                                             _voidptr -> _void))
 
 #| Set the callback for connection status changes.
- #  function(int friendnumber, uint8_t status)
+ #  function(Tox *tox, int32_t friendnumber, uint8_t status, void *userdata)
  #
  #  Status:
  #    0 -- friend went offline after being previously online
@@ -517,11 +586,11 @@
  #  being previously online" part. it's assumed that when adding friends,
  #  their connection status is offline.
  #
- # void tox_callback_connection_status(Tox *tox, void (*function)(Tox *tox, int, uint8_t, void *), void *userdata);
+ # void tox_callback_connection_status(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t, void *), void *userdata);
  |#
 (define-tox tox_callback_connection_status (_fun _Tox-pointer
-                                                 (_fun _Tox-pointer _int _uint8_t _voidptr -> _void)
-                                                 _voidptr -> _void)) ; 381
+                                                 (_fun _Tox-pointer _int32_t _uint8_t _voidptr -> _void)
+                                                 _voidptr -> _void))
 
 #| ##########GROUP CHAT FUNCTIONS: WARNING WILL BREAK A LOT############ |#
 
@@ -529,10 +598,10 @@
  #
  #  Function(Tox *tox, int friendnumber, uint8_t *group_public_key, void *userdata)
  #
- # void tox_callback_group_invite(Tox *tox, void (*function)(Tox *tox, int, uint8_t *, void *), void *userdata);
+ # void tox_callback_group_invite(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t *, void *), void *userdata);
  |#
 (define-tox tox_callback_group_invite (_fun _Tox-pointer
-                                            (_fun _Tox-pointer _int _uint8_t-pointer _voidptr -> _void)
+                                            (_fun _Tox-pointer _int32_t _uint8_t-pointer _voidptr -> _void)
                                             _voidptr -> _void))
 
 #| Set the callback for group messages.
@@ -562,11 +631,6 @@
  # It gets called every time the name list changes(new peer/name, deleted peer)
  #  Function(Tox *tox, int groupnumber, int peernumber, TOX_CHAT_CHANGE change, void *userdata)
  #
- # typedef enum {
- #   TOX_CHAT_CHANGE_PEER_ADD,
- #   TOX_CHAT_CHANGE_PEER_DEL,
- #   TOX_CHAT_CHANGE_PEER_NAME,
- # } TOX_CHAT_CHANGE;
  # void tox_callback_group_namelist_change(Tox *tox, void (*function)(Tox *tox, int, int, uint8_t, void *),
  #                                        void *userdata);
  |#
@@ -606,18 +670,18 @@
  # return 0 on success
  # return -1 on failure
  #
- # int tox_invite_friend(Tox *tox, int friendnumber, int groupnumber);
+ # int tox_invite_friend(Tox *tox, int32_t friendnumber, int groupnumber);
  |#
-(define-tox tox_invite_friend (_fun _Tox-pointer _int _int -> _int))
+(define-tox tox_invite_friend (_fun _Tox-pointer _int32_t _int -> _int))
 
 #| Join a group (you need to have been invited first.)
  #
  # returns group number on success
  # returns -1 on failure.
  #
- # int tox_join_groupchat(Tox *tox, int friendnumber, uint8_t *friend_group_public_key);
+ # int tox_join_groupchat(Tox *tox, int32_t friendnumber, uint8_t *friend_group_public_key);
  |#
-(define-tox tox_join_groupchat (_fun _Tox-pointer _uint8_t-pointer -> _int))
+(define-tox tox_join_groupchat (_fun _Tox-pointer _int32_t _uint8_t-pointer -> _int))
 
 #| send a group message
  # return 0 on success
@@ -685,13 +749,13 @@
 
 #| Set the callback for file send requests.
  #
- #  Function(Tox *tox, int friendnumber, uint8_t filenumber, uint64_t filesize, uint8_t *filename, uint16_t filename_length, void *userdata)
+ #  Function(Tox *tox, int32_t friendnumber, uint8_t filenumber, uint64_t filesize, uint8_t *filename, uint16_t filename_length, void *userdata)
  #
- # void tox_callback_file_send_request(Tox *tox, void (*function)(Tox *m, int, uint8_t, uint64_t, uint8_t *, uint16_t,
+ # void tox_callback_file_send_request(Tox *tox, void (*function)(Tox *m, int32_t, uint8_t, uint64_t, uint8_t *, uint16_t,
  #                                    void *), void *userdata);
  |#
 (define-tox tox_callback_file_send_request (_fun _Tox-pointer
-                                                 (_fun _Tox-pointer _int _uint8_t _uint64_t
+                                                 (_fun _Tox-pointer _int32_t _uint8_t _uint64_t
                                                        _uint8_t-pointer _uint16_t _voidptr -> _void)
                                                  _voidptr -> _void))
 
@@ -700,27 +764,27 @@
  #  receive_send is 1 if the message is for a slot on which we are currently sending a file and 0 if the message
  #  is for a slot on which we are receiving the file
  #
- #  Function(Tox *tox, int friendnumber, uint8_t receive_send, uint8_t filenumber, uint8_t control_type, uint8_t *data, uint16_t length, void *userdata)
+ #  Function(Tox *tox, int32_t friendnumber, uint8_t receive_send, uint8_t filenumber, uint8_t control_type, uint8_t *data, uint16_t length, void *userdata)
  #
  #
- # void tox_callback_file_control(Tox *tox, void (*function)(Tox *m, int, uint8_t, uint8_t, uint8_t, uint8_t *,
+ # void tox_callback_file_control(Tox *tox, void (*function)(Tox *m, int32_t, uint8_t, uint8_t, uint8_t, uint8_t *,
  #                                uint16_t, void *), void *userdata);
  |#
 (define-tox tox_callback_file_control (_fun _Tox-pointer
-                                            (_fun _Tox-pointer _int _uint8_t _uint8_t _uint8_t
+                                            (_fun _Tox-pointer _int32_t _uint8_t _uint8_t _uint8_t
                                                   _uint8_t-pointer _uint16_t _voidptr -> _void)
                                             _voidptr -> _void))
 
 #| Set the callback for file data.
  #
- #  Function(Tox *tox, int friendnumber, uint8_t filenumber, uint8_t *data, uint16_t length, void *userdata)
+ #  Function(Tox *tox, int32_t friendnumber, uint8_t filenumber, uint8_t *data, uint16_t length, void *userdata)
  #
  #
- # void tox_callback_file_data(Tox *tox, void (*function)(Tox *m, int, uint8_t, uint8_t *, uint16_t length, void *),
+ # void tox_callback_file_data(Tox *tox, void (*function)(Tox *m, int32_t, uint8_t, uint8_t *, uint16_t length, void *),
  #                             void *userdata);
  |#
 (define-tox tox_callback_file_data (_fun _Tox-pointer
-                                         (_fun _Tox-pointer _int _uint8_t _uint8_t-pointer
+                                         (_fun _Tox-pointer _int32_t _uint8_t _uint8_t-pointer
                                                _uint16_t _voidptr -> _void)
                                          _voidptr -> _void))
 
@@ -729,9 +793,9 @@
  #  return file number on success
  #  return -1 on failure
  #
- # int tox_new_file_sender(Tox *tox, int friendnumber, uint64_t filesize, uint8_t *filename, uint16_t filename_length);
+ # int tox_new_file_sender(Tox *tox, int32_t friendnumber, uint64_t filesize, uint8_t *filename, uint16_t filename_length);
  |#
-(define-tox tox_new_file_sender (_fun _Tox-pointer _int _uint64_t
+(define-tox tox_new_file_sender (_fun _Tox-pointer _int32_t _uint64_t
                                       _uint8_t-pointer _uint16_t
                                       -> _int))
 
@@ -743,10 +807,10 @@
  #  return 0 on success
  #  return -1 on failure
  #
- # int tox_file_send_control(Tox *tox, int friendnumber, uint8_t send_receive, uint8_t filenumber, uint8_t message_id,
+ # int tox_file_send_control(Tox *tox, int32_t friendnumber, uint8_t send_receive, uint8_t filenumber, uint8_t message_id,
  #                           uint8_t *data, uint16_t length);
  |#
-(define-tox tox_file_send_control (_fun _Tox-pointer _int _uint8_t
+(define-tox tox_file_send_control (_fun _Tox-pointer _int32_t _uint8_t
                                         _uint8_t _uint8_t _uint8_t-pointer
                                         _uint16_t -> _int))
 
@@ -755,9 +819,9 @@
  #  return 0 on success
  #  return -1 on failure
  #
- # int tox_file_send_data(Tox *tox, int friendnumber, uint8_t filenumber, uint8_t *data, uint16_t length);
+ # int tox_file_send_data(Tox *tox, int32_t friendnumber, uint8_t filenumber, uint8_t *data, uint16_t length);
  |#
-(define-tox tox_file_send_data (_fun _Tox-pointer _int _uint8_t
+(define-tox tox_file_send_data (_fun _Tox-pointer _int32_t _uint8_t
                                     _uint8_t-pointer _uint16_t -> _int))
 
 #| Returns the recommended/maximum size of the filedata you send with tox_file_send_data()
@@ -765,9 +829,9 @@
  #  return size on success
  #  return -1 on failure (currently will never return -1)
  #
- # int tox_file_data_size(Tox *tox, int friendnumber);
+ # int tox_file_data_size(Tox *tox, int32_t friendnumber);
  |#
-(define-tox tox_file_data_size (_fun _Tox-pointer _int -> _int))
+(define-tox tox_file_data_size (_fun _Tox-pointer _int32_t -> _int))
 
 #| Give the number of bytes left to be sent/received.
  #
@@ -776,14 +840,15 @@
  #  return number of bytes remaining to be sent/received on success
  #  return 0 on failure
  #
- # uint64_t tox_file_data_remaining(Tox *tox, int friendnumber, uint8_t filenumber, uint8_t send_receive);
+ # uint64_t tox_file_data_remaining(Tox *tox, int32_t friendnumber, uint8_t filenumber, uint8_t send_receive);
  |#
-(define-tox tox_file_data_remaining (_fun _Tox-pointer _int _uint8_t _uint8_t -> _uint64_t))
+(define-tox tox_file_data_remaining (_fun _Tox-pointer _int32_t _uint8_t _uint8_t -> _uint64_t))
 
 #| ##############END OF FILE SENDING FUNCTIONS################## |#
 
 
 #|
+ # WARNING: DEPRECATED, DO NOT USE
  # Use these two functions to bootstrap the client.
  #
  # Sends a "get nodes" request to the given node with ip, port and public_key
@@ -793,6 +858,10 @@
  |#
 (define-tox tox_bootstrap_from_ip (_fun _Tox-pointer
                                         _tox_IP_PORT-pointer _uint8_t-pointer -> _void))
+
+#|
+ # Use this function to bootstrap the client.
+ |#
 
 #| Resolves address into an IP address. If successful, sends a "get nodes"
  #   request to the given node with ip, port (in network byte order, HINT: use htons())
@@ -849,44 +918,48 @@
 (define-tox tox_do (_fun _Tox-pointer -> _void))
 
 #|
- # tox_wait_prepare(): function should be called under lock
+ # tox_wait_data_size():
+ #
+ #  returns a size of data buffer to allocate. the size is constant.
+ #
+ # tox_wait_prepare(): function should be called under lock every time we want to call tox_wait_execute()
  # Prepares the data required to call tox_wait_execute() asynchronously
  #
- # data[] is reserved and kept by the caller
- # *lenptr is in/out: in = reserved data[], out = required data[]
+ # data[] should be of at least tox_wait_data_size() size and it's reserved and kept by the caller
+ # Use that data[] to call tox_wait_execute()
  #
  #  returns  1 on success
- #  returns  0 if *lenptr is insufficient
- #  returns -1 if lenptr is NULL
+ #  returns  0 if data was NULL
  #
  #
  # tox_wait_execute(): function can be called asynchronously
- # Waits for something to happen on the socket for up to milliseconds milliseconds.
- # ### Function MUSTN'T poll. ###
- # The function mustn't modify anything at all, so it can be called completely
- # asynchronously without any worry.
+ # Waits for something to happen on the socket for up to seconds seconds and mircoseconds microseconds.
+ # mircoseconds should be between 0 and 999999.
+ # If you set either or both seconds and microseconds to negatives, it will block indefinetly until there
+ # is an activity.
  #
- #  returns  1 if there is socket activity (i.e. tox_do() should be called)
- #  returns  0 if the timeout was reached
- #  returns -1 if data was NULL or len too short
+ #  returns  2 if there is socket activity (i.e. tox_do() should be called)
+ #  returns  1 if the timeout was reached (tox_do() should be called anyway. it's advised to call it at least
+ #             once per second)
+ #  returns  0 if data was NULL
  #
  #
- # tox_wait_cleanup(): function should be called under lock
+ # tox_wait_cleanup(): function should be called under lock,  every time tox_wait_execute() finishes
  # Stores results from tox_wait_execute().
  #
- # data[]/len shall be the exact same as given to tox_wait_execute()
+ # returns  1 on success
+ #  returns  0 if data was NULL
  #
  #
- # int tox_wait_prepare(Tox *tox, uint8_t *data, uint16_t *lenptr);
- # int tox_wait_execute(Tox *tox, uint8_t *data, uint16_t len, uint16_t milliseconds);
- # void tox_wait_cleanup(Tox *tox, uint8_t *data, uint16_t len);
+ # size_t tox_wait_data_size();
+ # int tox_wait_prepare(Tox *tox, uint8_t *data);
+ # int tox_wait_execute(uint8_t *data, long seconds, long microseconds);
+ # int tox_wait_cleanup(Tox *tox, uint8_t *data);
  |#
-(define-tox tox_wait_prepare (_fun _Tox-pointer
-                                   _uint8_t-pointer _uint16_t-pointer -> _int))
-(define-tox tox_wait_execute (_fun _Tox-pointer
-                                   _uint8_t-pointer _uint16_t _uint16_t -> _int))
-(define-tox tox_wait_cleanup (_fun _Tox-pointer
-                                   _uint8_t-pointer _uint16_t -> _void))
+(define-tox tox_wait_data_size (_fun -> _size_t))
+(define-tox tox_wait_prepare (_fun _Tox-pointer _uint8_t-pointer -> _int))
+(define-tox tox_wait_execute (_fun _uint8_t-pointer _long _long -> _int))
+(define-tox tox_wait_cleanup (_fun _Tox-pointer _uint8_t-pointer -> _int))
 
 
 #| SAVING AND LOADING FUNCTIONS: |#
