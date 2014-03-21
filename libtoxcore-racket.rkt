@@ -13,7 +13,9 @@
  # DEAL WITH IT
  #
  # TODO:
- # testing!
+ #     testing!
+ #
+ # maybe uint8_t *data; should be _bytes?
  |#
 
 #|
@@ -228,7 +230,7 @@
  #
  # void tox_get_address(Tox *tox, uint8_t *address);
  |#
-(define-tox tox_get_address (_fun _Tox-pointer _uint8_t-pointer -> _void))
+(define-tox tox_get_address (_fun _Tox-pointer _string -> _void))
 
 #| Add a friend.
  # Set the data that will be sent along with friend request.
@@ -248,7 +250,7 @@
  #
  # int32_t tox_add_friend(Tox *tox, uint8_t *address, uint8_t *data, uint16_t length);
  |#
-(define-tox tox_add_friend (_fun _Tox-pointer _uint8_t-pointer _uint8_t-pointer _uint16_t -> _int32_t))
+(define-tox tox_add_friend (_fun _Tox-pointer _string _string _uint16_t -> _int32_t))
 
 #| Add a friend without sending a friendrequest.
  #  return the friend number if success.
@@ -256,14 +258,14 @@
  #
  # int32_t tox_add_friend_norequest(Tox *tox, uint8_t *client_id);
  |#
-(define-tox tox_add_friend_norequest (_fun _Tox-pointer _uint8_t-pointer -> _int32_t))
+(define-tox tox_add_friend_norequest (_fun _Tox-pointer _string -> _int32_t))
 
 #|
  #  return the friend number associated to that client id.
  #  return -1 if no such friend */
  # int32_t tox_get_friend_number(Tox *tox, uint8_t *client_id);
 |#
-(define-tox tox_get_friend_number (_fun _Tox-pointer _uint8_t -> _int32_t))
+(define-tox tox_get_friend_number (_fun _Tox-pointer _string -> _int32_t))
 
 #|
  # Copies the public key associated to that friend id into client_id buffer.
@@ -273,7 +275,7 @@
  #
  # int tox_get_client_id(Tox *tox, int32_t friend_id, uint8_t *client_id);
  |#
-(define-tox tox_get_client_id (_fun _Tox-pointer _int32_t _uint8_t-pointer -> _int))
+(define-tox tox_get_client_id (_fun _Tox-pointer _int32_t _string -> _int))
 
 #| Remove a friend.
  # 
@@ -316,8 +318,8 @@
  # uint32_t tox_send_message(Tox *tox, int32_t friendnumber, uint8_t *message, uint32_t length);
  # uint32_t tox_send_message_withid(Tox *tox, int32_t friendnumber, uint32_t theid, uint8_t *message, uint32_t length);
  |#
-(define-tox tox_send_message (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint32_t -> _uint32_t))
-(define-tox tox_send_message_withid (_fun _Tox-pointer _int32_t _uint32_t _uint8_t-pointer _uint32_t -> _uint32_t))
+(define-tox tox_send_message (_fun _Tox-pointer _int32_t _string _uint32_t -> _uint32_t))
+(define-tox tox_send_message_withid (_fun _Tox-pointer _int32_t _uint32_t _string _uint32_t -> _uint32_t))
 
 #| Send an action to an online friend.
  #
@@ -332,8 +334,8 @@
  # uint32_t tox_send_action(Tox *tox, int32_t friendnumber, uint8_t *action, uint32_t length);
  # uint32_t tox_send_action_withid(Tox *tox, int32_t friendnumber, uint32_t theid, uint8_t *action, uint32_t length);
  |#
-(define-tox tox_send_action (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint32_t -> _uint32_t))
-(define-tox tox_send_action_withid (_fun _Tox-pointer _int32_t _uint32_t _uint8_t-pointer _uint32_t -> _uint32_t))
+(define-tox tox_send_action (_fun _Tox-pointer _int32_t _string _uint32_t -> _uint32_t))
+(define-tox tox_send_action_withid (_fun _Tox-pointer _int32_t _uint32_t _string _uint32_t -> _uint32_t))
 
 #| Set our nickname.
  # name must be a string of maximum MAX_NAME_LENGTH length.
@@ -345,7 +347,7 @@
  #
  # int tox_set_name(Tox *tox, uint8_t *name, uint16_t length);
  |#
-(define-tox tox_set_name (_fun _Tox-pointer _uint8_t-pointer _uint16_t -> _int))
+(define-tox tox_set_name (_fun _Tox-pointer _string _uint16_t -> _int))
 
 #|
  # Get your nickname.
@@ -358,7 +360,7 @@
  #
  # uint16_t tox_get_self_name(Tox *tox, uint8_t *name);
  |#
-(define-tox tox_get_self_name (_fun _Tox-pointer _uint8_t-pointer -> _uint16_t))
+(define-tox tox_get_self_name (_fun _Tox-pointer _string -> _uint16_t))
 
 #| Get name of friendnumber and put it in name.
  # name needs to be a valid memory location with a size of at least MAX_NAME_LENGTH (128) bytes.
@@ -368,7 +370,7 @@
  #
  # int tox_get_name(Tox *tox, int32_t friendnumber, uint8_t *name);
  |#
-(define-tox tox_get_name (_fun _Tox-pointer _int32_t _uint8_t-pointer -> _int))
+(define-tox tox_get_name (_fun _Tox-pointer _int32_t _string -> _int))
 
 #|  returns the length of name on success.
  #  returns -1 on failure.
@@ -389,8 +391,8 @@
  # int tox_set_status_message(Tox *tox, uint8_t *status, uint16_t length);
  # int tox_set_user_status(Tox *tox, uint8_t userstatus);
  |#
-(define-tox tox_set_status_message (_fun _Tox-pointer _uint8_t-pointer _uint16_t -> _int))
-(define-tox tox_set_user_status (_fun _Tox-pointer _uint8_t -> _int))
+(define-tox tox_set_status_message (_fun _Tox-pointer _string _uint16_t -> _int))
+(define-tox tox_set_user_status (_fun _Tox-pointer _string -> _int))
 
 #|  returns the length of status message on success.
  #  returns -1 on failure.
@@ -411,8 +413,8 @@
  # int tox_get_status_message(Tox *tox, int32_t friendnumber, uint8_t *buf, uint32_t maxlen);
  # int tox_get_self_status_message(Tox *tox, uint8_t *buf, uint32_t maxlen);
  |#
-(define-tox tox_get_status_message (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint32_t -> _int))
-(define-tox tox_get_self_status_message (_fun _Tox-pointer _uint8_t-pointer _uint32_t -> _int))
+(define-tox tox_get_status_message (_fun _Tox-pointer _int32_t _string _uint32_t -> _int))
+(define-tox tox_get_self_status_message (_fun _Tox-pointer _string _uint32_t -> _int))
 
 #|  return one of TOX_USERSTATUS values.
  #  Values unknown to your application should be represented as TOX_USERSTATUS_NONE.
@@ -489,7 +491,7 @@
  #                                 void *userdata);
  |#
 (define-tox tox_callback_friend_request (_fun _Tox-pointer
-                                              (_fun _Tox-pointer _uint8_t-pointer _uint8_t-pointer
+                                              (_fun _Tox-pointer _string _string
                                                     _uint16_t _voidptr -> _voidptr)
                                               _voidptr -> _void))
 
@@ -502,7 +504,7 @@
  #                                  void *userdata);
  |#
 (define-tox tox_callback_friend_message (_fun _Tox-pointer
-                                              (_fun _Tox-pointer _int _uint8_t-pointer _uint16_t
+                                              (_fun _Tox-pointer _int _string _uint16_t
                                                     _voidptr -> _void)
                                               _voidptr -> _void))
 
@@ -515,7 +517,7 @@
  #                                void *userdata);
  |#
 (define-tox tox_callback_friend_action (_fun _Tox-pointer
-                                             (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                             (_fun _Tox-pointer _int32_t _string _uint16_t _voidptr -> _void)
                                              _voidptr -> _void))
 
 #| Set the callback for name changes.
@@ -528,7 +530,7 @@
  #                               void *userdata);
  |#
 (define-tox tox_callback_name_change (_fun _Tox-pointer
-                                           (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                           (_fun _Tox-pointer _int32_t _string _uint16_t _voidptr -> _void)
                                            _voidptr -> _void))
 
 #| Set the callback for status message changes.
@@ -539,7 +541,7 @@
  #                                  void *userdata);
  |#
 (define-tox tox_callback_status_message (_fun _Tox-pointer
-                                              (_fun _Tox-pointer _int32_t _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                              (_fun _Tox-pointer _int32_t _string _uint16_t _voidptr -> _void)
                                               _voidptr -> _void))
 
 #| Set the callback for status type changes.
@@ -601,7 +603,7 @@
  # void tox_callback_group_invite(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t *, void *), void *userdata);
  |#
 (define-tox tox_callback_group_invite (_fun _Tox-pointer
-                                            (_fun _Tox-pointer _int32_t _uint8_t-pointer _voidptr -> _void)
+                                            (_fun _Tox-pointer _int32_t _string _voidptr -> _void)
                                             _voidptr -> _void))
 
 #| Set the callback for group messages.
@@ -612,7 +614,7 @@
  #                                void *userdata);
  |#
 (define-tox tox_callback_group_message (_fun _Tox-pointer
-                                             (_fun _Tox-pointer _int _int _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                             (_fun _Tox-pointer _int _int _string _uint16_t _voidptr -> _void)
                                              _voidptr -> _void))
 
 #| Set the callback for group actions.
@@ -623,7 +625,7 @@
  #                               void *userdata);
  |#
 (define-tox tox_callback_group_action (_fun _Tox-pointer
-                                            (_fun _Tox-pointer _int _int _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                            (_fun _Tox-pointer _int _int _string _uint16_t _voidptr -> _void)
                                             _voidptr -> _void))
 
 #| Set callback function for peer name list changes.
@@ -664,7 +666,7 @@
  #
  # int tox_group_peername(Tox *tox, int groupnumber, int peernumber, uint8_t *name);
  |#
-(define-tox tox_group_peername (_fun _Tox-pointer _int _int _uint8_t-pointer -> _int))
+(define-tox tox_group_peername (_fun _Tox-pointer _int _int _string -> _int))
 
 #| invite friendnumber to groupnumber
  # return 0 on success
@@ -681,7 +683,7 @@
  #
  # int tox_join_groupchat(Tox *tox, int32_t friendnumber, uint8_t *friend_group_public_key);
  |#
-(define-tox tox_join_groupchat (_fun _Tox-pointer _int32_t _uint8_t-pointer -> _int))
+(define-tox tox_join_groupchat (_fun _Tox-pointer _int32_t _string -> _int))
 
 #| send a group message
  # return 0 on success
@@ -689,7 +691,7 @@
  #
  # int tox_group_message_send(Tox *tox, int groupnumber, uint8_t *message, uint32_t length);
  |#
-(define-tox tox_group_message_send (_fun _Tox-pointer _int _uint8_t-pointer _uint32_t -> _int))
+(define-tox tox_group_message_send (_fun _Tox-pointer _int _string _uint32_t -> _int))
 
 #| send a group action
  # return 0 on success
@@ -697,7 +699,7 @@
  #
  # int tox_group_action_send(Tox *tox, int groupnumber, uint8_t *action, uint32_t length);
  |#
-(define-tox tox_group_action_send (_fun _Tox-pointer _int _uint8_t-pointer _uint32_t -> _int))
+(define-tox tox_group_action_send (_fun _Tox-pointer _int _string _uint32_t -> _int))
 
 #| Return the number of peers in the group chat on success.
  # return -1 on failure
@@ -756,7 +758,7 @@
  |#
 (define-tox tox_callback_file_send_request (_fun _Tox-pointer
                                                  (_fun _Tox-pointer _int32_t _uint8_t _uint64_t
-                                                       _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                                       _string _uint16_t _voidptr -> _void)
                                                  _voidptr -> _void))
 
 #| Set the callback for file control requests.
@@ -784,7 +786,7 @@
  #                             void *userdata);
  |#
 (define-tox tox_callback_file_data (_fun _Tox-pointer
-                                         (_fun _Tox-pointer _int32_t _uint8_t _uint8_t-pointer
+                                         (_fun _Tox-pointer _int32_t _uint8_t _string
                                                _uint16_t _voidptr -> _void)
                                          _voidptr -> _void))
 
@@ -796,7 +798,7 @@
  # int tox_new_file_sender(Tox *tox, int32_t friendnumber, uint64_t filesize, uint8_t *filename, uint16_t filename_length);
  |#
 (define-tox tox_new_file_sender (_fun _Tox-pointer _int32_t _uint64_t
-                                      _uint8_t-pointer _uint16_t
+                                      _string _uint16_t
                                       -> _int))
 
 #| Send a file control request.
@@ -811,7 +813,7 @@
  #                           uint8_t *data, uint16_t length);
  |#
 (define-tox tox_file_send_control (_fun _Tox-pointer _int32_t _uint8_t
-                                        _uint8_t _uint8_t _uint8_t-pointer
+                                        _uint8_t _uint8_t _string
                                         _uint16_t -> _int))
 
 #| Send file data.
@@ -857,7 +859,7 @@
  # void tox_bootstrap_from_ip(Tox *tox, tox_IP_Port ip_port, uint8_t *public_key);
  |#
 (define-tox tox_bootstrap_from_ip (_fun _Tox-pointer
-                                        _tox_IP_PORT-pointer _uint8_t-pointer -> _void))
+                                        _tox_IP_PORT-pointer _string -> _void))
 
 #|
  # Use this function to bootstrap the client.
@@ -879,7 +881,7 @@
  #                                uint16_t port, uint8_t *public_key);
  |#
 (define-tox tox_bootstrap_from_address (_fun _Tox-pointer _char-pointer _uint8_t
-                                             _uint16_t _uint8_t-pointer
+                                             _uint16_t _string
                                              -> _int))
 
 #|  return 0 if we are not connected to the DHT.
@@ -981,6 +983,7 @@
  #
  # int tox_load(Tox *tox, uint8_t *data, uint32_t length);
  |#
+(define-tox tox_load (_fun _Tox-pointer _uint8_t-pointer _uint32_t -> _int))
 
 #| return the size of data to pass to messenger_save_encrypted(...)
  #
@@ -1001,7 +1004,7 @@
  # int tox_save_encrypted(Tox *tox, uint8_t *data, uint8_t *key, uint16_t key_length);
  |#
 (define-tox tox_save_encrypted (_fun _Tox-pointer _uint8_t-pointer
-                                     _uint8_t-pointer _uint16_t -> _int))
+                                     _string _uint16_t -> _int))
 
 #| Load the messenger from data of size length encrypted with key of key_length.
  #
@@ -1011,4 +1014,4 @@
  # int tox_load_encrypted(Tox *tox, uint8_t *data, uint32_t length, uint8_t *key, uint16_t key_length);
  |#
 (define-tox tox_load_encrypted (_fun _Tox-pointer _uint8_t-pointer
-                                     _uint32_t _uint8_t-pointer _uint16_t -> _int))
+                                     _uint32_t _string _uint16_t -> _int))
