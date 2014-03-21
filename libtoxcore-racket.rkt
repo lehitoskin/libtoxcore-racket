@@ -449,9 +449,9 @@
  # returns 0 if friend is not typing.
  # returns 1 if friend is typing.
  #
- # int tox_get_is_typing(Tox *tox, int32_t friendnumber);
+ # uint8_t tox_get_is_typing(Tox *tox, int32_t friendnumber);
  |#
-(define-tox tox_get_is_typing (_fun _Tox-pointer _int32_t -> _int))
+(define-tox tox_get_is_typing (_fun _Tox-pointer _int32_t -> _uint8_t))
 
 #| Sets whether we send read receipts for friendnumber.
  # This function is not lazy, and it will fail if yesno is not (0 or 1).
