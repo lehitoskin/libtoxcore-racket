@@ -392,7 +392,7 @@
  # int tox_set_user_status(Tox *tox, uint8_t userstatus);
  |#
 (define-tox tox_set_status_message (_fun _Tox-pointer _string _uint16_t -> _int))
-(define-tox tox_set_user_status (_fun _Tox-pointer _string -> _int))
+(define-tox tox_set_user_status (_fun _Tox-pointer _uint8_t -> _int))
 
 #|  returns the length of status message on success.
  #  returns -1 on failure.
