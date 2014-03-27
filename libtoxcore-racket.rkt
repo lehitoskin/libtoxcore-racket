@@ -14,6 +14,8 @@
  #
  # TODO:
  #     testing!
+ #     make certain the callback functions work
+ #     tox_get_group_names takes an array - works as-written?
  #
  # maybe uint8_t *data; should be _bytes?
  |#
@@ -909,12 +911,12 @@
 (define-tox tox_new (_fun _uint8_t -> _Tox-pointer))
 
 #| Run this before closing shop.
- # Free all datastructures. */
+ # Free all datastructures.
  # void tox_kill(Tox *tox);
  |#
 (define-tox tox_kill (_fun _Tox-pointer -> _void))
 
-#| The main loop that needs to be run at least 20 times per second. */
+#| The main loop that needs to be run at least 20 times per second.
  # void tox_do(Tox *tox);
  |#
 (define-tox tox_do (_fun _Tox-pointer -> _void))
