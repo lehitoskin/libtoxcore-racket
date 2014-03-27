@@ -1,22 +1,32 @@
 #!/usr/bin/env racket
 #lang racket
 ; libtoxcore-racket-test.rkt
+; not exactly supposed to be exhaustive,
+; just testing out the wrapper
 (require racket/include)
 (include "libtoxcore-racket.rkt")
 
 ; initialize a new Tox and grab the _Tox-pointer
 (define my-tox (tox_new TOX_ENABLE_IPV6_DEFAULT))
-(define my-name "Leah Twoskin")
+(define my-name "Leah Twoskin Redux")
+(define my-status-message "Testing the Racket wrapper")
 
+; set nick name
 (display "Setting my name\n")
-; set name
 (tox_set_name my-tox my-name (string-length my-name))
+
+; set status message
+(display "Setting my status\n")
+(tox_set_status_message my-tox my-status-message (string-length my-status-message))
 
 (display "How long is my name?\n")
 ; returns length of my-name
 (tox_get_self_name_size my-tox)
 ; returns the same as above... for some reason
 (tox_get_self_name my-tox my-name)
+
+(display "How long is my status message?\n")
+(tox_get_self_status_message my-tox my-status-message (string-length my-status-message))
 
 (display "How large is the encrypted data?\n")
 (tox_size_encrypted my-tox)
