@@ -726,7 +726,7 @@
 
 #| Return the number of chats in the instance m.
  # You should use this to determine how much memory to allocate
- # for copy_chatlist. */
+ # for copy_chatlist.
  # uint32_t tox_count_chatlist(Tox *tox);
  |#
 (define-tox tox_count_chatlist (_fun _Tox-pointer -> _uint32_t))
@@ -735,7 +735,7 @@
  # If out_list is NULL, returns 0.
  # Otherwise, returns the number of elements copied.
  # If the array was too small, the contents
- # of out_list will be truncated to list_size. */
+ # of out_list will be truncated to list_size.
  # uint32_t tox_get_chatlist(Tox *tox, int *out_list, uint32_t list_size);
  |#
 (define-tox tox_get_chatlist (_fun _Tox-pointer _intptr _uint32_t -> _uint32_t))
