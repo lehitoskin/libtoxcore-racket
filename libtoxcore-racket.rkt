@@ -861,7 +861,7 @@
  # void tox_bootstrap_from_ip(Tox *tox, tox_IP_Port ip_port, uint8_t *public_key);
  |#
 (define-tox tox_bootstrap_from_ip (_fun _Tox-pointer
-                                        _tox_IP_PORT-pointer _string -> _void))
+                                        _tox_IP_PORT _string -> _void))
 
 #|
  # Use this function to bootstrap the client.
