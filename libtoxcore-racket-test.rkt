@@ -31,7 +31,11 @@
 (display "How large is the encrypted data?\n")
 (tox_size_encrypted my-tox)
 
+(displayln "How many friends do I have?")
+(tox_count_friendlist my-tox)
+
 ; connect to DHT
+(displayln "Connection to DHT...")
 (define dht-address "192.254.75.98")
 (define dht-port 33445)
 ; does dht-public-key need to be bytes? a string?
@@ -73,7 +77,6 @@
     tox_set_user_is_typing
     tox_get_is_typing
     tox_set_sends_receipts
-    tox_count_friendlist
     tox_get_num_online_friends
     tox_get_friendlist
     tox_callback_friend_request
@@ -109,8 +112,6 @@
     tox_file_data_size
     tox_file_data_remaining
     tox_bootstrap_from_ip
-    tox_bootstrap_from_address
-    tox_isconnected
     tox_do
     tox_wait_data_size
     tox_wait_prepare
