@@ -31,8 +31,19 @@
 (display "How large is the encrypted data?\n")
 (tox_size_encrypted my-tox)
 
+; connect to DHT
+(define dht-address "192.254.75.98")
+(define dht-port 33445)
+; does dht-public-key need to be bytes? a string?
+(define dht-public-key #"FE3914F4616E227F29B2103450D6B55A836AD4BD23F97144E2C4ABE8D504FE1B")
+(tox_bootstrap_from_address my-tox dht-address TOX_ENABLE_IPV6_DEFAULT dht-port dht-public-key)
+
+(displayln "Are we connected?")
+(tox_isconnected my-tox)
+
 ; THIS KILLS THE TOX
-(tox_kill my-tox)
+; comment out to proceed via REPL
+;(tox_kill my-tox)
 
 #|
     haven't tried using these yet
@@ -52,12 +63,10 @@
     tox_send_action_withid
     tox_get_name
     tox_get_name_size
-    tox_set_status_message
     tox_set_user_status
     tox_get_status_message_size
     tox_get_self_status_message_size
     tox_get_status_message
-    tox_get_self_status_message
     tox_get_user_status
     tox_get_self_user_status
     tox_get_last_online
