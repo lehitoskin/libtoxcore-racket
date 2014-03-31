@@ -39,11 +39,19 @@
 (define dht-address "192.254.75.98")
 (define dht-port 33445)
 ; does dht-public-key need to be bytes? a string?
-(define dht-public-key #"FE3914F4616E227F29B2103450D6B55A836AD4BD23F97144E2C4ABE8D504FE1B")
+(define dht-public-key #"A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074")
 (tox_bootstrap_from_address my-tox dht-address TOX_ENABLE_IPV6_DEFAULT dht-port dht-public-key)
 
-(displayln "Are we connected?")
-(tox_isconnected my-tox)
+; need to run tox_do
+; replace with a named let or letrec?
+(define main
+  (λ (num)
+    (cond ((zero? num) (displayln "All done!"))
+          (else (tox_do my-tox)
+                (sleep 1/20)
+                (main (- num 1))))))
+
+(main 20)
 
 ; THIS KILLS THE TOX
 ; comment out to proceed via REPL
