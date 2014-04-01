@@ -51,7 +51,9 @@
                 (sleep 1/20)
                 (main (- num 1))))))
 
-(main 20)
+; loop for 5 seconds. examples show a while(1) loop,
+; but I think I'm missing something basic
+(main (* 20 5))
 
 ; THIS KILLS THE TOX
 ; comment out to proceed via REPL
