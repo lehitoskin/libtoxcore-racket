@@ -714,17 +714,21 @@
  #
  # Copies the names of the peers to the name[length][TOX_MAX_NAME_LENGTH] array.
  #
+ # Copies the lengths of the names to lengths[length]
+ #
  # returns the number of peers on success.
  #
  # return -1 on failure.
  #
- # int tox_group_get_names(Tox *tox, int groupnumber, uint8_t names[][TOX_MAX_NAME_LENGTH], uint16_t length);
+ # int tox_group_get_names(Tox *tox, int groupnumber, uint8_t names[][TOX_MAX_NAME_LENGTH], uint16_t lengths[],
+ #                         uint16_t length);
  |#
 ; takes an array as a parameter. how do represent? maybe this is okay...
 ;(define-tox tox_group_get_names (_fun _Tox-pointer _int _uint8_t _uint16_t -> _int))
 ; or how about this?
 (define names (_array _uint8_t 256 TOX_MAX_NAME_LENGTH))
-(define-tox tox_group_get_names (_fun _Tox-pointer _int names _uint16_t -> _int))
+(define lengths (_array _uint16_t 256))
+(define-tox tox_group_get_names (_fun _Tox-pointer _int names lengths _uint16_t -> _int))
 
 #| Return the number of chats in the instance m.
  # You should use this to determine how much memory to allocate
@@ -882,7 +886,7 @@
  # int tox_bootstrap_from_address(Tox *tox, const char *address, uint8_t ipv6enabled,
  #                                uint16_t port, uint8_t *public_key);
  |#
-(define-tox tox_bootstrap_from_address (_fun _Tox-pointer _char-pointer _uint8_t
+(define-tox tox_bootstrap_from_address (_fun _Tox-pointer _string _uint8_t
                                              _uint16_t _string
                                              -> _int))
 
