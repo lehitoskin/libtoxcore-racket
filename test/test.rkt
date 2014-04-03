@@ -11,7 +11,7 @@
 (define my-status-message "Testing the Racket wrapper")
 
 ; set nick name
-(display "Setting my name\n")
+#|(display "Setting my name\n")
 (tox_set_name my-tox my-name (string-length my-name))
 
 ; set status message
@@ -52,7 +52,8 @@
 
 ; loop for 5 seconds. examples show a while(1) loop,
 ; but I think I'm missing something basic
-(main (* 20 5))
+(main (* 20 5))|#
+(tox_kill my-tox)
 
 ; THIS KILLS THE TOX
 ; comment out to proceed via REPL
