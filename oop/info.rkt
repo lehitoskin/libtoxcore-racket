@@ -1,2 +1,2 @@
 #lang info
-(define collection "libtoxcore-racket/oop")
+(define collection "oop")
