@@ -1,5 +1,5 @@
 #lang racket
 ; libtoxcore-racket/oop/main.rkt
-(require libtoxcore-racket/functions)
+(require "main.rkt")
 
 ; create new Tox instance

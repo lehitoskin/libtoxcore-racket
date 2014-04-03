@@ -4,7 +4,7 @@
 (define scribblings '(("manual.scrbl" ())))
 
 (define blurb '("Racket wrapper for libtoxcore."))
-(define primary-file "functions.rkt")
+(define primary-file "main.rkt")
 (define homepage "https://github.com/lehitoskin/libtoxcore-racket/")
 
 (define version "0.0.1")
