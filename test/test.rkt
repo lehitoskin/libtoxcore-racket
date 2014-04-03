@@ -3,8 +3,9 @@
 ; libtoxcore-racket-test.rkt
 ; not exactly supposed to be exhaustive,
 ; just testing out the wrapper
-(require racket/include)
-(include "libtoxcore-racket.rkt")
+;(require racket/include)
+;(include "libtoxcore-racket.rkt")
+(require libtoxcore-racket/functions)
 
 ; initialize a new Tox and grab the _Tox-pointer
 (define my-tox (tox_new TOX_ENABLE_IPV6_DEFAULT))
