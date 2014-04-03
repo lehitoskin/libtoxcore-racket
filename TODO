@@ -1,0 +1,5 @@
+In no particular order:
+
+	Test the wrapper
+	make certain the callback functions work
+	tox_get_group_names takes an array - works as-written?
