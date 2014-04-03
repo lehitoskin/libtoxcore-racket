@@ -1,4 +1,4 @@
-; libtoxcore-racket.rkt
+; libtoxcore-racket/functions/main.rkt
 ; FFI implementation of libtoxcore
 (require ffi/unsafe
          ffi/unsafe/define)
