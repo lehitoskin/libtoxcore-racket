@@ -1,5 +1,5 @@
 #lang racket
-(provide (all-from-out))
+(provide (all-defined-out))
 ; libtoxcore-racket/functions.rkt
 ; FFI implementation of libtoxcore
 (require ffi/unsafe
