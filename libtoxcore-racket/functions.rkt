@@ -1,110 +1,24 @@
-; libtoxcore-racket.rkt
+#lang racket
+(provide (all-defined-out))
+; libtoxcore-racket/functions.rkt
 ; FFI implementation of libtoxcore
 (require ffi/unsafe
          ffi/unsafe/define)
 
 (define-ffi-definer define-tox (ffi-lib "/usr/lib/libtoxcore"))
 
-#| the problem remains that racket won't deal with empty cstructs
- # at least as far as I can tell. a "fix" is in the form of a
- # cpointer to 'Tox, which works and even looks nice.
- #
+#|
  # this code is verbose, messy, and probably doesn't work at all.
  # DEAL WITH IT
  #
  # TODO:
+ #     (provide) all the API functions
  #     testing!
  #     make certain the callback functions work
  #     tox_get_group_names takes an array - works as-written?
  #
  # maybe uint8_t *data; should be _bytes?
  |#
-
-#|
-    ; -> defined with define-tox
-    ^ -> has that nasty function-as-parameter
-    * -> accepts an array as a parameter
-    ;tox_get_address
-    ;tox_add_friend
-    ;tox_add_friend_norequest
-    ;tox_get_friend_number
-    ;tox_get_client_id
-    ;tox_del_friend
-    ;tox_get_friend_connection_status
-    ;tox_friend_exists
-    ;tox_send_message
-    ;tox_send_message_withid
-    ;tox_send_action
-    ;tox_send_action_withid
-    ;tox_set_name
-    ;tox_get_self_name
-    ;tox_get_name
-    ;tox_get_name_size
-    ;tox_get_self_name_size
-    ;tox_set_status_message
-    ;tox_set_user_status
-    ;tox_get_status_message_size
-    ;tox_get_self_status_message_size
-    ;tox_get_status_message
-    ;tox_get_self_status_message
-    ;tox_get_user_status
-    ;tox_get_self_user_status
-    ;tox_get_last_online
-    ;tox_set_user_is_typing
-    ;tox_get_is_typing
-    ;tox_set_sends_receipts
-    ;tox_count_friendlist
-    ;tox_get_num_online_friends
-    ;tox_get_friendlist
-    ;^tox_callback_friend_request
-    ;^tox_callback_friend_message
-    ;^tox_callback_friend_action
-    ;^tox_callback_name_change
-    ;^tox_callback_status_message
-    ;^tox_callback_user_status
-    ;^tox_callback_typing_change
-    ;^tox_callback_read_receipt
-    ;^tox_callback_connection_status
-    ;^tox_callback_group_invite
-    ;^tox_callback_group_message
-    ;^tox_callback_group_action
-    ;^tox_callback_group_namelist_change
-    ;tox_add_groupchat
-    ;tox_del_groupchat
-    ;tox_group_peername
-    ;tox_invite_friend
-    ;tox_join_groupchat
-    ;tox_group_message_send
-    ;tox_group_action_sent
-    ;tox_group_number_peers
-    ;*tox_group_get_names
-    ;tox_count_chatlist
-    ;tox_get_chatlist
-    ;^tox_callback_file_send_request
-    ;^tox_callback_file_control
-    ;^tox_callback_file_data
-    ;tox_new_file_sender
-    ;tox_file_send_control
-    ;tox_file_send_data
-    ;tox_file_data_size
-    ;tox_file_data_remaining
-    ;tox_bootstrap_from_ip
-    ;tox_bootstrap_from_address
-    ;tox_isconnected
-    ;tox_new
-    ;tox_kill
-    ;tox_do
-    ;tox_wait_data_size
-    ;tox_wait_prepare
-    ;tox_wait_execute
-    ;tox_wait_cleanup
-    ;tox_size
-    ;tox_save
-    ;tox_load
-    ;tox_size_encrypted
-    ;tox_save_encrypted
-    ;tox_load_encrypted
-|#
 
 #|###################
  # type definitions #
@@ -596,7 +510,16 @@
                                                  (_fun _Tox-pointer _int32_t _uint8_t _voidptr -> _void)
                                                  _voidptr -> _void))
 
-#| ##########GROUP CHAT FUNCTIONS: WARNING WILL BREAK A LOT############ |#
+#| ##########ADVANCED FUNCTIONS (If you don't know what they do you can safely ignore them.) ############ |#
+#| Functions to get/set the nospam part of the id.
+ #
+ # uint32_t tox_get_nospam(Tox *tox);
+ # void tox_set_nospam(Tox *tox, uint32_t nospam);
+|#
+(define-tox tox_get_nospam (_fun _Tox-pointer -> _uint32_t))
+(define-tox tox_set_nospam (_fun _Tox-pointer  _uint32_t -> _void))
+
+#| ##########GROUP CHAT FUNCTIONS: WARNING Group chats will be rewritten so this might change ########### |#
 
 #| Set the callback for group invites.
  #
