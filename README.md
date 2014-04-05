@@ -8,7 +8,7 @@ but this is less cool.
 
 ## Installation
 Open a terminal and enter the following:
-```raco pkg install github://github.com/lehitoskin/libtoxcore-racket```
+```raco pkg install github://github.com/lehitoskin/libtoxcore-racket/master```
 
 Racket's raco package manager will do the rest.
 
