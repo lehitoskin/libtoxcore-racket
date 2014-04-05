@@ -55,6 +55,7 @@ library. There is an OOP implementation being worked on, currently.
   
   return -1 if failure.
 }
+
 @defproc[(tox_add_groupchat [my-tox cpointer?]) number?]{
   Creates a new groupchat and puts it in the chats array.
 
