@@ -67,10 +67,38 @@ library. There is an OOP implementation being worked on, currently.
   return TOX_FRIEND_ADDRESS_SIZE byte address to give to others.
 }
 
+@defproc[(tox_bootstrap_from_address [my-tox cpointer?] [address string?]
+                                     [ipv6enabled number?] [port number?]
+                                     [pub_key string?]) number?]{
+  Resolves address into an IP address. If successful, sends a "get nodes"
+  request to the given node with ip, port (in network byte order, HINT: use htons())
+  and public_key to setup connections
+
+  address can be a hostname or an IP address (IPv4 or IPv6).
+  if ipv6enabled is 0 (zero), the resolving sticks STRICTLY to IPv4 addresses
+  if ipv6enabled is not 0 (zero), the resolving looks for IPv6 addresses first,
+  then IPv4 addresses.
+ 
+  returns 1 if the address could be converted into an IP address
+
+  returns 0 otherwise
+}
+
+@defproc[(tox_bootstrap_from_ip [my-tox cpointer?] [ip-port cstruct?]
+                                [pubkey string?]) void?]{
+  WARNING: DEPRECATED, DO NOT USE
+  
+  ip-port is an instance of the struct tox_IP_Port
+
+  Sends a "get nodes" request to the given node with ip, port and public_key
+  to setup connections
+}
+
 @section{Examples}
 
 @verbatim{
-(require libtoxcore)
+; simple 1-to-1 function wrapper
+(require libtoxcore-racket)
 
 (define my-tox (tox_new TOX_ENABLE_IPV6_DEFAULT))
 (define my-name "Toxizen5k")
