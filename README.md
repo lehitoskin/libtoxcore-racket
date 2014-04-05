@@ -6,6 +6,12 @@ package that has an Object-Oriented approach to programming for Tox. This
 package also allows direct access to the functions through the basic wrapper,
 but this is less cool.
 
+## Installation
+Open a terminal and enter the following:
+```raco pkg install github://github.com/lehitoskin/libtoxcore-racket```
+
+Racket's raco package manager will do the rest.
+
 ## Implemented API Functions
 * Below is a list of the API functions that have been implemented, in
 alphabetical order:
