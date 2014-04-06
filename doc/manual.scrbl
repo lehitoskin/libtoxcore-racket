@@ -11,7 +11,7 @@ library. There is an OOP implementation being worked on, currently.
 
 @section{Installaion}
 @commandline{raco pkg install
-                     github://github.com/lehitoskin/libtoxcore-racket/master}
+                     github://github.com/lehitoskin/libtoxcore-racket/racket6}
 
 @section{Procedures}
 @defproc[(tox_add_friend [my-tox cpointer?] [address string?] [data string?]
