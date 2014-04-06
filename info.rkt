@@ -10,4 +10,4 @@
 (define version "0.0.1")
 (define release-notes '("Initial release."))
 
-(define required-core-version "5.3")
+(define required-core-version "6.0")
