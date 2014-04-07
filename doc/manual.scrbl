@@ -10,8 +10,15 @@ This package provides a 1-to-1 wrapper for the C functions in the Tox
 library. There is an OOP implementation being worked on, currently.
 
 @section{Installaion}
-@commandline{raco pkg install
-                     github://github.com/lehitoskin/libtoxcore-racket/racket6}
+@itemlist[@item{If you are using Racket version 6, open a terminal and enter the following:
+                @commandline{raco pkg install
+                             github://github.com/lehitoskin/libtoxcore-racket/master}}
+           @item{If you are using Racket version 5.3.x (most likely), run the following:
+                 @commandline{raco pkg install
+                     github://github.com/lehitoskin/libtoxcore-racket/racket5.3}}]
+Racket's raco package manager will do the rest. Alternatively, you may install
+the package by copying the github link and pasting it into DrRacket's "Install
+Package" tool.
 
 @section{Procedures}
 @defproc[(tox_add_friend [my-tox cpointer?] [address string?] [data string?]

@@ -7,10 +7,15 @@ package also allows direct access to the functions through the basic wrapper,
 but this is less cool.
 
 ## Installation
-Open a terminal and enter the following:
-```raco pkg install github://github.com/lehitoskin/libtoxcore-racket/racket6```
+* If you are using Racket version 6, open a terminal and enter the following:
+```raco pkg install github://github.com/lehitoskin/libtoxcore-racket/master```
 
-Racket's raco package manager will do the rest.
+* If you are using Racket version 5.3.x (most likely), run the following:
+```raco pkg install github://github.com/lehitoskin/libtoxcore-racket/racket5.3```
+
+Racket's raco package manager will do the rest. Alternatively, you may install
+the package by copying the github link and pasting it into DrRacket's "Install
+Package" tool.
 
 ## Implemented API Functions
 * Below is a list of the API functions that have been implemented, in
