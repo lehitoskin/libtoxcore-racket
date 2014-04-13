@@ -102,6 +102,26 @@ Package" tool.
   to setup connections
 }
 
+@defproc[(tox_callback_connection_status [my-tox cpointer?] [anon-proc void?]
+                                [userdata voidptr?]) void?]{
+  This function is kind of tricky because the C library requires a function
+  as a parameter (anon-proc). This wrapper procedure is kind of tricky and shouldn't be
+  considered complete.
+  
+  anon-proc is in the form
+    @commandline{function(Tox *tox, int32_t friendnumber, uint8_t status, void *userdata)}
+  
+  Status:
+  
+    0 -- friend went offline after being previously online
+    
+    1 -- friend went online
+
+  NOTE: This callback is not called when adding friends, thus the "after
+  being previously online" part. it's assumed that when adding friends,
+  their connection status is offline.
+}
+
 @section{Examples}
 
 @verbatim{
