@@ -10,8 +10,15 @@ This package provides a 1-to-1 wrapper for the C functions in the Tox
 library. There is an OOP implementation being worked on, currently.
 
 @section{Installaion}
-@commandline{raco pkg install
-                     github://github.com/lehitoskin/libtoxcore-racket/master}
+@itemlist[@item{If you are using Racket version 6, open a terminal and enter the following:
+                @commandline{raco pkg install
+                             github://github.com/lehitoskin/libtoxcore-racket/master}}
+           @item{If you are using Racket version 5.3.x (most likely), run the following:
+                 @commandline{raco pkg install
+                     github://github.com/lehitoskin/libtoxcore-racket/racket5.3}}]
+Racket's raco package manager will do the rest. Alternatively, you may install
+the package by copying the github link and pasting it into DrRacket's "Install
+Package" tool.
 
 @section{Procedures}
 @defproc[(tox_add_friend [my-tox cpointer?] [address string?] [data string?]
@@ -93,6 +100,26 @@ library. There is an OOP implementation being worked on, currently.
 
   Sends a "get nodes" request to the given node with ip, port and public_key
   to setup connections
+}
+
+@defproc[(tox_callback_connection_status [my-tox cpointer?] [anon-proc void?]
+                                [userdata voidptr?]) void?]{
+  This function is kind of tricky because the C library requires a function
+  as a parameter (anon-proc). This wrapper procedure is kind of tricky and shouldn't be
+  considered complete.
+  
+  anon-proc is in the form
+    @commandline{function(Tox *tox, int32_t friendnumber, uint8_t status, void *userdata)}
+  
+  Status:
+  
+    0 -- friend went offline after being previously online
+    
+    1 -- friend went online
+
+  NOTE: This callback is not called when adding friends, thus the "after
+  being previously online" part. it's assumed that when adding friends,
+  their connection status is offline.
 }
 
 @section{Examples}
