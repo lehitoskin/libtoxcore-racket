@@ -5,7 +5,7 @@
 (require ffi/unsafe
          ffi/unsafe/define)
 
-(define-ffi-definer define-tox (ffi-lib "/usr/lib/libtoxcore"))
+(define-ffi-definer define-tox (ffi-lib "libtoxcore"))
 
 #|
  # this code is verbose, messy, and probably doesn't work at all.
