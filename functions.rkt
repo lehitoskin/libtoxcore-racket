@@ -903,7 +903,7 @@
 #| Save the messenger in data (must be allocated memory of size Messenger_size()).
  # void tox_save(Tox *tox, uint8_t *data);
  |#
-(define-tox tox_save (_fun _Tox-pointer _uint8_t-pointer -> _void))
+(define-tox tox_save (_fun _Tox-pointer _pointer -> _void))
 
 #| Load the messenger from data of size length.
  #
@@ -912,7 +912,7 @@
  #
  # int tox_load(Tox *tox, uint8_t *data, uint32_t length);
  |#
-(define-tox tox_load (_fun _Tox-pointer _uint8_t-pointer _uint32_t -> _int))
+(define-tox tox_load (_fun _Tox-pointer _pointer _uint32_t -> _int))
 
 #| return the size of data to pass to messenger_save_encrypted(...)
  #
