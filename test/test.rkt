@@ -46,9 +46,17 @@
   (λ (mtox pub-key data length userdata)
     (displayln "There's been a change in connection")))
 
+(displayln "my-id stuff")
+(define my-id (malloc TOX_FRIEND_ADDRESS_SIZE))
+(ctype? my-id)
+(cpointer? my-id)
+; get self id
+(tox_get_address my-tox my-id)
+(ptr-ref my-id _uint8_t)
+
 ; need to run tox_do
 ; replace with a named let or letrec?
-(define main
+#|(define main
   (λ (num)
     (cond ((zero? num) (displayln "All done!"))
           (else (tox_do my-tox)
@@ -65,7 +73,8 @@
 
 ; loop for 5 seconds. examples show a while(1) loop,
 ; but I think I'm missing something basic
-(main (* 20 5))
+(main (* 20 5))|#
+(displayln "This kills the Tox...")
 (tox_kill my-tox)
 
 ; THIS KILLS THE TOX

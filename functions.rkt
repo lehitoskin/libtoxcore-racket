@@ -146,7 +146,7 @@
  #
  # void tox_get_address(Tox *tox, uint8_t *address);
  |#
-(define-tox tox_get_address (_fun _Tox-pointer _string -> _void))
+(define-tox tox_get_address (_fun _Tox-pointer _pointer -> _void))
 
 #| Add a friend.
  # Set the data that will be sent along with friend request.
