@@ -3,7 +3,8 @@
 ; libtoxcore-racket-test.rkt
 ; not exactly supposed to be exhaustive,
 ; just testing out the wrapper
-(require libtoxcore-racket)
+(require "../main.rkt"
+         ffi/unsafe)
 
 ; initialize a new Tox and grab the _Tox-pointer
 (define my-tox (tox_new TOX_ENABLE_IPV6_DEFAULT))
@@ -41,12 +42,24 @@
 (define dht-public-key #"A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074")
 (tox_bootstrap_from_address my-tox dht-address TOX_ENABLE_IPV6_DEFAULT dht-port dht-public-key)
 
+(define on-connection-change
+  (λ (mtox pub-key data length userdata)
+    (displayln "There's been a change in connection")))
+
 ; need to run tox_do
 ; replace with a named let or letrec?
 (define main
   (λ (num)
     (cond ((zero? num) (displayln "All done!"))
           (else (tox_do my-tox)
+                (tox_callback_connection_status my-tox
+                                                (on-connection-change
+                                                 my-tox
+                                                 #"A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074"
+                                                 "muhdata"
+                                                 7
+                                                 "otherdata")
+                                                null)
                 (sleep 1/20)
                 (main (- num 1))))))
 
