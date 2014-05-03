@@ -71,10 +71,6 @@ Package" tool.
   return -1 on failure.
 }
 
-@defproc[(tox_get_address [my-tox cpointer?] [address string?]) void?]{
-  return TOX_FRIEND_ADDRESS_SIZE byte address to give to others.
-}
-
 @defproc[(tox_bootstrap_from_address [my-tox cpointer?] [address string?]
                                      [ipv6enabled number?] [port number?]
                                      [pub_key string?]) number?]{
@@ -121,6 +117,14 @@ Package" tool.
   being previously online" part. it's assumed that when adding friends,
   their connection status is offline.
 }
+
+@defproc[(tox_get_address [my-tox cpointer?]) void?]{
+  return TOX_FRIEND_ADDRESS_SIZE byte address to give to others.
+
+  format: [client_id (32 bytes)][nospam number (4 bytes)][checksum (2 bytes)]
+}
+
+
 
 @section{Examples}
 
