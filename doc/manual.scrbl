@@ -127,7 +127,7 @@ Package" tool.
 @defproc[(tox_get_friend_number [my-tox cpointer?]) number?]{
   return the friend number associated to that client id.
   
-  return -1 if no such friend */
+  return -1 if no such friend
 }
 
 
