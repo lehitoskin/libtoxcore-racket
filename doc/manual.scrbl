@@ -124,6 +124,12 @@ Package" tool.
   format: [client_id (32 bytes)][nospam number (4 bytes)][checksum (2 bytes)]
 }
 
+@defproc[(tox_get_friend_number [my-tox cpointer?]) number?]{
+  return the friend number associated to that client id.
+  
+  return -1 if no such friend */
+}
+
 
 
 @section{Examples}
