@@ -14,10 +14,8 @@
  # TODO:
  #     (provide) all the API functions
  #     testing!
- #     make certain the callback functions work
- #     tox_get_group_names takes an array - works as-written?
- #
- # maybe uint8_t *data; should be _bytes?
+ #     make certain the tox_callback functions work
+ #     tox_group_get_names takes two arrays - works as-written?
  |#
 
 #|###################
@@ -646,12 +644,7 @@
  # int tox_group_get_names(Tox *tox, int groupnumber, uint8_t names[][TOX_MAX_NAME_LENGTH], uint16_t lengths[],
  #                         uint16_t length);
  |#
-; takes an array as a parameter. how do represent? maybe this is okay...
-;(define-tox tox_group_get_names (_fun _Tox-pointer _int _uint8_t _uint16_t -> _int))
-; or how about this?
-(define names (_array _uint8_t 256 TOX_MAX_NAME_LENGTH))
-(define lengths (_array _uint16_t 256))
-(define-tox tox_group_get_names (_fun _Tox-pointer _int names lengths _uint16_t -> _int))
+(define-tox tox_group_get_names (_fun _Tox-pointer _int _pointer _pointer _uint16_t -> _int))
 
 #| Return the number of chats in the instance m.
  # You should use this to determine how much memory to allocate
