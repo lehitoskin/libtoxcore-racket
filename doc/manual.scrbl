@@ -22,7 +22,7 @@ Package" tool.
 
 @section{Procedures}
 @defproc[(tox_add_friend [my-tox cpointer?] [address string?] [data string?]
-                         [length number?]) number?]{
+                         [length number?]) integer?]{
   Add a friend.
 
   Set the data that will be sent along with friend request.
@@ -55,7 +55,7 @@ Package" tool.
 }
 
 @defproc[(tox_add_friend_norequest [my-tox cpointer?] [address string?]
-                                   [data string?] [length number?]) number?]{
+                                   [data string?] [length number?]) integer?]{
   Add a friend without sending a friendrequest.
   
   return the friend number if success.
@@ -63,7 +63,7 @@ Package" tool.
   return -1 if failure.
 }
 
-@defproc[(tox_add_groupchat [my-tox cpointer?]) number?]{
+@defproc[(tox_add_groupchat [my-tox cpointer?]) integer?]{
   Creates a new groupchat and puts it in the chats array.
 
   return group number on success.
@@ -73,7 +73,7 @@ Package" tool.
 
 @defproc[(tox_bootstrap_from_address [my-tox cpointer?] [address string?]
                                      [ipv6enabled number?] [port number?]
-                                     [pub_key string?]) number?]{
+                                     [pub_key string?]) integer?]{
   Resolves address into an IP address. If successful, sends a "get nodes"
   request to the given node with ip, port (in network byte order, HINT: use htons())
   and public_key to setup connections
@@ -118,16 +118,196 @@ Package" tool.
   their connection status is offline.
 }
 
+@defproc[(tox_del_friend [my-tox cpointer?]) integer?]{
+  Remove a friend.
+ 
+  return 0 if success.
+
+  return -1 if failure.
+}
+
+@defproc[(tox_friend_exists [my-tox cpointer?]) integer?]{
+  Checks if there exists a friend with given friendnumber.
+
+  return 1 if friend exists.
+
+  return 0 if friend doesn't exist.
+}
+
 @defproc[(tox_get_address [my-tox cpointer?]) void?]{
   return TOX_FRIEND_ADDRESS_SIZE byte address to give to others.
 
   format: [client_id (32 bytes)][nospam number (4 bytes)][checksum (2 bytes)]
 }
 
-@defproc[(tox_get_friend_number [my-tox cpointer?]) number?]{
+@defproc[(tox_get_client_id [my-tox cpointer?]) integer?]{
+  Copies the public key associated to that friend id into client_id buffer.
+
+  Make sure that client_id is of size CLIENT_ID_SIZE.
+
+  return 0 if success.
+
+  return -1 if failure.
+}
+
+@defproc[(tox_get_friend_connection_status [my-tox cpointer?]) integer?]{
+  Checks friend's connecting status.
+
+  return 1 if friend is connected to us (Online).
+
+  return 0 if friend is not connected to us (Offline).
+
+  return -1 on failure.
+}
+
+@defproc[(tox_get_friend_number [my-tox cpointer?]) integer?]{
   return the friend number associated to that client id.
   
   return -1 if no such friend
+}
+
+@defproc[(tox_get_name [my-tox cpointer?]) integer?]{
+  Get name of friendnumber and put it in name.
+
+  name needs to be a valid memory location with a size of at least MAX_NAME_LENGTH (128) bytes.
+
+  return length of name if success.
+
+  return -1 if failure.
+}
+
+@defproc[(tox_get_name_size [my-tox cpointer?]) integer?]{
+  returns the length of name on success.
+
+  returns -1 on failure.
+}
+
+@defproc[(tox_get_self_name [my-tox cpointer?]) integer?]{
+  name - needs to be a valid memory location with a size of
+  at least MAX_NAME_LENGTH (128) bytes.
+
+  return length of name.
+
+  return 0 on error.
+}
+
+@defproc[(tox_get_self_name_size [my-tox cpointer?]) integer?]{
+  Like @tt{tox_get_name_size}, the @tt{self} variant returns the length of @italic{our} name on success, and returns -1 on failure.
+}
+
+@defproc[(tox_get_self_status_message [my-tox cpointer?]) integer?]{
+  Like @tt{tox_get_status_message}, the @tt{self} variant copies the @italic{our} status message into buf, truncating if size is over maxlen.
+}
+
+@defproc[(tox_get_self_status_message_size [my-tox cpointer?]) integer?]{
+  Like @tt{tox_get_status_message_size}, the @tt{self} variant returns the length of our status message on success, and returns -1 on failure.
+}
+
+@defproc[(tox_get_self_user_status [my-tox cpointer?]) integer?]{
+  Like @tt{tox_get_user_status}, the @tt{self} variant will return @italic{our own} TOX_USERSTATUS.
+}
+
+@defproc[(tox_get_status_message [my-tox cpointer?]) integer?]{
+  Copy friendnumber's status message into buf, truncating if size is over maxlen.
+
+  Get the size you need to allocate from m_get_statusmessage_size.
+
+  The self variant will copy our own status message.
+
+  returns the length of the copied data on success.
+
+  returns -1 on failure.
+}
+
+@defproc[(tox_get_status_message_size [my-tox cpointer?]) integer?]{
+  returns the length of status message on success.
+
+  returns -1 on failure.
+}
+
+@defproc[(tox_get_user_status [my-tox cpointer?]) integer?]{
+  return one of TOX_USERSTATUS values.
+
+  Values unknown to your application should be represented as TOX_USERSTATUS_NONE.
+
+  If friendnumber is invalid, this shall return TOX_USERSTATUS_INVALID.
+}
+
+@defproc[(tox_send_action [my-tox cpointer?]) integer?]{
+  Send an action to an online friend.
+
+  return the message id if packet was successfully put into the send queue.
+
+  return 0 if it was not.
+
+  You will want to retain the return value, it will be passed to your read_receipt callback
+  if one is received.
+
+  m_sendaction_withid will send an action message with the id of your choosing,
+  however we can generate an id for you by calling plain m_sendaction.
+}
+
+@defproc[(tox_send_action_withid [my-tox cpointer?]) integer?]{
+  Like @tt{tox_send_action}, but specify a specific ID.
+}
+
+@defproc[(tox_send_message [my-tox cpointer?]) integer?]{
+  Send a text chat message to an online friend.
+
+  return the message id if packet was successfully put into the send queue.
+
+  return 0 if it was not.
+
+  You will want to retain the return value, it will be passed to your read_receipt callback
+  if one is received.
+
+  m_sendmessage_withid will send a message with the id of your choosing,
+  however we can generate an id for you by calling plain m_sendmessage.
+}
+
+@defproc[(tox_send_message_withid [my-tox cpointer?]) integer?]{
+  Like @tt{tox_send_message}, but specify a specific ID.
+}
+
+@defproc[(tox_set_name [my-tox cpointer?]) integer?]{
+  Set our nickname.
+
+  name must be a string of maximum MAX_NAME_LENGTH length.
+
+  length must be at least 1 byte.
+
+  length is the length of name with the NULL terminator.
+
+  return 0 if success.
+
+  return -1 if failure.
+}
+
+@defproc[(tox_set_status_message [my-tox cpointer?]) integer?]{
+  Set our user status.
+
+  userstatus must be one of TOX_USERSTATUS values.
+
+  returns 0 on success.
+
+  returns -1 on failure.
+}
+
+@defproc[(tox_set_user_status [my-tox cpointer?]) integer?]{
+  Set our user status.
+
+  userstatus must be one of TOX_USERSTATUS values.
+
+  returns 0 on success.
+
+  returns -1 on failure.
+}
+
+# PROCEDURE DEFINITION TEMPLATE
+@defproc[(function_name [argument argument_type?]) function_return_type?]{
+information about the procedure goes here
+
+make sure to doublespace, otherwise it’ll all be on the same line.
 }
 
 

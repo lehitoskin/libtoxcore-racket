@@ -321,8 +321,8 @@
  # Get the size you need to allocate from m_get_statusmessage_size.
  # The self variant will copy our own status message.
  #
- # returns the length of the copied data on success
- # retruns -1 on failure.
+ # returns the length of the copied data on success.
+ # returns -1 on failure.
  #
  # int tox_get_status_message(Tox *tox, int32_t friendnumber, uint8_t *buf, uint32_t maxlen);
  # int tox_get_self_status_message(Tox *tox, uint8_t *buf, uint32_t maxlen);
