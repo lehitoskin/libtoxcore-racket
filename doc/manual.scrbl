@@ -118,6 +118,13 @@ Package" tool.
   their connection status is offline.
 }
 
+@defproc[(tox_count_friendlist [my-tox cpointer?]) integer?]{
+  Return the number of friends in the instance m.
+
+  You should use this to determine how much memory to allocate
+  for copy_friendlist.
+}
+
 @defproc[(tox_del_friend [my-tox cpointer?]) integer?]{
   Remove a friend.
  
@@ -160,10 +167,35 @@ Package" tool.
   return -1 on failure.
 }
 
+@defproc[(tox_get_friendlist [my-tox cpointer?]) integer?]{
+  Copy a list of valid friend IDs into the array out_list.
+
+  If out_list is NULL, returns 0.
+
+  Otherwise, returns the number of elements copied.
+
+  If the array was too small, the contents
+  of out_list will be truncated to list_size.
+}
+
 @defproc[(tox_get_friend_number [my-tox cpointer?]) integer?]{
   return the friend number associated to that client id.
   
   return -1 if no such friend
+}
+
+@defproc[(tox_get_is_typing [my-tox cpointer?]) integer?]{
+  Get the typing status of a friend.
+
+  returns 0 if friend is not typing.
+
+  returns 1 if friend is typing.
+}
+
+@defproc[(tox_get_last_online [my-tox cpointer?]) integer?]{
+  returns timestamp of last time friendnumber was seen online, or 0 if never seen.
+
+  returns -1 on error.
 }
 
 @defproc[(tox_get_name [my-tox cpointer?]) integer?]{
@@ -180,6 +212,10 @@ Package" tool.
   returns the length of name on success.
 
   returns -1 on failure.
+}
+
+@defproc[(tox_get_num_online_friends [my-tox cpointer?]) integer?]{
+  Return the number of online friends in the instance m.
 }
 
 @defproc[(tox_get_self_name [my-tox cpointer?]) integer?]{
@@ -283,10 +319,26 @@ Package" tool.
   return -1 if failure.
 }
 
+@defproc[(tox_set_sends_receipts [my-tox cpointer?]) void?]{
+  Sets whether we send read receipts for friendnumber.
+
+  This function is not lazy, and it will fail if yesno is not (0 or 1).
+}
+
 @defproc[(tox_set_status_message [my-tox cpointer?]) integer?]{
   Set our user status.
 
   userstatus must be one of TOX_USERSTATUS values.
+
+  returns 0 on success.
+
+  returns -1 on failure.
+}
+
+@defproc[(tox_set_user_is_typing [my-tox cpointer?]) integer?]{
+  Set our typing status for a friend.
+
+  You are responsible for turning it on or off.
 
   returns 0 on success.
 
@@ -303,13 +355,14 @@ Package" tool.
   returns -1 on failure.
 }
 
-# PROCEDURE DEFINITION TEMPLATE
+
+@;{ PROCEDURE DEFINITION TEMPLATE
 @defproc[(function_name [argument argument_type?]) function_return_type?]{
 information about the procedure goes here
 
 make sure to doublespace, otherwise it’ll all be on the same line.
 }
-
+;}
 
 
 @section{Examples}
