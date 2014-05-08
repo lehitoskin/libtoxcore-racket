@@ -1,8 +1,7 @@
 #lang racket
 ; libtoxcore-racket/oop.rkt
 (require ffi/unsafe
-         "functions.rkt"
-         file/sha1)
+         "functions.rkt")
 
 ; super-duper Tox class
 (define Tox-class%
@@ -85,6 +84,12 @@
     (define/public (set-status str)
       (set! status str)
       (tox_set_status_message tox str (string-length str)))
+    
+    (define/public (save-tox)
+      (tox_save tox))
+    
+    (define/public (load-tox data)
+      (tox_load tox data))
     
     (define/public (kill-tox)
       (tox_kill tox))
