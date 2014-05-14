@@ -6,6 +6,50 @@
 (require "../main.rkt"
          ffi/unsafe)
 
+; takes a number, returns a number
+(define dec->bin
+  (λ (x)
+    (if (not (integer? x))
+        (raise-argument-error 'dec->bin "integer?" x)
+        (string->number (number->string x 2)))))
+
+; takes a number, returns a string
+(define dec->hex
+  (λ (x)
+    (if (not (integer? x))
+        (raise-argument-error 'dec->hex "integer?" x)
+        (if (< x 16)
+            (string-append "0" (number->string x 16))
+            (number->string x 16)))))
+
+; takes a number, returns a number
+(define bin->dec
+  (λ (x)
+    (if (not (integer? x))
+        (raise-argument-error 'bin->dec "integer?" x)
+        (string->number (number->string x) 2))))
+
+; takes a number, returns a string
+(define bin->hex
+  (λ (x)
+    (if (integer? x)
+        (dec->hex (bin->dec x))
+        (raise-argument-error 'bin->hex "integer?" x))))
+
+; takes a string, returns a number
+(define hex->dec
+  (λ (x)
+    (if (string? x)
+        (string->number x 16)
+        (raise-argument-error 'hex->dec "string?" x))))
+
+; takes a string, returns a number
+(define hex->bin
+  (λ (x)
+    (if (string? x)
+        (dec->bin (hex->dec x))
+        (raise-argument-error 'hex->bin "string?" x))))
+
 ; initialize a new Tox and grab the _Tox-pointer
 (define my-tox (tox_new TOX_ENABLE_IPV6_DEFAULT))
 (define my-name "Leah Twoskin Redux")
@@ -47,12 +91,21 @@
     (displayln "There's been a change in connection")))
 
 (displayln "my-id stuff")
-(define my-id (malloc TOX_FRIEND_ADDRESS_SIZE))
-(ctype? my-id)
-(cpointer? my-id)
-; get self id
-(tox_get_address my-tox my-id)
-(ptr-ref my-id _uint8_t)
+(define size (tox_size my-tox))
+(define data-ptr (malloc size))
+; obtain tox id
+(define my-id-bytes (malloc (* TOX_FRIEND_ADDRESS_SIZE
+                               (ctype-sizeof _uint8_t))))
+;(define my-id-hex "")
+(tox_get_address my-tox my-id-bytes)
+
+; make this purely functional?
+(do ((i 0 (+ i 1)))
+  ((= i TOX_FRIEND_ADDRESS_SIZE))
+  (printf "~a"
+          (string-upcase
+           (dec->hex (ptr-ref my-id-bytes _uint8_t i)))))
+(newline)
 
 ; need to run tox_do
 ; replace with a named let or letrec?
