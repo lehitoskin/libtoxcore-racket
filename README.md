@@ -83,11 +83,9 @@ tox_isconnected
 tox_join_groupchat
 tox_kill
 tox_load
-tox_load_encrypted
 tox_new
 tox_new_file_sender
 tox_save
-tox_save_encrypted
 tox_send_action
 tox_send_action_withid
 tox_send_message
@@ -99,7 +97,6 @@ tox_set_status_message
 tox_set_user_is_typing
 tox_set_user_status
 tox_size
-tox_size_encrypted
 tox_wait_cleanup
 tox_wait_data_size
 tox_wait_execute
