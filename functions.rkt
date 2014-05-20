@@ -869,9 +869,9 @@
  # int tox_wait_cleanup(Tox *tox, uint8_t *data);
  |#
 (define-tox tox_wait_data_size (_fun -> _size_t))
-(define-tox tox_wait_prepare (_fun _Tox-pointer _uint8_t-pointer -> _int))
-(define-tox tox_wait_execute (_fun _uint8_t-pointer _long _long -> _int))
-(define-tox tox_wait_cleanup (_fun _Tox-pointer _uint8_t-pointer -> _int))
+(define-tox tox_wait_prepare (_fun _Tox-pointer _pointer -> _int))
+(define-tox tox_wait_execute (_fun _pointer _long _long -> _int))
+(define-tox tox_wait_cleanup (_fun _Tox-pointer _pointer -> _int))
 
 
 #| SAVING AND LOADING FUNCTIONS: |#
