@@ -1,9 +1,11 @@
 #lang racket
-(provide (all-defined-out))
 ; libtoxcore-racket/functions.rkt
 ; FFI implementation of libtoxcore
 (require ffi/unsafe
-         ffi/unsafe/define)
+         ffi/unsafe/define
+         "enums.rkt")
+(provide (all-from-out "enums.rkt")
+         (all-defined-out))
 
 (define-ffi-definer define-tox (ffi-lib "libtoxcore"))
 
@@ -14,10 +16,8 @@
  # TODO:
  #     (provide) all the API functions
  #     testing!
- #     make certain the callback functions work
- #     tox_get_group_names takes an array - works as-written?
- #
- # maybe uint8_t *data; should be _bytes?
+ #     make certain the tox_callback functions work
+ #     tox_group_get_names takes two arrays - works as-written?
  |#
 
 #|###################
@@ -105,6 +105,10 @@
 
 (define TOX_ENABLE_IPV6_DEFAULT 1)
 
+#|
+
+enum definitions have moved to enums.rkt which uses r6rs
+
 ; enum definitions
 ; Errors for m_addfriend
 ; FAERR - Friend Add Error
@@ -127,7 +131,7 @@
 (define TOX_FILECONTROL (_enum
                          '(TOX_FILECONTROL_ACCEPT TOX_FILECONTROL_PAUSE
                                                   TOXFILECONTROL_KILL TOXFILECONTROL_FINISHED
-                                                  TOX_FILECONTROL_RESUME_BROKEN)))
+                                                  TOX_FILECONTROL_RESUME_BROKEN)))|#
 
 
 #|#######################
@@ -146,7 +150,7 @@
  #
  # void tox_get_address(Tox *tox, uint8_t *address);
  |#
-(define-tox tox_get_address (_fun _Tox-pointer _string -> _void))
+(define-tox tox_get_address (_fun _Tox-pointer _pointer -> _void))
 
 #| Add a friend.
  # Set the data that will be sent along with friend request.
@@ -323,8 +327,8 @@
  # Get the size you need to allocate from m_get_statusmessage_size.
  # The self variant will copy our own status message.
  #
- # returns the length of the copied data on success
- # retruns -1 on failure.
+ # returns the length of the copied data on success.
+ # returns -1 on failure.
  #
  # int tox_get_status_message(Tox *tox, int32_t friendnumber, uint8_t *buf, uint32_t maxlen);
  # int tox_get_self_status_message(Tox *tox, uint8_t *buf, uint32_t maxlen);
@@ -646,12 +650,7 @@
  # int tox_group_get_names(Tox *tox, int groupnumber, uint8_t names[][TOX_MAX_NAME_LENGTH], uint16_t lengths[],
  #                         uint16_t length);
  |#
-; takes an array as a parameter. how do represent? maybe this is okay...
-;(define-tox tox_group_get_names (_fun _Tox-pointer _int _uint8_t _uint16_t -> _int))
-; or how about this?
-(define names (_array _uint8_t 256 TOX_MAX_NAME_LENGTH))
-(define lengths (_array _uint16_t 256))
-(define-tox tox_group_get_names (_fun _Tox-pointer _int names lengths _uint16_t -> _int))
+(define-tox tox_group_get_names (_fun _Tox-pointer _int _pointer _pointer _uint16_t -> _int))
 
 #| Return the number of chats in the instance m.
  # You should use this to determine how much memory to allocate
@@ -779,18 +778,6 @@
 
 
 #|
- # WARNING: DEPRECATED, DO NOT USE
- # Use these two functions to bootstrap the client.
- #
- # Sends a "get nodes" request to the given node with ip, port and public_key
- #   to setup connections
- #
- # void tox_bootstrap_from_ip(Tox *tox, tox_IP_Port ip_port, uint8_t *public_key);
- |#
-(define-tox tox_bootstrap_from_ip (_fun _Tox-pointer
-                                        _tox_IP_PORT _string -> _void))
-
-#|
  # Use this function to bootstrap the client.
  |#
 
@@ -888,9 +875,9 @@
  # int tox_wait_cleanup(Tox *tox, uint8_t *data);
  |#
 (define-tox tox_wait_data_size (_fun -> _size_t))
-(define-tox tox_wait_prepare (_fun _Tox-pointer _uint8_t-pointer -> _int))
-(define-tox tox_wait_execute (_fun _uint8_t-pointer _long _long -> _int))
-(define-tox tox_wait_cleanup (_fun _Tox-pointer _uint8_t-pointer -> _int))
+(define-tox tox_wait_prepare (_fun _Tox-pointer _pointer -> _int))
+(define-tox tox_wait_execute (_fun _pointer _long _long -> _int))
+(define-tox tox_wait_cleanup (_fun _Tox-pointer _pointer -> _int))
 
 
 #| SAVING AND LOADING FUNCTIONS: |#
@@ -913,34 +900,3 @@
  # int tox_load(Tox *tox, uint8_t *data, uint32_t length);
  |#
 (define-tox tox_load (_fun _Tox-pointer _pointer _uint32_t -> _int))
-
-#| return the size of data to pass to messenger_save_encrypted(...)
- #
- # uint32_t tox_size_encrypted(Tox *tox);
- |#
-(define-tox tox_size_encrypted (_fun _Tox-pointer -> _uint32_t))
-
-#| Save the messenger, encrypting the data with key of length key_length
- #
- # This functions simply calls and then encrypt the output of tox_save(..)
- # with crypto_secretbox(...) from NaCl/libsodium with the key
- # given to crypto_secretbox(...) being the SHA256 sum of the key
- # passed to this function.
- #
- # return 0 on success.
- # return -1 on failure.
- #
- # int tox_save_encrypted(Tox *tox, uint8_t *data, uint8_t *key, uint16_t key_length);
- |#
-(define-tox tox_save_encrypted (_fun _Tox-pointer _uint8_t-pointer
-                                     _string _uint16_t -> _int))
-
-#| Load the messenger from data of size length encrypted with key of key_length.
- #
- # return 0 on success.
- # return -1 on failure.
- #
- # int tox_load_encrypted(Tox *tox, uint8_t *data, uint32_t length, uint8_t *key, uint16_t key_length);
- |#
-(define-tox tox_load_encrypted (_fun _Tox-pointer _uint8_t-pointer
-                                     _uint32_t _string _uint16_t -> _int))
