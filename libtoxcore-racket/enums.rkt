@@ -27,6 +27,7 @@
                               BADCHECKSUM
                               SETNEWNOSPAM
                               NOMEM)))
+         ; enum starts at -1 and decrements from that point
          (define _TOX_FAERR-index
            (lambda (x)
              (if (enum-set-member? x _TOX_FAERR)
@@ -39,12 +40,12 @@
                                  '(NONE
                                    AWAY
                                    BUSY
-                                   BUSY)))
+                                   INVALID)))
          (define _TOX_USERSTATUS-index
            (lambda (x)
-             (if (enum-set-member? x _TOX_FAERR)
-                 (let ((i (enum-set-indexer _TOX_FAERR)))
-                   (- (+ (i x) 1)))
+             (if (enum-set-member? x _TOX_USERSTATUS)
+                 (let ((i (enum-set-indexer _TOX_USERSTATUS)))
+                   (i x))
                  #f)))
          (define _TOX_CHAT_CHANGE_PEER (make-enumeration
                                        '(ADD
@@ -52,9 +53,9 @@
                                          NAME)))
          (define _TOX_CHAT_CHANGE_PEER-index
            (lambda (x)
-             (if (enum-set-member? x _TOX_FAERR)
-                 (let ((i (enum-set-indexer _TOX_FAERR)))
-                   (- (+ (i x) 1)))
+             (if (enum-set-member? x _TOX_CHAT_CHANGE_PEER)
+                 (let ((i (enum-set-indexer _TOX_CHAT_CHANGE_PEER)))
+                   (i x))
                  #f)))
          ; improvised from line 521-ish of tox.h
          (define _TOX_FILECONTROL (make-enumeration
@@ -67,5 +68,5 @@
            (lambda (x)
              (if (enum-set-member? x _TOX_FILECONTROL)
                  (let ((i (enum-set-indexer _TOX_FILECONTROL)))
-                   (- (+ (i x) 1)))
+                   (i x))
                  #f))))
