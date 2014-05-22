@@ -1,8 +1,8 @@
---- functions.rkt.old	2014-04-17 17:41:23.072375074 -0700
-+++ functions.rkt	2014-04-17 18:56:25.685927724 -0700
-@@ -5,7 +5,17 @@
- (require ffi/unsafe
-          ffi/unsafe/define)
+--- functions.rkt.old	2014-05-22 13:38:52.705977658 -0700
++++ functions.rkt	2014-05-22 13:39:15.641977495 -0700
+@@ -7,7 +7,17 @@
+ (provide (all-from-out "enums.rkt")
+          (all-defined-out))
  
 -(define-ffi-definer define-tox (ffi-lib "libtoxcore"))
 +; jenkins junk

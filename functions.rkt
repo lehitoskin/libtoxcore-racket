@@ -1,9 +1,11 @@
 #lang racket
-(provide (all-defined-out))
 ; libtoxcore-racket/functions.rkt
 ; FFI implementation of libtoxcore
 (require ffi/unsafe
-         ffi/unsafe/define)
+         ffi/unsafe/define
+         "enums.rkt")
+(provide (all-from-out "enums.rkt")
+         (all-defined-out))
 
 (define-ffi-definer define-tox (ffi-lib "libtoxcore"))
 
@@ -103,6 +105,10 @@
 
 (define TOX_ENABLE_IPV6_DEFAULT 1)
 
+#|
+
+enum definitions have moved to enums.rkt which uses r6rs
+
 ; enum definitions
 ; Errors for m_addfriend
 ; FAERR - Friend Add Error
@@ -125,7 +131,7 @@
 (define TOX_FILECONTROL (_enum
                          '(TOX_FILECONTROL_ACCEPT TOX_FILECONTROL_PAUSE
                                                   TOXFILECONTROL_KILL TOXFILECONTROL_FINISHED
-                                                  TOX_FILECONTROL_RESUME_BROKEN)))
+                                                  TOX_FILECONTROL_RESUME_BROKEN)))|#
 
 
 #|#######################
