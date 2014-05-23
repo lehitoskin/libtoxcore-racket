@@ -271,7 +271,7 @@ enum definitions have moved to enums.rkt which uses r6rs
 
 #|
  # Get your nickname.
- # m - The messanger context to use.
+ # m - The messenger context to use.
  # name - needs to be a valid memory location with a size of
  # at least MAX_NAME_LENGTH (128) bytes.
  #
@@ -280,7 +280,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  #
  # uint16_t tox_get_self_name(Tox *tox, uint8_t *name);
  |#
-(define-tox tox_get_self_name (_fun _Tox-pointer _string -> _uint16_t))
+(define-tox tox_get_self_name (_fun _Tox-pointer _pointer -> _uint16_t))
 
 #| Get name of friendnumber and put it in name.
  # name needs to be a valid memory location with a size of at least MAX_NAME_LENGTH (128) bytes.
