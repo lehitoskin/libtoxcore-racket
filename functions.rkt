@@ -290,7 +290,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  #
  # int tox_get_name(Tox *tox, int32_t friendnumber, uint8_t *name);
  |#
-(define-tox tox_get_name (_fun _Tox-pointer _int32_t _string -> _int))
+(define-tox tox_get_name (_fun _Tox-pointer _int32_t _pointer -> _int))
 
 #|  returns the length of name on success.
  #  returns -1 on failure.
