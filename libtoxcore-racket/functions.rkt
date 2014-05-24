@@ -170,7 +170,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  #
  # int32_t tox_add_friend(Tox *tox, uint8_t *address, uint8_t *data, uint16_t length);
  |#
-(define-tox tox_add_friend (_fun _Tox-pointer _string _string _uint16_t -> _int32_t))
+(define-tox tox_add_friend (_fun _Tox-pointer _pointer _string _uint16_t -> _int32_t))
 
 #| Add a friend without sending a friendrequest.
  #  return the friend number if success.
