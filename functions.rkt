@@ -412,21 +412,18 @@ enum definitions have moved to enums.rkt which uses r6rs
  |#
 (define-tox tox_callback_friend_request (_fun _Tox-pointer
                                               (_fun _Tox-pointer _string _string
-                                                    _uint16_t _voidptr -> _voidptr)
-                                              _voidptr -> _void))
+                                                    _uint16_t _pointer -> _void)
+                                              _pointer -> _void))
 
 #| Set the function that will be executed when a message from a friend is received.
  #  Function format is: function(Tox *tox, int friendnumber, uint8_t * message, uint32_t length, void *userdata)
- #
- # I wonder if this is done correctly...
  #
  # void tox_callback_friend_message(Tox *tox, void (*function)(Tox *tox, int, uint8_t *, uint16_t, void *),
  #                                  void *userdata);
  |#
 (define-tox tox_callback_friend_message (_fun _Tox-pointer
-                                              (_fun _Tox-pointer _int _string _uint16_t
-                                                    _voidptr -> _void)
-                                              _voidptr -> _void))
+                                              (_fun _Tox-pointer _int _string _uint16_t _pointer -> _void)
+                                              _pointer -> _void))
 
 #| Set the function that will be executed when an action from a friend is received.
  #  Function format is: function(Tox *tox, int32_t friendnumber, uint8_t * action, uint32_t length, void *userdata)
@@ -437,8 +434,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  #                                void *userdata);
  |#
 (define-tox tox_callback_friend_action (_fun _Tox-pointer
-                                             (_fun _Tox-pointer _int32_t _string _uint16_t _voidptr -> _void)
-                                             _voidptr -> _void))
+                                             (_fun _Tox-pointer _int32_t _string _uint16_t _pointer -> _void)
+                                             _pointer -> _void))
 
 #| Set the callback for name changes.
  #  function(Tox *tox, int32_t friendnumber, uint8_t *newname, uint16_t length, void *userdata)
@@ -450,8 +447,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  #                               void *userdata);
  |#
 (define-tox tox_callback_name_change (_fun _Tox-pointer
-                                           (_fun _Tox-pointer _int32_t _string _uint16_t _voidptr -> _void)
-                                           _voidptr -> _void))
+                                           (_fun _Tox-pointer _int32_t _string _uint16_t _pointer -> _void)
+                                           _pointer -> _void))
 
 #| Set the callback for status message changes.
  #  function(Tox *tox, int32_t friendnumber, uint8_t *newstatus, uint16_t length, void *userdata)
@@ -461,17 +458,18 @@ enum definitions have moved to enums.rkt which uses r6rs
  #                                  void *userdata);
  |#
 (define-tox tox_callback_status_message (_fun _Tox-pointer
-                                              (_fun _Tox-pointer _int32_t _string _uint16_t _voidptr -> _void)
-                                              _voidptr -> _void))
+                                              (_fun _Tox-pointer _int32_t _string _uint16_t _pointer -> _void)
+                                              _pointer -> _void))
 
 #| Set the callback for status type changes.
  #  function(Tox *tox, int32_t friendnumber, uint8_t TOX_USERSTATUS, void *userdata)
  #
  # void tox_callback_user_status(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t, void *), void *userdata);
  |#
+; COMPLETED
 (define-tox tox_callback_user_status (_fun _Tox-pointer
-                                           (_fun _Tox-pointer _int32_t _uint8_t _voidptr -> _void)
-                                           _voidptr -> _void))
+                                           (_fun _Tox-pointer _int _uint8_t _pointer -> _void)
+                                           _pointer -> _void))
 
 #| Set the callback for typing changes.
  #  function (Tox *tox, int32_t friendnumber, int is_typing, void *userdata)
@@ -479,8 +477,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  # void tox_callback_typing_change(Tox *tox, void (*function)(Tox *tox, int32_t, int, void *), void *userdata);
  |#
 (define-tox tox_callback_typing_change (_fun _Tox-pointer
-                                             (_fun _Tox-pointer _int32_t _int _voidptr -> _void)
-                                             _voidptr -> _void))
+                                             (_fun _Tox-pointer _int32_t _int _pointer -> _void)
+                                             _pointer -> _void))
 
 #| Set the callback for read receipts.
  #  function(Tox *tox, int32_t friendnumber, uint32_t status, void *userdata)
@@ -494,8 +492,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  # void tox_callback_read_receipt(Tox *tox, void (*function)(Tox *tox, int32_t, uint32_t, void *), void *userdata);
  |#
 (define-tox tox_callback_read_receipt (_fun _Tox-pointer
-                                            (_fun _Tox-pointer _int32_t _uint32_t _voidptr -> _void)
-                                            _voidptr -> _void))
+                                            (_fun _Tox-pointer _int32_t _uint32_t _pointer -> _void)
+                                            _pointer -> _void))
 
 #| Set the callback for connection status changes.
  #  function(Tox *tox, int32_t friendnumber, uint8_t status, void *userdata)
@@ -511,8 +509,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  # void tox_callback_connection_status(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t, void *), void *userdata);
  |#
 (define-tox tox_callback_connection_status (_fun _Tox-pointer
-                                                 (_fun _Tox-pointer _int32_t _uint8_t _voidptr -> _void)
-                                                 _voidptr -> _void))
+                                                 (_fun _Tox-pointer _int32_t _uint8_t _pointer -> _void)
+                                                 _pointer -> _void))
 
 #| ##########ADVANCED FUNCTIONS (If you don't know what they do you can safely ignore them.) ############ |#
 #| Functions to get/set the nospam part of the id.
@@ -532,8 +530,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  # void tox_callback_group_invite(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t *, void *), void *userdata);
  |#
 (define-tox tox_callback_group_invite (_fun _Tox-pointer
-                                            (_fun _Tox-pointer _int32_t _string _voidptr -> _void)
-                                            _voidptr -> _void))
+                                            (_fun _Tox-pointer _int32_t _string _pointer -> _void)
+                                            _pointer -> _void))
 
 #| Set the callback for group messages.
  #
@@ -543,8 +541,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  #                                void *userdata);
  |#
 (define-tox tox_callback_group_message (_fun _Tox-pointer
-                                             (_fun _Tox-pointer _int _int _string _uint16_t _voidptr -> _void)
-                                             _voidptr -> _void))
+                                             (_fun _Tox-pointer _int _int _string _uint16_t _pointer -> _void)
+                                             _pointer -> _void))
 
 #| Set the callback for group actions.
  #
@@ -554,8 +552,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  #                               void *userdata);
  |#
 (define-tox tox_callback_group_action (_fun _Tox-pointer
-                                            (_fun _Tox-pointer _int _int _string _uint16_t _voidptr -> _void)
-                                            _voidptr -> _void))
+                                            (_fun _Tox-pointer _int _int _string _uint16_t _pointer -> _void)
+                                            _pointer -> _void))
 
 #| Set callback function for peer name list changes.
  #
@@ -566,8 +564,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  #                                        void *userdata);
  |#
 (define-tox tox_callback_group_namelist_change (_fun _Tox-pointer
-                                                     (_fun _Tox-pointer _int _int _uint8_t _voidptr -> _void)
-                                                     _voidptr -> _void))
+                                                     (_fun _Tox-pointer _int _int _uint8_t _pointer -> _void)
+                                                     _pointer -> _void))
 
 #| Creates a new groupchat and puts it in the chats array.
  #
