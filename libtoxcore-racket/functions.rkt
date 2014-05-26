@@ -178,14 +178,16 @@ enum definitions have moved to enums.rkt which uses r6rs
  #
  # int32_t tox_add_friend_norequest(Tox *tox, uint8_t *client_id);
  |#
-(define-tox tox_add_friend_norequest (_fun _Tox-pointer _string -> _int32_t))
+; client_id is the bytes form of the Tox ID
+(define-tox tox_add_friend_norequest (_fun _Tox-pointer _pointer -> _int32_t))
 
 #|
  #  return the friend number associated to that client id.
  #  return -1 if no such friend */
  # int32_t tox_get_friend_number(Tox *tox, uint8_t *client_id);
 |#
-(define-tox tox_get_friend_number (_fun _Tox-pointer _string -> _int32_t))
+; client_id is the bytes form of the Tox ID
+(define-tox tox_get_friend_number (_fun _Tox-pointer _pointer -> _int32_t))
 
 #|
  # Copies the public key associated to that friend id into client_id buffer.
@@ -402,7 +404,7 @@ enum definitions have moved to enums.rkt which uses r6rs
 (define-tox tox_get_friendlist (_fun _Tox-pointer _int32_t-pointer _uint32_t -> _uint32_t))
 
 #| Set the function that will be executed when a friend request is received.
- #  Function format is function(Tox *tox, uint8_t * public_key, uint8_t * data, uint16_t length, void *userdata)
+ # Function format is function(Tox *tox, uint8_t * public_key, uint8_t * data, uint16_t length, void *userdata)
  #
  #
  # I wonder if this is done correctly...
@@ -411,7 +413,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  #                                 void *userdata);
  |#
 (define-tox tox_callback_friend_request (_fun _Tox-pointer
-                                              (_fun _Tox-pointer _string _string
+                                              (_fun _Tox-pointer _pointer _string
                                                     _uint16_t _pointer -> _void)
                                               _pointer -> _void))
 
