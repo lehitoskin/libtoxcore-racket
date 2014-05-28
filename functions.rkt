@@ -197,7 +197,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  #
  # int tox_get_client_id(Tox *tox, int32_t friend_id, uint8_t *client_id);
  |#
-(define-tox tox_get_client_id (_fun _Tox-pointer _int32_t _string -> _int))
+(define-tox tox_get_client_id (_fun _Tox-pointer _int32_t _pointer -> _int))
 
 #| Remove a friend.
  # 
