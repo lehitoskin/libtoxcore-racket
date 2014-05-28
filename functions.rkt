@@ -401,7 +401,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  # of out_list will be truncated to list_size.
  # uint32_t tox_get_friendlist(Tox *tox, int32_t *out_list, uint32_t list_size);
  |#
-(define-tox tox_get_friendlist (_fun _Tox-pointer _int32_t-pointer _uint32_t -> _uint32_t))
+(define-tox tox_get_friendlist (_fun _Tox-pointer _pointer _uint32_t -> _uint32_t))
 
 #| Set the function that will be executed when a friend request is received.
  # Function format is function(Tox *tox, uint8_t * public_key, uint8_t * data, uint16_t length, void *userdata)
