@@ -27,9 +27,6 @@
 (display "How long is my status message?\n")
 (tox_get_self_status_message my-tox my-status-message (string-length my-status-message))
 
-(display "How large is the encrypted data?\n")
-(tox_size_encrypted my-tox)
-
 (displayln "How many friends do I have?")
 (tox_count_friendlist my-tox)
 
