@@ -56,18 +56,14 @@
  # structs, constants, etc #
  ######################### |#
 ; are these constants even necessary for the wrapper?
-
-
 (define TOX_MAX_NAME_LENGTH 128)
+; Maximum length of single messages after which they should be split.
+(define TOX_MAX_MESSAGE_LENGTH 1368)
 (define TOX_MAX_STATUSMESSAGE_LENGTH 1007)
 (define TOX_CLIENT_ID_SIZE 32)
 
 (define TOX_FRIEND_ADDRESS_SIZE (+ TOX_CLIENT_ID_SIZE
                                    (ctype-sizeof _uint32_t) (ctype-sizeof _uint16_t)))
-
-(define TOX_PORTRANGE_FROM 33445)
-(define TOX_PORTRANGE_TO 33545)
-(define TOX_PORT_DEFAULT TOX_PORTRANGE_FROM)
 
 ; UNIONS ARE ALWAYS TREATED LIKE STRUCTS
 ; http://docs.racket-lang.org/foreign/C_Union_Types.html
@@ -232,6 +228,10 @@ enum definitions have moved to enums.rkt which uses r6rs
  #  return the message id if packet was successfully put into the send queue.
  #  return 0 if it was not.
  #
+ #  maximum length of messages is TOX_MAX_MESSAGE_LENGTH, your client must split larger messages
+ #  or else sending them will not work. No the core will not split messages for you because that
+ #  requires me to parse UTF-8.
+ #
  # You will want to retain the return value, it will be passed to your read_receipt callback
  # if one is received.
  # m_sendmessage_withid will send a message with the id of your choosing,
@@ -247,6 +247,10 @@ enum definitions have moved to enums.rkt which uses r6rs
  #
  #  return the message id if packet was successfully put into the send queue.
  #  return 0 if it was not.
+ #
+ #  maximum length of messages is TOX_MAX_MESSAGE_LENGTH, your client must split larger messages
+ #  or else sending them will not work. No the core will not split messages for you because that
+ #  requires me to parse UTF-8.
  #
  #  You will want to retain the return value, it will be passed to your read_receipt callback
  #  if one is received.
@@ -306,6 +310,7 @@ enum definitions have moved to enums.rkt which uses r6rs
 #| Set our user status.
  #
  # userstatus must be one of TOX_USERSTATUS values.
+ # max length of the status is TOX_MAX_STATUSMESSAGE_LENGTH.
  #
  #  returns 0 on success.
  #  returns -1 on failure.
@@ -418,13 +423,13 @@ enum definitions have moved to enums.rkt which uses r6rs
                                               _pointer -> _void))
 
 #| Set the function that will be executed when a message from a friend is received.
- #  Function format is: function(Tox *tox, int friendnumber, uint8_t * message, uint32_t length, void *userdata)
+ #  Function format is: function(Tox *tox, int32_t friendnumber, uint8_t * message, uint32_t length, void *userdata)
  #
  # void tox_callback_friend_message(Tox *tox, void (*function)(Tox *tox, int, uint8_t *, uint16_t, void *),
  #                                  void *userdata);
  |#
 (define-tox tox_callback_friend_message (_fun _Tox-pointer
-                                              (_fun _Tox-pointer _int _string _uint16_t _pointer -> _void)
+                                              (_fun _Tox-pointer _int32_t _string _uint16_t _pointer -> _void)
                                               _pointer -> _void))
 
 #| Set the function that will be executed when an action from a friend is received.
@@ -810,7 +815,7 @@ enum definitions have moved to enums.rkt which uses r6rs
 #|
  #  Run this function at startup.
  #
- # Initializes a tox structure
+ #  Initializes a tox structure
  #  The type of communication socket depends on ipv6enabled:
  #  If set to 0 (zero), creates an IPv4 socket which subsequently only allows
  #    IPv4 communication
@@ -830,55 +835,19 @@ enum definitions have moved to enums.rkt which uses r6rs
  |#
 (define-tox tox_kill (_fun _Tox-pointer -> _void))
 
-#| The main loop that needs to be run at least 20 times per second.
+#| Return the time in milliseconds before tox_do() should be called again
+ # for optimal performance.
+ #
+ # returns time (in ms) before the next tox_do() needs to be run on success.
+ #
+ # uint32_t tox_do_interval(Tox *tox);
+|#
+(define-tox tox_do_interval (_fun _Tox-pointer -> _uint32_t))
+
+#| The main loop that needs to be run in intervals of tox_do_interval() ms.
  # void tox_do(Tox *tox);
  |#
 (define-tox tox_do (_fun _Tox-pointer -> _void))
-
-#|
- # tox_wait_data_size():
- #
- #  returns a size of data buffer to allocate. the size is constant.
- #
- # tox_wait_prepare(): function should be called under lock every time we want to call tox_wait_execute()
- # Prepares the data required to call tox_wait_execute() asynchronously
- #
- # data[] should be of at least tox_wait_data_size() size and it's reserved and kept by the caller
- # Use that data[] to call tox_wait_execute()
- #
- #  returns  1 on success
- #  returns  0 if data was NULL
- #
- #
- # tox_wait_execute(): function can be called asynchronously
- # Waits for something to happen on the socket for up to seconds seconds and mircoseconds microseconds.
- # mircoseconds should be between 0 and 999999.
- # If you set either or both seconds and microseconds to negatives, it will block indefinetly until there
- # is an activity.
- #
- #  returns  2 if there is socket activity (i.e. tox_do() should be called)
- #  returns  1 if the timeout was reached (tox_do() should be called anyway. it's advised to call it at least
- #             once per second)
- #  returns  0 if data was NULL
- #
- #
- # tox_wait_cleanup(): function should be called under lock,  every time tox_wait_execute() finishes
- # Stores results from tox_wait_execute().
- #
- # returns  1 on success
- #  returns  0 if data was NULL
- #
- #
- # size_t tox_wait_data_size();
- # int tox_wait_prepare(Tox *tox, uint8_t *data);
- # int tox_wait_execute(uint8_t *data, long seconds, long microseconds);
- # int tox_wait_cleanup(Tox *tox, uint8_t *data);
- |#
-(define-tox tox_wait_data_size (_fun -> _size_t))
-(define-tox tox_wait_prepare (_fun _Tox-pointer _pointer -> _int))
-(define-tox tox_wait_execute (_fun _pointer _long _long -> _int))
-(define-tox tox_wait_cleanup (_fun _Tox-pointer _pointer -> _int))
-
 
 #| SAVING AND LOADING FUNCTIONS: |#
 
