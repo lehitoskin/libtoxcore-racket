@@ -731,8 +731,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  # int tox_new_file_sender(Tox *tox, int32_t friendnumber, uint64_t filesize, uint8_t *filename, uint16_t filename_length);
  |#
 (define-tox tox_new_file_sender (_fun _Tox-pointer _int32_t _uint64_t
-                                      _string _uint16_t
-                                      -> _int))
+                                      _string _uint16_t -> _int))
 
 #| Send a file control request.
  #
@@ -757,7 +756,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  # int tox_file_send_data(Tox *tox, int32_t friendnumber, uint8_t filenumber, uint8_t *data, uint16_t length);
  |#
 (define-tox tox_file_send_data (_fun _Tox-pointer _int32_t _uint8_t
-                                    _uint8_t-pointer _uint16_t -> _int))
+                                    _pointer _uint16_t -> _int))
 
 #| Returns the recommended/maximum size of the filedata you send with tox_file_send_data()
  #
