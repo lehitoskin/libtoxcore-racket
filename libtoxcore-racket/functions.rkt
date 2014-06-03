@@ -707,7 +707,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  |#
 (define-tox tox_callback_file_control (_fun _Tox-pointer
                                             (_fun _Tox-pointer _int32_t _uint8_t _uint8_t _uint8_t
-                                                  _uint8_t-pointer _uint16_t _voidptr -> _void)
+                                                  _pointer _uint16_t _voidptr -> _void)
                                             _voidptr -> _void))
 
 #| Set the callback for file data.
@@ -745,8 +745,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  #                           uint8_t *data, uint16_t length);
  |#
 (define-tox tox_file_send_control (_fun _Tox-pointer _int32_t _uint8_t
-                                        _uint8_t _uint8_t _string
-                                        _uint16_t -> _int))
+                                        _uint8_t _uint8_t _pointer _uint16_t -> _int))
 
 #| Send file data.
  #
