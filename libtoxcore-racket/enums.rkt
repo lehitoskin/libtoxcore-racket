@@ -59,11 +59,11 @@
                  #f)))
          ; improvised from line 521-ish of tox.h
          (define _TOX_FILECONTROL (make-enumeration
-                                  '(TOX_FILECONTROL_ACCEPT
-                                    TOX_FILECONTROL_PAUSE
-                                    TOXFILECONTROL_KILL
-                                    TOXFILECONTROL_FINISHED
-                                    TOX_FILECONTROL_RESUME_BROKEN)))
+                                  '(ACCEPT
+                                    PAUSE
+                                    KILL
+                                    FINISHED
+                                    RESUME_BROKEN)))
          (define _TOX_FILECONTROL-index
            (lambda (x)
              (if (enum-set-member? x _TOX_FILECONTROL)
