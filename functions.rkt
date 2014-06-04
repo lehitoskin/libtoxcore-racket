@@ -12,12 +12,6 @@
 #|
  # this code is verbose, messy, and probably doesn't work at all.
  # DEAL WITH IT
- #
- # TODO:
- #     (provide) all the API functions
- #     testing!
- #     make certain the tox_callback functions work
- #     tox_group_get_names takes two arrays - works as-written?
  |#
 
 #|###################
@@ -34,18 +28,11 @@
 (define _uint32_t _uint32)
 (define _uint64_t _uint64)
 
-; pointer definitions
-(define _int32_t-pointer (_cpointer 'int32_t))
-(define _uint8_t-pointer (_cpointer 'uint8_t))
-(define _uint16_t-pointer (_cpointer 'uint16_t))
-(define _uint32_t-pointer (_cpointer 'uint32_t))
-(define _voidptr (_cpointer 'void))
 ; The _string type supports conversion between Racket strings
 ; and char* strings using a parameter-determined conversion.
 ; instead of using _bytes, which is unnatural, use _string
 ; of specified type _string*/utf-8.
 (default-_string-type _string*/utf-8)
-(define _char-pointer _string)
 
 ; define Tox struct
 ;(define-cstruct _Tox ([Tox (_cpointer 'Tox)]))
@@ -101,33 +88,8 @@
 
 (define TOX_ENABLE_IPV6_DEFAULT 1)
 
-#|
 
-enum definitions have moved to enums.rkt which uses r6rs
-
-; enum definitions
-; Errors for m_addfriend
-; FAERR - Friend Add Error
-(define TOX_FAERR (_enum '(TOX_FAERR_TOOLONG = -1
-                                             TOX_FAERR_NOMESSAGE = -2
-                                             TOX_FAERR_OWNKEY = -3
-                                             TOX_FAERR_ALREADYSENT = -4
-                                             TOX_FAERR_UNKNOWN = -5
-                                             TOX_FAERR_BADCHECKSUM = -6
-                                             TOX_FAERR_SETNEWNOSPAM = -7
-                                             TOX_FAERR_NOMEM = -8)))
-
-; USERSTATUS -
-; Represents userstatuses someone can have.
-(define TOX_USERSTATUS (_enum '(TOX_USERSTATUS_NONE TOX_USERSTATS_AWAY TOX_USERSTATUS_BUSY
-                                                    TOX_USERSTATUS_BUSY)))
-(define TOX_CHAT_CHANGE (_enum '(TOX_CHAT_CHANGE_PEER_ADD TOX_CHAT_CHANGE_PEER_DEL
-                                                          TOX_CHAT_CHANGE_PEER_NAME)))
-; improvised from line 521-ish of tox.h
-(define TOX_FILECONTROL (_enum
-                         '(TOX_FILECONTROL_ACCEPT TOX_FILECONTROL_PAUSE
-                                                  TOXFILECONTROL_KILL TOXFILECONTROL_FINISHED
-                                                  TOX_FILECONTROL_RESUME_BROKEN)))|#
+#| ############# enum definitions have moved to enums.rkt which uses r6rs ################# |#
 
 
 #|#######################
@@ -671,7 +633,7 @@ enum definitions have moved to enums.rkt which uses r6rs
  # of out_list will be truncated to list_size.
  # uint32_t tox_get_chatlist(Tox *tox, int *out_list, uint32_t list_size);
  |#
-(define-tox tox_get_chatlist (_fun _Tox-pointer _intptr _uint32_t -> _uint32_t))
+(define-tox tox_get_chatlist (_fun _Tox-pointer _pointer _uint32_t -> _uint32_t))
 
 #|
  #################FILE SENDING FUNCTIONS#####################
@@ -691,8 +653,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  |#
 (define-tox tox_callback_file_send_request (_fun _Tox-pointer
                                                  (_fun _Tox-pointer _int32_t _uint8_t _uint64_t
-                                                       _string _uint16_t _voidptr -> _void)
-                                                 _voidptr -> _void))
+                                                       _string _uint16_t _pointer -> _void)
+                                                 _pointer -> _void))
 
 #| Set the callback for file control requests.
  #
@@ -707,8 +669,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  |#
 (define-tox tox_callback_file_control (_fun _Tox-pointer
                                             (_fun _Tox-pointer _int32_t _uint8_t _uint8_t _uint8_t
-                                                  _pointer _uint16_t _voidptr -> _void)
-                                            _voidptr -> _void))
+                                                  _pointer _uint16_t _pointer -> _void)
+                                            _pointer -> _void))
 
 #| Set the callback for file data.
  #
@@ -720,8 +682,8 @@ enum definitions have moved to enums.rkt which uses r6rs
  |#
 (define-tox tox_callback_file_data (_fun _Tox-pointer
                                          (_fun _Tox-pointer _int32_t _uint8_t _string
-                                               _uint16_t _voidptr -> _void)
-                                         _voidptr -> _void))
+                                               _uint16_t _pointer -> _void)
+                                         _pointer -> _void))
 
 #| Send a file send request.
  # Maximum filename length is 255 bytes.
