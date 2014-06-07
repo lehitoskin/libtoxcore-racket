@@ -12,8 +12,7 @@
                  _TOX_FAERR-index
                  _TOX_USERSTATUS-index
                  _TOX_CHAT_CHANGE_PEER-index
-                 _TOX_FILECONTROL-index
-                 enum-set-member?)
+                 _TOX_FILECONTROL-index)
          (import (rnrs))
          ; enum definitions
          ; Errors for m_addfriend

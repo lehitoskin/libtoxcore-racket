@@ -681,7 +681,7 @@
  #                             void *userdata);
  |#
 (define-tox tox_callback_file_data (_fun _Tox-pointer
-                                         (_fun _Tox-pointer _int32_t _uint8_t _string
+                                         (_fun _Tox-pointer _int32_t _uint8_t _pointer
                                                _uint16_t _pointer -> _void)
                                          _pointer -> _void))
 
