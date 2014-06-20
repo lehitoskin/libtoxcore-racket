@@ -52,7 +52,7 @@
  #                             uint8_t *name, uint8_t name_len)
  |#
 (define-dns tox_generate_dns3_string
-  (_fun _pointer _string _uint16_t _uint32_t _string _uint8_t -> _int))
+  (_fun _pointer _pointer _uint16_t _pointer _string _uint8_t -> _int))
 
 #| Decode and decrypt the id_record returned of length id_record_len into
  # tox_id (needs to be at least TOX_FRIEND_ADDRESS_SIZE).
