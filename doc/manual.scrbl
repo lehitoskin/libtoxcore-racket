@@ -2,6 +2,7 @@
 @; manual.scrbl
 @; add all API functions
 @; enter some examples
+@(require (for-label racket))
 
 @title{libtoxcore-racket: Racket wrapper for the Tox library}
 @author{@author+email["Lehi Toskin" "lehi AT tosk.in"]}
@@ -9,7 +10,9 @@
 This package provides a 1-to-1 wrapper for the C functions in the Tox
 library. There is an OOP implementation being worked on, currently.
 
-@section{Installaion}
+@table-of-contents[]
+
+@section[#:tag "Installation"]{Installaion}
 @itemlist[@item{If you are using Racket version 6, open a terminal and enter the following:
                 @commandline{raco pkg install
                              github://github.com/lehitoskin/libtoxcore-racket/master}}
@@ -20,7 +23,7 @@ Racket's raco package manager will do the rest. Alternatively, you may install
 the package by copying the github link and pasting it into DrRacket's "Install
 Package" tool.
 
-@section{Procedures}
+@section[#:tag "Procedures"]{Procedures}
 @defproc[(tox_add_friend [my-tox cpointer?] [address string?] [data string?]
                          [length number?]) integer?]{
   Add a friend.
@@ -355,17 +358,7 @@ Package" tool.
   returns -1 on failure.
 }
 
-
-@;{ PROCEDURE DEFINITION TEMPLATE
-@defproc[(function_name [argument argument_type?]) function_return_type?]{
-information about the procedure goes here
-
-make sure to doublespace, otherwise it’ll all be on the same line.
-}
-;}
-
-
-@section{Examples}
+@section[#:tag "Examples"]{Examples}
 
 @verbatim{
 ; simple 1-to-1 function wrapper
@@ -381,7 +374,7 @@ make sure to doublespace, otherwise it’ll all be on the same line.
 (tox_kill my-tox)
 }
 
-@section{License}
+@section[#:tag "License"]{License}
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the
