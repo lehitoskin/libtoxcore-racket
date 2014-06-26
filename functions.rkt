@@ -888,7 +888,7 @@
                                                           [sending? : _bool]
                                                           [filenumber : _uint8_t]
                                                           [control-type : _uint8_t]
-                                                          [data : _bytes]
+                                                          [data : _pointer]
                                                           [len : _uint16_t]
                                                           [userdata : _pointer] -> _void)]
                                         [userdata : _pointer = #f] -> _void)
@@ -908,7 +908,7 @@
                                      [anonproc : (_fun [tox : _Tox-pointer]
                                                        [friendnumber : _int32_t]
                                                        [filenumber : _uint8_t]
-                                                       [data : _bytes]
+                                                       [data : _pointer]
                                                        [len : _uint16_t]
                                                        [userdata : _pointer] -> _void)]
                                      [userdata : _pointer = #f] -> _void)
