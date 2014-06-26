@@ -8,7 +8,7 @@
 @author{@author+email["Lehi Toskin" "lehi AT tosk.in"]}
 
 This package provides a 1-to-1 wrapper for the C functions in the Tox
-library. There is an OOP implementation being worked on, currently.
+library.
 
 @table-of-contents[]
 
@@ -23,9 +23,10 @@ Racket's raco package manager will do the rest. Alternatively, you may install
 the package by copying the github link and pasting it into DrRacket's "Install
 Package" tool.
 
-@section[#:tag "Procedures"]{Procedures}
-@defproc[(tox_add_friend [my-tox cpointer?] [address string?] [data string?]
-                         [length number?]) integer?]{
+@section[#:tag "Functions"]{Functions}
+The following are functions from the functions.rkt file
+@defproc[(add-friend [tox cpointer?] [address bytes?] [message string?]
+                         [message-length number?]) integer?]{
   Add a friend.
 
   Set the data that will be sent along with friend request.
