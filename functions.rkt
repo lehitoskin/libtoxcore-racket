@@ -304,7 +304,9 @@
  |#
 (define-tox set-status-message (_fun [tox : _Tox-pointer]
                                      [status : _string]
-                                     [len : _uint16_t = (string-length status)] -> _int)
+                                     [len : _uint16_t = (bytes-length
+                                                         (string->bytes/utf-8
+                                                          status))] -> _int)
   #:c-id tox_set_status_message)
 (define-tox set-user-status (_fun [tox : _Tox-pointer]
                                   [userstatus : _uint8_t] -> _int) ; enum value
@@ -612,7 +614,7 @@
 (define-tox get-nospam (_fun [tox : _Tox-pointer] -> _uint32_t)
   #:c-id tox_get_nospam)
 (define-tox set-nospam! (_fun [tox : _Tox-pointer]
-                             [nospam : _uint32_t] -> _void)
+                              [nospam : _uint32_t] -> _void)
   #:c-id tox_set_nospam)
 
 #|
@@ -925,8 +927,9 @@
                                   [friendnumber : _int32_t]
                                   [filesize : _uint64_t]
                                   [filename : _string]
-                                  [filename-length : _uint16_t = (string-length filename)]
-                                  -> _int)
+                                  [filename-length : _uint16_t = (bytes-length
+                                                                  (string->bytes/utf-8
+                                                                   filename))] -> _int)
   #:c-id tox_new_file_sender)
 
 #|
