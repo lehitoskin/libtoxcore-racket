@@ -1,7 +1,7 @@
 #lang setup/infotab
 
 (define name "libtoxcore-racket")
-(define scribblings '(("doc/manual.scrbl" ())))
+(define scribblings '(("doc/libtoxcore-racket.scrbl" ())))
 
 (define blurb '("Racket wrapper for libtoxcore."))
 (define primary-file "main.rkt")
