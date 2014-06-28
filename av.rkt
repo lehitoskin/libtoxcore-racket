@@ -203,7 +203,7 @@
 (define-av prepare-transmission (_fun [av : _ToxAv-pointer]
                                       [call-index : _int32_t]
                                       [codec-settings : _pointer]
-                                      [support-video : _int] -> _int)
+                                      [support-video? : _bool] -> _int)
   #:c-id toxav_prepare_transmission)
 
 #|
