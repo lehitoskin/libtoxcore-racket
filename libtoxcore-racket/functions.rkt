@@ -274,7 +274,7 @@
  |#
 (define-tox get-name (_fun [tox : _Tox-pointer]
                            [friendnumber : _int32_t]
-                           [name : _string] -> _int)
+                           [name : _bytes] -> _int)
   #:c-id tox_get_name)
 
 #|
@@ -1026,7 +1026,7 @@
                                          [address : _string]
                                          [ipv6? : _bool]
                                          [port : _uint16_t]
-                                         [public-key : _string] -> _int)
+                                         [public-key : _string] -> _bool)
   #:c-id tox_bootstrap_from_address)
 
 #|
