@@ -5,9 +5,11 @@
 
 @author["Lehi Toskin"]
 
+@defmodule[libtoxcore-racket]{
 This library provides a Racket-like interface to the libtoxcore, libtoxav, and
 libtoxdns libraries. Be aware that Tox is currently thread-unsafe, so please
 take all proper precautions while using the library.
+}
 
 @table-of-contents[]
 

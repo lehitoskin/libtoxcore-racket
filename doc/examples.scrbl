@@ -12,7 +12,7 @@
 (define my-status-message "Testing Tox with the Racket wrapper!")
 
 (set-name my-tox my-name)
-(set-user-status-message my-status-message)
+(set-status-message my-status-message)
 
 (tox-kill! my-tox)
 }

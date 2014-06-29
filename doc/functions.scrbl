@@ -285,7 +285,7 @@ for the functions found in libtoxcore.
   return -1 if failure.
 }
 
-@defproc[(tox_set_sends_receipts [tox _Tox-pointer] [friendnumber integer?]
+@defproc[(set-sends-receipts [tox _Tox-pointer] [friendnumber integer?]
                                  [yesno? boolean?]) void?]{
   Sets whether we send read receipts for friendnumber.
 }
