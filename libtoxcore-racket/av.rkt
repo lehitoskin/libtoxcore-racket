@@ -70,7 +70,7 @@
  #
  # void toxav_kill(ToxAv *av)
  |#
-(define-av av-kill (_fun [av : _ToxAv-pointer] -> _void)
+(define-av av-kill! (_fun [av : _ToxAv-pointer] -> _void)
   #:c-id toxav_kill)
 
 #|
