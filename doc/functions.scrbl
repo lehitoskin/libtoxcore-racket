@@ -37,7 +37,7 @@ for the functions found in libtoxcore.
 @defproc[(get-client-id [tox _Tox-pointer] [friendnumber integer?] [client-id bytes?]) integer?]{
   Copies the public key associated to that friend id into @racket[client-id] buffer.
 
-  Make sure that client-id is of size @racket[CLIENT_ID_SIZE].
+  Make sure that client-id is of size @tt{TOX_CLIENT_ID_SIZE}.
 
   return 0 if success.
 
