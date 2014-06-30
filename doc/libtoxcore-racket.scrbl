@@ -13,9 +13,10 @@ take all proper precautions while using the library.
 
 @table-of-contents[]
 
+@include-section["examples.scrbl"]
+@include-section["constants.scrbl"]
 @include-section["functions.scrbl"]
 @include-section["av.scrbl"]
-@include-section["examples.scrbl"]
 @include-section["license.scrbl"]
 
 @index-section[]
