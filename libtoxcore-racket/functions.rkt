@@ -463,7 +463,7 @@
  # void tox_callback_friend_message(Tox *tox, void (*function)(Tox *tox, int, uint8_t *,
  #                                  uint16_t, void *), void *userdata);
  |#
-(define-tox callback-friend_message (_fun [tox : _Tox-pointer]
+(define-tox callback-friend-message (_fun [tox : _Tox-pointer]
                                           [anonproc : (_fun [tox : _Tox-pointer]
                                                             [friendnumber : _int32_t]
                                                             [message : _string]
