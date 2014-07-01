@@ -237,6 +237,17 @@ for the functions found in libtoxcore.
   return -1 on failure.
 }
 
+@defproc[(get-group-peername! [tox _Tox-pointer] [groupnumber integer?]
+                              [peernumber integer?] [name bytes?]) integer?]{
+  Copy the name of peernumber who is in groupnumber to name.
+  
+  name must be at least @racket[TOX_MAX_NAME_LENGTH] long in bytes.
+ 
+  return length of name if success
+  
+  return -1 if failure
+}
+
 @defproc[(count-chatlist [tox _Tox-pointer]) integer?]{
   Return the number of group chats in the instance @racket[tox].
  
@@ -418,7 +429,7 @@ for the functions found in libtoxcore.
   @racket[client-id] is the bytes form of the Tox ID; e.g. @racket[(hex-string->bytes str)].
 }
 
-@defproc[(del-friend [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+@defproc[(del-friend! [tox _Tox-pointer] [friendnumber integer?]) integer?]{
   Remove a friend.
  
   return 0 if success.
@@ -439,11 +450,7 @@ for the functions found in libtoxcore.
   
   return 0 on success.
   
-  return -1 on failure.(define-tox group-message-send (_fun [tox : _Tox-pointer]
-                                     [groupnumber : _int]
-                                     [message : _string]
-                                     [len : _uint32_t] -> _int)
-  #:c-id tox_group_message_send)
+  return -1 on failure.
 }
 
 @defproc[(invite-friend [tox _Tox-pointer] [friendnumber integer?]

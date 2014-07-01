@@ -140,7 +140,7 @@
  #
  # int tox_del_friend(Tox *tox, int32_t friendnumber);
  |#
-(define-tox del-friend (_fun [tox : _Tox-pointer]
+(define-tox del-friend! (_fun [tox : _Tox-pointer]
                              [friendnumber : _int32_t] -> _int)
   #:c-id tox_del_friend)
 
@@ -653,7 +653,7 @@
                                                            [message : _string]
                                                            [len : _uint16_t]
                                                            [userdata : _pointer] -> _void)]
-                                         [userdata : _pointer] -> _void)
+                                         [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_group_message)
 
 #|
@@ -729,7 +729,7 @@
 (define-tox get-group-peername! (_fun [tox : _Tox-pointer]
                                       [groupnumber : _int]
                                       [peernumber : _int]
-                                      [name : _string] -> _int)
+                                      [name : _bytes] -> _int)
   #:c-id tox_group_peername)
 
 #|
