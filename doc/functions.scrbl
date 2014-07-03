@@ -131,6 +131,14 @@ for the functions found in libtoxcore.
   status message on success, and returns -1 on failure.
 }
 
+@defproc[(get-user-status [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+  return one of @racket[TOX_USERSTATUS] values.
+
+  Values unknown to your application should be represented as @racket[TOX_USERSTATUS_NONE].
+
+  If friendnumber is invalid, this shall return @racket[TOX_USERSTATUS_INVALID].
+}
+
 @defproc[(get-self-user-status [tox _Tox-pointer]) integer?]{
   Like @tt{get-user-status}, the @tt{self} variant will return @italic{our own}
   @racket[TOX_USERSTATUS].
@@ -153,14 +161,6 @@ for the functions found in libtoxcore.
   returns the length of status message on success.
 
   returns -1 on failure.
-}
-
-@defproc[(get-user-status [tox _Tox-pointer] [friendnumber integer?]) integer?]{
-  return one of @racket[TOX_USERSTATUS] values.
-
-  Values unknown to your application should be represented as @racket[TOX_USERSTATUS_NONE].
-
-  If friendnumber is invalid, this shall return @racket[TOX_USERSTATUS_INVALID].
 }
 
 @defproc[(set-name [tox _Tox-pointer] [name string?] [len integer?
@@ -474,6 +474,48 @@ for the functions found in libtoxcore.
 @section[#:tag "callbacks"]{Callbacks}
 
 @subsection[#:tag "general-callbacks"]{General Callbacks}
+
+@defproc[(callback-friend-request [tox _Tox-pointer] [anonproc procedure?]
+                                  [userdata cpointer? #f]) void?]{
+  Set the function that will be executed when a friend request is received.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox public-key data length userdata)]
+}
+
+@defproc[(callback-friend-message [tox _Tox-pointer] [anonproc procedure?]
+                                  [userdata cpointer? #f]) void?]{
+  Set the function that will be executed when a message from a friend is received.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber message len userdata)].
+}
+
+@defproc[(callback-friend-action [tox _Tox-pointer] [anonproc procedure?]
+                                 [userdata cpointer? #f]) void?]{
+  Set the function that will be executed when an action from a friend is received.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber action len userdata)]
+}
+
+@defproc[(callback-name-change [tox _Tox-pointer] [anonproc procedure?]
+                               [userdata cpointer? #f]) void?]{
+  Set the callback for name changes.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber newname len userdata)]
+}
+
+@defproc[(callback-status-message [tox _Tox-pointer] [anonproc procedure?]
+                               [userdata cpointer? #f]) void?]{
+  Set the callback for status message changes.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox friendstatus newstatus len userdata)]
+}
+
+@defproc[(callback-user-status [tox _Tox-pointer] [anonproc procedure?]
+                               [userdata cpointer? #f]) void?]{
+  Set the callback for status type changes.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber TOX_USERSTATUS userdata)]
+}
 
 @defproc[(callback-connection-status [tox _Tox-pointer] [anonproc procedure?]
                                      [userdata cpointer? #f]) void?]{
