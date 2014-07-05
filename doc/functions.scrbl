@@ -267,6 +267,14 @@ for the functions found in libtoxcore.
   to @racket[list-size].
 }
 
+@defproc[(get-nospam [tox _Tox-pointer]) integer?]{
+  Procedure to get the nospam part of the ID.
+}
+
+@defproc[(set-nospam! [tox _Tox-pointer] [nospam integer?]) void?]{
+  Procedure to set the nospam part of the ID.
+}
+
 @section[#:tag "interactors"]{Interact with Tox}
 
 @defproc[(bootstrap-from-address [tox _Tox-pointer] [address string?]
@@ -515,6 +523,28 @@ for the functions found in libtoxcore.
   Set the callback for status type changes.
   
   @racket[anonproc] is in the form @racket[(anonproc tox friendnumber TOX_USERSTATUS userdata)]
+}
+
+@defproc[(callback-typing-change [tox _Tox-pointer] [anonproc prodecure?]
+                                 [userdata cpointer? #f]) void?]{
+  Set the callback for typing changes.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber typing? userdata)]
+  where @racket[typing?] is a boolean value.
+}
+
+@defproc[(callback-read-receipt [tox _Tox-pointer] [anonproc procedure?]
+                                [userdata cpointer? #f]) void?]{
+  Set the callback for read receipts.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber status userdata)].
+  
+  If you are keeping a record of returns from m_sendmessage;
+  receipt might be one of those values, meaning the message
+  has been received on the other side.
+  
+  Since core doesn't track ids for you, receipt may not correspond to any message.
+  In that case, you should discard it.
 }
 
 @defproc[(callback-connection-status [tox _Tox-pointer] [anonproc procedure?]
