@@ -392,7 +392,7 @@
  #
  # int toxav_set_audio_queue_limit ( ToxAv *av, int32_t call_index, uint64_t limit);
 |#
-(define-av set-audio-queue-limit (_fun [av : _ToxAv-pointer]
+#;(define-av set-audio-queue-limit (_fun [av : _ToxAv-pointer]
                                        [call-index : _int32_t]
                                        [limit : _uint64_t] -> _int)
   #:c-id toxav_set_audio_queue_limit)
@@ -407,7 +407,7 @@
  #
  # int toxav_set_video_queue_limit ( ToxAv *av, int32_t call_index, uint64_t limit );
  |#
-(define-av set-video-queue-limit (_fun [av : _ToxAv-pointer]
+#;(define-av set-video-queue-limit (_fun [av : _ToxAv-pointer]
                                        [call-index : _int32_t]
                                        [limit : _uint64_t] -> _int)
   #:c-id toxav_set_video_queue_limit)
