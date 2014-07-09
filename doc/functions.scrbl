@@ -487,7 +487,7 @@ for the functions found in libtoxcore.
                                   [userdata cpointer? #f]) void?]{
   Set the function that will be executed when a friend request is received.
   
-  @racket[anonproc] is in the form @racket[(anonproc tox public-key data length userdata)]
+  @racket[anonproc] is in the form @racket[(anonproc tox public-key data len userdata)]
 }
 
 @defproc[(callback-friend-message [tox _Tox-pointer] [anonproc procedure?]

@@ -54,13 +54,31 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   return void
 }
 
-@defproc[(register-callstate-callback [callback _ToxAVCallback-pointer]
-                                      [id integer?] [userdata pointer?]) void?]{
+@defproc[(callback-callstate [callback _ToxAVCallback-pointer]
+                             [id integer?] [userdata pointer?]) void?]{
   Register callback for call state.
  
-  @racket[callback] is the callback
+  @racket[callback] is the callback procedure.
   
   @racket[id] is one of the @racket[ToxAvCallbackID] values
+  
+  return void
+}
+
+@defproc[(callback-audio-recv [av _ToxAv-pointer] [callback procedure?]) void?]{
+  Register callback for receiving audio data.
+  
+  @racket[callback] is in the form @racket[(callback _ToxAv-pointer
+                                                     integer? cpointer? integer?)]
+  
+  return void
+}
+
+@defproc[(callback-video-recv [av _Tox-Av-pointer] [callback procedure?]) void?]{
+  Register callback for receiving video data.
+  
+  @racket[callback] is in the form @racket[(callback _ToxAv-pointer
+                                                     integer? cpointer? integer?)]
   
   return void
 }

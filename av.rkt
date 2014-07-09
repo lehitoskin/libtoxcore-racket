@@ -7,6 +7,7 @@
 (provide (except-out (all-defined-out)
                      define-av
                      _Tox-pointer
+                     _int16_t
                      _int32_t
                      _uint16_t
                      _uint32_t
@@ -20,6 +21,7 @@
 ; of specified type _string*/utf-8.
 (default-_string-type _string*/utf-8)
 
+(define _int16_t _int16)
 (define _int32_t _int32)
 (define _uint16_t _uint16)
 (define _uint32_t _uint32)
@@ -83,10 +85,42 @@
  # void toxav_register_callstate_callback (ToxAVCallback callback, ToxAvCallbackID id,
  #                                         void *userdata);
  |#
-(define-av register-callstate-callback (_fun [callback : _ToxAVCallback-pointer]
+(define-av callback-callstate (_fun [callback : _ToxAVCallback-pointer]
                                              [id : _int]
                                              [userdata : _pointer] -> _void)
   #:c-id toxav_register_callstate_callback)
+
+#|
+ # @brief Register callback for recieving audio data
+ #
+ # @param callback The callback
+ # @return void
+ #
+ # void toxav_register_audio_recv_callback (ToxAv *av, void (*callback)(ToxAv*, int32_t,
+ #                                          int16_t*, int));
+ |#
+(define-av callback-audio-recv (_fun [av : _ToxAv-pointer]
+                                     [callback : (_fun _ToxAv-pointer
+                                                       _int32_t
+                                                       _pointer
+                                                       _int -> _void)] -> _void)
+  #:c-id toxav_register_audio_recv_callback)
+
+#|
+ # @brief Register callback for recieving video data
+ #
+ # @param callback The callback
+ # @return void
+ #
+ # void toxav_register_video_recv_callback (ToxAv *av, void (*callback)(ToxAv*, int32_t,
+ #                                          vpx_image_t*));
+ |#
+(define-av callback-video-recv (_fun [av : _ToxAv-pointer]
+                                     [callback : (_fun _ToxAv-pointer
+                                                       _int32_t
+                                                       _pointer -> _void)]
+                                     -> _void)
+  #:c-id toxav_register_video_recv_callback)
 
 #|
  # @brief Call user. Use its friend_id.
@@ -219,42 +253,6 @@
 (define-av kill-transmission (_fun [av : _ToxAv-pointer]
                                    [call-index : _int32_t] -> _int)
   #:c-id toxav_kill_transmission)
-
-#|
- # @brief Receive decoded video packet.
- #
- # @param av Handler.
- # @param output Storage.
- # @return int
- # @retval 0 Success.
- # @retval ToxAvError On Error.
- #
- # int toxav_recv_video ( ToxAv *av, int32_t call_index, vpx_image_t **output);
- |#
-(define-av recv-video (_fun [av : _ToxAv-pointer]
-                            [call-index : _int32_t]
-                            [output : _pointer] -> _int)
-  #:c-id toxav_recv_video)
-
-#|
- # @brief Receive decoded audio frame.
- #
- # @param av Handler.
- # @param frame_size The size of dest in frames/samples (one frame/sample is 16 bits or 2 bytes
- # and corresponds to one sample of audio.)
- # @param dest Destination of the raw audio (16 bit signed pcm with AUDIO_CHANNELS channels).
- # Make sure it has enough space for frame_size frames/samples.
- # @return int
- # @retval >=0 Size of received data in frames/samples.
- # @retval ToxAvError On error.
- #
- # int toxav_recv_audio( ToxAv *av, int32_t call_index, int frame_size, int16_t *dest );
- |#
-(define-av recv-audio (_fun [av : _ToxAv-pointer]
-                            [call-index : _int32_t]
-                            [frame-size : _int]
-                            [dest : _pointer] -> _int)
-  #:c-id toxav_recv_audio)
 
 #|
  # @brief Encode and send video packet.
