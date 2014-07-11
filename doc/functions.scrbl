@@ -127,7 +127,7 @@ for the functions found in libtoxcore.
 }
 
 @defproc[(get-self-status-message-size [tox _Tox-pointer]) integer?]{
-  Like @tt{get-status_message-size}, the @tt{self} variant returns the length of our
+  Like @tt{get-status-message-size}, the @tt{self} variant returns the length of our
   status message on success, and returns -1 on failure.
 }
 
