@@ -586,3 +586,15 @@ for the functions found in libtoxcore.
                                                      control-type data len userdata)]
   where @racket[control-type] is a @racket[TOX_FILECONTROL] enum value.
 }
+
+@subsection[#:tag "groupchat-callbacks"]{Groupchat Callbacks}
+
+WARNING: Groupchats will be rewritten so these might change
+
+@defproc[(callback-group-invite [tox _Tox-pointer] [anonproc procedure?]
+                                [userdata cpointer? #f]) void?]{
+  Set the callback for group invites.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber
+                                                     group-public-key userdata)]
+}
