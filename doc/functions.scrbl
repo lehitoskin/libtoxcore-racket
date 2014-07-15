@@ -34,7 +34,8 @@ for the functions found in libtoxcore.
   into hex format for ordinary usage).
 }
 
-@defproc[(get-client-id [tox _Tox-pointer] [friendnumber integer?] [client-id bytes?]) integer?]{
+@defproc[(get-client-id [tox _Tox-pointer] [friendnumber integer?] [client-id bytes?])
+         integer?]{
   Copies the public key associated to that friend id into @racket[client-id] buffer.
 
   Make sure that client-id is of size @tt{TOX_CLIENT_ID_SIZE}.
@@ -296,6 +297,12 @@ for the functions found in libtoxcore.
   returns @racket[#f] otherwise
 }
 
+@defproc[(tox-connected? [tox _Tox-pointer]) boolean?]{
+  return @racket[#f] if we are not connected to the DHT.
+  
+  return @racket[#t] if we are.
+}
+
 @defproc[(send-message [tox _Tox-pointer] [friendnumber integer?]
                        [message string?] [len integer?]) integer?]{
   Send a text chat message to an online friend.
@@ -390,6 +397,26 @@ for the functions found in libtoxcore.
   for optimal performance.
 }
 
+@section[#:tag "save-load"]{Saving and Loading Functions}
+
+@defproc[(tox-size [tox _Tox-pointer]) integer?]{
+  return size of messenger data (for saving).
+}
+
+@defproc[(tox-save! [tox _Tox-pointer] [data bytes?]) void?]{
+  Save the messenger in @racket[data].
+  
+  @racket[data] must be a byte string of size @tt{tox-size}
+}
+
+@defproc[(tox-load [tox _Tox-pointer] [data bytes?] [len integer?]) integer?]{
+  Load the messenger from data of size length.
+ 
+  returns 0 on success
+  
+  returns -1 on failure
+}
+
 @section[#:tag "friend-group"]{Friend and Group Manipulation}
 
 @defproc[(add-friend [tox _Tox-pointer] [address bytes?]
@@ -477,6 +504,61 @@ for the functions found in libtoxcore.
   return groupnumber on success.
   
   return -1 on failure.
+}
+
+@section[#:tag "filesending"]{Filesending Functions}
+
+@defproc[(new-file-sender [tox _Tox-pointer] [friendnumber integer?] [filesize integer?]
+                          [filename string?] [filename-length integer?
+                                                              (bytes-length
+                                                               (string->bytes/utf-8 filename))])
+         integer?]{
+  Send a file send request.
+  
+  Maximum filename length is 255 bytes.
+  
+  return file number on success
+  
+  return -1 on failure
+}
+
+@defproc[(send-file-control [tox _Tox-pointer] [friendnumber integer?] [receiving? boolean?]
+                            [filenumber integer?] [message-id integer?] [data bytes?]
+                            [len integer?]) integer?]{
+  Send a file control request.
+ 
+  return 0 on success
+  
+  return -1 on failure
+}
+
+@defproc[(send-file-data [tox _Tox-pointer] [friendnumber integer?] [filenumber integer?]
+                         [data bytes?] [len integer?]) integer?]{
+  Send file data.
+ 
+  return 0 on success
+  
+  return -1 on failure
+  
+  If this function returns -1, you must @tt{tox-do}, sleep @tt{tox-do-interval}
+  miliseconds, then attempt to send the data again.
+}
+
+@defproc[(file-data-size [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+  Returns the recommended/maximum size of the filedata you send with @tt{send-file-data}
+ 
+  return size on success
+  
+  return -1 on failure (currently will never return -1)
+}
+
+@defproc[(file-data-remaining [tox _Tox-pointer] [friendnumber integer?] [filenumber integer?]
+                              [receiving? boolean?]) integer?]{
+  Give the number of bytes left to be sent/received.
+  
+  return number of bytes remaining to be sent/received on success
+  
+  return 0 on failure
 }
 
 @section[#:tag "callbacks"]{Callbacks}
@@ -587,6 +669,16 @@ for the functions found in libtoxcore.
   where @racket[control-type] is a @racket[TOX_FILECONTROL] enum value.
 }
 
+@defproc[(callback-file-data [tox _Tox-pointer] [anonproc procedure?]
+                             [userdata? cpointer? #f]) void?]{
+  Set the callback for file data.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber filenumber data
+                                                     len userdata)]
+  
+  @racket[data] is a byte string of length @racket[len].
+}
+
 @subsection[#:tag "groupchat-callbacks"]{Groupchat Callbacks}
 
 WARNING: Groupchats will be rewritten so these might change
@@ -597,4 +689,32 @@ WARNING: Groupchats will be rewritten so these might change
   
   @racket[anonproc] is in the form @racket[(anonproc tox friendnumber
                                                      group-public-key userdata)]
+}
+
+@defproc[(callback-group-message [tox _Tox-pointer] [anonproc procedure?]
+                                 [userdata cpointer? #f]) void?]{
+  Set the callback for group messages.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox groupnumber friendgroupnumber
+                                                     message len userdata)]
+}
+
+@defproc[(callback-group-action [tox _Tox-pointer] [anonproc procedure?]
+                                [userdata cpointer? #f]) void?]{
+  Set the callback for group actions.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox groupnumber friendgroupnumber
+                                                     action len userdata)]
+}
+
+@defproc[(callback-group-namelist-change [tox _Tox-pointer] [anonproc procedure?]
+                                         [userdata cpointer? #f]) void?]{
+  Set callback function for peer name list changes.
+  
+  It gets called every time the name list changes (new peer/name, deleted peer)
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox groupnumber peernumber
+                                                     change userdata)]
+  
+  @racket[change] is a @racket[TOX_CHAT_CHANGE] enum value.
 }
