@@ -345,12 +345,13 @@
  # @retval ToxAvCallType On success.
  # @retval ToxAvError On error.
  #
- # int toxav_get_peer_transmission_type ( ToxAv *av, int32_t call_index, int peer );
+ # int toxav_get_peer_csettings ( ToxAv *av, int32_t call_index, int peer, ToxAvCodecSettings* dest );
  |#
 (define-av get-peer-transmission-type (_fun [av : _ToxAv-pointer]
                                             [call-index : _int32_t]
-                                            [peer : _int] -> _int)
-  #:c-id toxav_get_peer_transmission_type)
+                                            [peer : _int]
+                                            [dest : _pointer] -> _int)
+  #:c-id toxav_get_peer_csettings)
 
 #|
  # @brief Get id of peer participating in conversation
