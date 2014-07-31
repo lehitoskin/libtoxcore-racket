@@ -618,6 +618,16 @@
   #:c-id tox_set_nospam)
 
 #|
+ # Copy the public and secret key from the Tox object.
+ # public_key and secret_key must be 32 bytes big.
+ # if the pointer is NULL, no data will be copied to it.
+ |#
+(define-tox get-keys (_fun [tox : _Tox-pointer]
+                           [public-key : _bytes]
+                           [secret-key : _bytes] -> _void)
+  #:c-id tox_get_keys)
+
+#|
  ########## GROUP CHAT FUNCTIONS: WARNING Group chats will be rewritten so these might change
  |#
 
