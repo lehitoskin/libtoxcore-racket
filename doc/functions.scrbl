@@ -276,6 +276,16 @@ for the functions found in libtoxcore.
   Procedure to set the nospam part of the ID.
 }
 
+@defproc[(get-keys [tox _Tox-pointer]
+                   [secret-key bytes?]
+                   [public-key bytes?]) void?]{
+ Copy the public and secret key from the Tox object.
+ 
+ @racket[public-key] and @racket[secret-key] must be 32 bytes long.
+ 
+ if the pointer is NULL, no data will be copied to it.
+}
+
 @section[#:tag "interactors"]{Interact with Tox}
 
 @defproc[(bootstrap-from-address [tox _Tox-pointer] [address string?]
