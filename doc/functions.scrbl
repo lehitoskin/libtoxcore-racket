@@ -289,18 +289,12 @@ for the functions found in libtoxcore.
 @section[#:tag "interactors"]{Interact with Tox}
 
 @defproc[(bootstrap-from-address [tox _Tox-pointer] [address string?]
-                                 [ipv6? boolean?] [port integer?]
-                                 [public-key string?]) boolean?]{
+                                 [port integer?] [public-key string?]) boolean?]{
   Resolves address into an IP address. If successful, sends a "get nodes"
-  request to the given node with ip, port (in network byte order, HINT: use htons())
+  request to the given node with ip, port (in host byte order)
   and public_key to setup connections
 
   address can be a hostname or an IP address (IPv4 or IPv6)
-  
-  if @racket[ipv6?] is @racket[#f], the resolving sticks STRICTLY to IPv4 addresses
-  
-  if @racket[ipv6?] is not @racket[#f], the resolving looks for IPv6 addresses first,
-  then IPv4 addresses.
  
   returns @racket[#t] if the address was converted into an IP address
 
@@ -374,18 +368,33 @@ for the functions found in libtoxcore.
   return -1 on failure.
 }
 
-@defproc[(tox-new [ipv6? boolean?]) _Tox-pointer]{
+@defstruct[Tox-Options ([ipv6-enabled? boolean?]
+                        [udp-disabled? boolean?]
+                        [proxy-enabled? boolean?]
+                        [proxy-address string?]
+                        [proxy-port integer?])]{
+  The type of UDP socket created depends on @racket[ipv6-enabled?]:
+  If set to @racket[#f], creates an IPv4 socket which subsequently only allows
+  IPv4 communication.
+  If set to @racket[#t] (default), creates an IPv6 socket which allows both IPv4 AND
+  IPv6 communication.
+  
+  Set @racket[udp-disabled?] to @racket[#t] to disable udp support. (default: @racket[#f])
+  This will force Tox to use TCP only which may slow things down.
+  Disabling udp support is necessary when using anonymous proxies or Tor.
+  
+  Set @racket[proxy-enabled?] to enable proxy support. (Only basic TCP socks5 proxy
+  currently supported.) (default: @racket[#f] (disabled))
+}
+
+@defproc[(tox-new [opts _Tox-Options-pointer]) _Tox-pointer]{
   Run this function at startup.
   
+  Options are some options that can be passed to the Tox instance (see above struct).
+
+  If options is @racket[null], @tt{tox-new} will use default settings.
+  
   Initializes a tox structure
-  
-  The type of communication socket depends on ipv6enabled:
-  
-  If set to 0 (zero), creates an IPv4 socket which subsequently only allows
-  IPv4 communication
-  
-  If set to anything else, creates an IPv6 socket which allows both IPv4 AND
-  IPv6 communication
   
   return allocated instance of tox on success.
   
