@@ -44,6 +44,29 @@
 (define TOX_ENABLE_IPV6_DEFAULT #t)
 
 
+(define-cstruct _Tox-Options
+ #|
+ # The type of UDP socket created depends on ipv6enabled:
+ # If set to 0 (zero), creates an IPv4 socket which subsequently only allows
+ # IPv4 communication
+ # If set to anything else (default), creates an IPv6 socket which allows both IPv4 AND
+ # IPv6 communication
+ |#
+ ([ipv6-enabled? _bool]
+
+ #| Set to 1 to disable udp support. (default: 0)
+ This will force Tox to use TCP only which may slow things down.
+ Disabling udp support is necessary when using anonymous proxies or Tor.|#
+ [udp-disabled? _bool]
+
+ ; Enable proxy support. (only basic TCP socks5 proxy currently supported.)
+ ; (default: 0 (disabled))
+ [proxy-enabled? _bool]
+ [proxy-address _string] ; Proxy ip or domain in NULL terminated string format.
+ [proxy-port _uint16_t]) ; Proxy port: in host byte order.
+)
+
+
 #| ############# enum definitions have moved to enums.rkt which uses r6rs ################# |#
 
 
@@ -1018,23 +1041,19 @@
 
 #|
  # Resolves address into an IP address. If successful, sends a "get nodes"
- #   request to the given node with ip, port (in network byte order, HINT: use htons())
+ #   request to the given node with ip, port (in host byte order)
  #   and public_key to setup connections
  #
  # address can be a hostname or an IP address (IPv4 or IPv6).
- # if ipv6enabled is 0 (zero), the resolving sticks STRICTLY to IPv4 addresses
- # if ipv6enabled is not 0 (zero), the resolving looks for IPv6 addresses first,
- #   then IPv4 addresses.
  #
  #  returns 1 if the address could be converted into an IP address
  #  returns 0 otherwise
  #
- # int tox_bootstrap_from_address(Tox *tox, const char *address, uint8_t ipv6enabled,
- #                                uint16_t port, uint8_t *public_key);
+ # int tox_bootstrap_from_address(Tox *tox, const char *address, uint16_t port,
+ #                                const uint8_t *public_key);
  |#
 (define-tox bootstrap-from-address (_fun [tox : _Tox-pointer]
                                          [address : _string]
-                                         [ipv6? : _bool]
                                          [port : _uint16_t]
                                          [public-key : _string] -> _bool)
   #:c-id tox_bootstrap_from_address)
