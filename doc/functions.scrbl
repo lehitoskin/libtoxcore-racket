@@ -180,11 +180,6 @@ for the functions found in libtoxcore.
   return -1 if failure.
 }
 
-@defproc[(set-sends-receipts [tox _Tox-pointer] [friendnumber integer?]
-                                 [yesno? boolean?]) void?]{
-  Sets whether we send read receipts for friendnumber.
-}
-
 @defproc[(set-status-message [tox _Tox-pointer] [status string?]
                              [len integer? (bytes-length
                                             (string->bytes/utf-8 status))]) integer?]{
@@ -320,14 +315,6 @@ for the functions found in libtoxcore.
  
   You will want to retain the return value, it will be passed to your read_receipt callback
   if one is received.
-  
-  @tt{send-message-withid} will send a message with the id of your choosing,
-  however we can generate an id for you by calling plain @tt{send-message}.
-}
-
-@defproc[(send-message-withid [tox _Tox-pointer] [friendnumber integer?]
-                                  [theid integer?] [message string?] [len integer?]) integer?]{
-  Like @tt{tox_send_message}, but specify a specific ID.
 }
 
 @defproc[(send-action [tox _Tox-pointer] [friendnumber integer?] [action string?]
@@ -340,14 +327,6 @@ for the functions found in libtoxcore.
 
   You will want to retain the return value, it will be passed to your read_receipt callback
   if one is received.
-
-  @tt{send-action-withid} will send an action message with the id of your choosing,
-  however we can generate an id for you by calling plain @tt{send-action}.
-}
-
-@defproc[(send-action-withid [tox _Tox-pointer] [friendnumber integer?]
-                             [theid integer?] [action string?] [len integer?]) integer?]{
-  Like @tt{tox_send_action}, but specify a specific ID.
 }
 
 @defproc[(group-message-send [tox _Tox-pointer] [groupnumber integer?]
