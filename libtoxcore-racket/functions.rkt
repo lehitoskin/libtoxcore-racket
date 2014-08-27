@@ -204,8 +204,6 @@
  #
  # You will want to retain the return value, it will be passed to your read_receipt callback
  # if one is received.
- # m_sendmessage_withid will send a message with the id of your choosing,
- # however we can generate an id for you by calling plain m_sendmessage.
  #
  # uint32_t tox_send_message(Tox *tox, int32_t friendnumber, uint8_t *message, uint32_t length);
  # uint32_t tox_send_message_withid(Tox *tox, int32_t friendnumber, uint32_t theid,
@@ -216,12 +214,6 @@
                                [message : _string]
                                [len : _uint32_t] -> _uint32_t)
   #:c-id tox_send_message)
-(define-tox send-message-withid (_fun [tox : _Tox-pointer]
-                                      [friendnumber : _int32_t]
-                                      [theid : _uint32_t]
-                                      [message : _string]
-                                      [len : _uint32_t] -> _uint32_t)
-  #:c-id tox_send_message_withid)
 
 #|
  # Send an action to an online friend.
@@ -235,8 +227,6 @@
  #
  #  You will want to retain the return value, it will be passed to your read_receipt callback
  #  if one is received.
- #  m_sendaction_withid will send an action message with the id of your choosing,
- #  however we can generate an id for you by calling plain m_sendaction.
  #
  # uint32_t tox_send_action(Tox *tox, int32_t friendnumber, uint8_t *action, uint32_t length);
  # uint32_t tox_send_action_withid(Tox *tox, int32_t friendnumber, uint32_t theid,
@@ -247,12 +237,6 @@
                               [action : _string]
                               [len : _uint32_t] -> _uint32_t)
   #:c-id tox_send_action)
-(define-tox send-action-withid (_fun [tox : _Tox-pointer]
-                                     [friendnumber : _int32_t]
-                                     [theid : _uint32_t]
-                                     [action : _string]
-                                     [len : _uint32_t] -> _uint32_t)
-  #:c-id tox_send_action_withid)
 
 #|
  # Set our nickname.
@@ -419,17 +403,6 @@
 (define-tox is-typing? (_fun [tox : _Tox-pointer]
                              [friendnumber : _int32_t] -> _bool)
   #:c-id tox_get_is_typing)
-
-#|
- # Sets whether we send read receipts for friendnumber.
- # This function is not lazy, and it will fail if yesno is not (0 or 1).
- #
- # void tox_set_sends_receipts(Tox *tox, int32_t friendnumber, int yesno);
- |#
-(define-tox set-sends-receipts (_fun [tox : _Tox-pointer]
-                                     [friendnumber : _int32_t]
-                                     [yesno? : _bool] -> _void)
-  #:c-id tox_set_sends_receipts)
 
 #|
  # Return the number of friends in the instance m.
