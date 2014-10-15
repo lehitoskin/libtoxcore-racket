@@ -630,15 +630,18 @@
 #|
  # Set the callback for group invites.
  #
- #  Function(Tox *tox, int friendnumber, uint8_t *group_public_key, void *userdata)
+ # Function(Tox *tox, int32_t friendnumber, uint8_t *data, uint16_t length, void *userdata)
  #
- # void tox_callback_group_invite(Tox *tox, void (*function)(Tox *tox, int32_t,
- #                                               uint8_t *, void *), void *userdata);
+ # data of length is what needs to be passed to join_groupchat().
+ #
+ # void tox_callback_group_invite(Tox *tox, void (*function)(Tox *tox, int32_t, const uint8_t *,
+ #                                                           uint16_t, void *), void *userdata);
  |#
 (define-tox callback-group-invite (_fun [tox : _Tox-pointer]
                                         [anonproc : (_fun [tox : _Tox-pointer]
                                                           [friendnumber : _int32_t]
-                                                          [group-public-key : _bytes]
+                                                          [data : _bytes]
+                                                          [len : _int]
                                                           [userdata : _pointer] -> _void)]
                                         [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_group_invite)
@@ -751,16 +754,18 @@
   #:c-id tox_invite_friend)
 
 #|
- # Join a group (you need to have been invited first.)
+ # Join a group (you need to have been invited first.) using data of length obtained
+ # in the group invite callback.
  #
  # returns group number on success
  # returns -1 on failure.
  #
- # int tox_join_groupchat(Tox *tox, int32_t friendnumber, uint8_t *friend_group_public_key);
+ # int tox_join_groupchat(Tox *tox, int32_t friendnumber, const uint8_t *data, uint16_t length);
  |#
 (define-tox join-groupchat (_fun [tox : _Tox-pointer]
                                  [friendnumber : _int32_t]
-                                 [friend-group-public-key : _string] -> _int)
+                                 [data : _bytes]
+                                 [len : _int]-> _int)
   #:c-id tox_join_groupchat)
 
 #|
