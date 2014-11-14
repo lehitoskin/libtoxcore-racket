@@ -37,20 +37,20 @@ with the enums, especially.
 The enums that Tox uses should be accessed through the following procedures.
 
 @defproc[(_TOX_FAERR [sym (or/c 'TOOLONG
-                                      'NOMESSAGE
-                                      'OWNKEY
-                                      'ALREADYSENT
-                                      'UNKNOWN
-                                      'BADCHECKSUM
-                                      'SETNEWNOSPAM
-                                      'NOMEM)]) integer?]{
+                                'NOMESSAGE
+                                'OWNKEY
+                                'ALREADYSENT
+                                'UNKNOWN
+                                'BADCHECKSUM
+                                'SETNEWNOSPAM
+                                'NOMEM)]) integer?]{
   FAERR - friend add errors.
 }
 
 @defproc[(_TOX_USERSTATUS [sym (or/c 'NONE
-                                           'AWAY
-                                           'BUSY
-                                           'INVALID)]) integer?]{
+                                     'AWAY
+                                     'BUSY
+                                     'INVALID)]) integer?]{
   Represents the types of statuses a user can have.
 }
 
@@ -67,16 +67,16 @@ The enums that Tox uses should be accessed through the following procedures.
 }
 
 @defproc[(_ToxAvCallbackID [sym (or/c 'av_OnInvite
-                                            'av_OnStart
-                                            'av_OnCancel
-                                            'av_OnReject
-                                            'av_OnEnd
-                                            'av_OnRinging
-                                            'av_OnStarting
-                                            'av_OnEnding
-                                            'av_OnError
-                                            'av_OnRequestTimeout
-                                            'av_OnPeerTimeout)]) integer?]{
+                                      'av_OnStart
+                                      'av_OnCancel
+                                      'av_OnReject
+                                      'av_OnEnd
+                                      'av_OnRinging
+                                      'av_OnStarting
+                                      'av_OnEnding
+                                      'av_OnError
+                                      'av_OnRequestTimeout
+                                      'av_OnPeerTimeout)]) integer?]{
   @racket['av_OnInvite], @racket['av_OnStart], @racket['av_OnCancel], @racket['av_OnReject],
   and @racket['av_OnEnd] are all for A/V requests.
   
@@ -127,9 +127,9 @@ The enums that Tox uses should be accessed through the following procedures.
 }
 
 @defproc[(_ToxAvCapabilities [sym (or/c 'AudioEncoding
-                                              'AudioDecoding
-                                              'VideoEncoding
-                                              'VideoDecoding)]) integer?]{
+                                        'AudioDecoding
+                                        'VideoEncoding
+                                        'VideoDecoding)]) integer?]{
   @racket['AudioEncoding] is equivalent to 1 << 0 or @racket[(expt 2 0)]
   
   @racket['AudioDecoding] is equivalent to 1 << 1 or @racket[(expt 2 1)]
@@ -143,8 +143,8 @@ The enums that Tox uses should be accessed through the following procedures.
   Represents the format of the avatar.
 }
 
-@defproc[(_TOX_GROUPCHAT_FORMAT [sym (or/c 'TEXT 'AV)]) integer?]{
-  Represents the format of the groupchat.
+@defproc[(_TOX_GROUPCHAT_TYPE [sym (or/c 'TEXT 'AV)]) integer?]{
+  Represents the type of the groupchat.
   
   @racket[TOX_GROUPCHAT_TYPE_TEXT] groupchats must be accepted with the @racket[join-groupchat] function.
   
