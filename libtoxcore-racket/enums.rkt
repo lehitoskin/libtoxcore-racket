@@ -13,144 +13,152 @@
                  _ToxAvCallType
                  _ToxAvError
                  _ToxAvCapabilities
-                 _TOX_FAERR-index
-                 _TOX_USERSTATUS-index
-                 _TOX_CHAT_CHANGE_PEER-index
-                 _TOX_FILECONTROL-index
-                 _ToxAvCallbackID-index
-                 _ToxAvCallType-index
-                 _ToxAvError-index
-                 _ToxAvCapabilities-index)
+                 _TOX_AVATAR_FORMAT
+                 _TOX_GROUPCHAT_TYPE)
          (import (rnrs))
          ; enum definitions
          ; Errors for m_addfriend
          ; FAERR - Friend Add Error
-         (define _TOX_FAERR (make-enumeration
-                             '(TOOLONG
-                               NOMESSAGE
-                               OWNKEY
-                               ALREADYSENT
-                               UNKNOWN
-                               BADCHECKSUM
-                               SETNEWNOSPAM
-                               NOMEM)))
          ; enum starts at -1 and decrements from that point
-         (define _TOX_FAERR-index
-           (lambda (x)
-             (if (enum-set-member? x _TOX_FAERR)
-                 (let ((i (enum-set-indexer _TOX_FAERR)))
-                   (- (+ (i x) 1)))
+         (define (_TOX_FAERR sym)
+           (let ([enum (make-enumeration
+                        '(TOOLONG
+                          NOMESSAGE
+                          OWNKEY
+                          ALREADYSENT
+                          UNKNOWN
+                          BADCHECKSUM
+                          SETNEWNOSPAM
+                          NOMEM))])
+             (if (enum-set-member? sym enum)
+                 (let ((i (enum-set-indexer enum)))
+                   (- (+ (i sym) 1)))
                  #f)))
+         
          ; USERSTATUS -
          ; Represents userstatuses someone can have.
-         (define _TOX_USERSTATUS (make-enumeration
-                                  '(NONE
-                                    AWAY
-                                    BUSY
-                                    INVALID)))
-         (define _TOX_USERSTATUS-index
-           (lambda (x)
-             (if (enum-set-member? x _TOX_USERSTATUS)
-                 (let ((i (enum-set-indexer _TOX_USERSTATUS)))
-                   (i x))
+         (define (_TOX_USERSTATUS sym)
+           (let ([enum (make-enumeration
+                        '(NONE
+                          AWAY
+                          BUSY
+                          INVALID))])
+             (if (enum-set-member? sym enum)
+                 (let ((i (enum-set-indexer enum)))
+                   (i sym))
                  #f)))
-         (define _TOX_CHAT_CHANGE_PEER (make-enumeration
-                                        '(ADD
-                                          DEL
-                                          NAME)))
-         (define _TOX_CHAT_CHANGE_PEER-index
-           (lambda (x)
-             (if (enum-set-member? x _TOX_CHAT_CHANGE_PEER)
-                 (let ((i (enum-set-indexer _TOX_CHAT_CHANGE_PEER)))
-                   (i x))
+         
+         (define (_TOX_CHAT_CHANGE_PEER sym)
+           (let ([enum (make-enumeration
+                        '(ADD
+                          DEL
+                          NAME))])
+             (if (enum-set-member? sym enum)
+                 (let ((i (enum-set-indexer enum)))
+                   (i sym))
                  #f)))
+         
          ; improvised from line 521-ish of tox.h
-         (define _TOX_FILECONTROL (make-enumeration
-                                   '(ACCEPT
-                                     PAUSE
-                                     KILL
-                                     FINISHED
-                                     RESUME_BROKEN)))
-         (define _TOX_FILECONTROL-index
-           (lambda (x)
-             (if (enum-set-member? x _TOX_FILECONTROL)
-                 (let ((i (enum-set-indexer _TOX_FILECONTROL)))
-                   (i x))
+         (define (_TOX_FILECONTROL sym)
+           (let ([enum (make-enumeration
+                        '(ACCEPT
+                          PAUSE
+                          KILL
+                          FINISHED
+                          RESUME_BROKEN))])
+             (if (enum-set-member? sym enum)
+                 (let ((i (enum-set-indexer enum)))
+                   (i sym))
+                 #f)))
+         
+         (define (_TOX_AVATAR_FORMAT sym)
+           (let ([enum (make-enumeration '(NONE PNG))])
+             (if (enum-set-member? sym enum)
+                 (let ([i (enum-set-indexer enum)])
+                   (i sym))
+                 #f)))
+         
+         ; TOX_GROUPCHAT_TYPE_TEXT groupchats must be accepted with the join-groupchat function.
+         ; The function to accept TOX_GROUPCHAT_TYPE_AV is in toxav.
+         (define (_TOX_GROUPCHAT_TYPE sym)
+           (let ([enum (make-enumeration '(TEXT AV))])
+             (if (enum-set-member? sym enum)
+                 (let ([i (enum-set-indexer enum)])
+                   (i sym))
                  #f)))
          
          #| ############### BEGIN AV ENUMERATIONS ############# |#
-         (define _ToxAvCallbackID (make-enumeration
-                                   ; requests
-                                   '(av_OnInvite
-                                     av_OnStart
-                                     av_OnCancel
-                                     av_OnReject
-                                     av_OnEnd
-                                     ; responses
-                                     av_OnRinging
-                                     av_OnStarting
-                                     av_OnEnding
-                                     ; protocol
-                                     av_OnError
-                                     av_OnRequestTimeout
-                                     av_OnPeerTimeout)))
-         (define _ToxAvCallbackID-index
-           (lambda (x)
-             (if (enum-set-member? x _ToxAvCallbackID)
-                 (let ((i (enum-set-indexer _ToxAvCallbackID)))
-                   (i x))
+         (define (_ToxAvCallbackID sym)
+           (let ([enum (make-enumeration
+                        ; requests
+                        '(av_OnInvite
+                          av_OnStart
+                          av_OnCancel
+                          av_OnReject
+                          av_OnEnd
+                          ; responses
+                          av_OnRinging
+                          av_OnStarting
+                          av_OnEnding
+                          ; protocol
+                          av_OnError
+                          av_OnRequestTimeout
+                          av_OnPeerTimeout))])
+             (if (enum-set-member? sym enum)
+                 (let ((i (enum-set-indexer enum)))
+                   (i sym))
                  #f)))
-         (define _ToxAvCallType (make-enumeration
-                                 '(Audio
-                                   Video)))
-         (define _ToxAvCallType-index
-           (lambda (x)
-             (if (enum-set-member? x _ToxAvCallType)
-                 (let ((i (enum-set-indexer _ToxAvCallType)))
-                   (+ (i x) 192))
+         
+         (define (_ToxAvCallType sym)
+           (let ([enum (make-enumeration
+                        '(Audio
+                          Video))])
+             (if (enum-set-member? sym enum)
+                 (let ((i (enum-set-indexer enum)))
+                   (+ (i sym) 192))
                  #f)))
-         (define _ToxAvError (make-enumeration
-                              '(None
-                                ; internal error
-                                Internal
-                                ; already has an active call
-                                AlreadyInCall
-                                ; trying to perform call action while not in a call
-                                NoCall
-                                ; trying to perform call action while in invalid state
-                                InvalidState
-                                ; trying to perform rtp action on invalid session
-                                NoRtpSession
-                                ; indicating packet loss
-                                AudioPacketLost
-                                ; error in toxav_prepare_transmission()
-                                StartingAudioRtp
-                                ; error in toxav_prepare_transmission()
-                                StartingVideoRtp
-                                ; returned in toxav_kill_transmission()
-                                TerminatingAudioRtp
-                                ; returned in toxav_kill_transmission()
-                                TerminatingVideoRtp
-                                ; buffer exceeds size while encoding
-                                PacketTooLarge)))
-         (define _ToxAvError-index
-           (lambda (x)
-             (if (enum-set-member? x _ToxAvError)
-                 (let ((i (enum-set-indexer _ToxAvError)))
-                   (- (+ (i x) 1)))
+         
+         (define (_ToxAvError sym)
+           (let ([enum (make-enumeration
+                        '(None
+                          ; internal error
+                          Internal
+                          ; already has an active call
+                          AlreadyInCall
+                          ; trying to perform call action while not in a call
+                          NoCall
+                          ; trying to perform call action while in invalid state
+                          InvalidState
+                          ; trying to perform rtp action on invalid session
+                          NoRtpSession
+                          ; indicating packet loss
+                          AudioPacketLost
+                          ; error in toxav_prepare_transmission()
+                          StartingAudioRtp
+                          ; error in toxav_prepare_transmission()
+                          StartingVideoRtp
+                          ; returned in toxav_kill_transmission()
+                          TerminatingAudioRtp
+                          ; returned in toxav_kill_transmission()
+                          TerminatingVideoRtp
+                          ; buffer exceeds size while encoding
+                          PacketTooLarge))])
+             (if (enum-set-member? sym enum)
+                 (let ((i (enum-set-indexer enum)))
+                   (- (+ (i sym) 1)))
                  #f)))
-         (define _ToxAvCapabilities (make-enumeration
-                                     ; 1 << 0
-                                     '(AudioEncoding
-                                       ; 1 << 1
-                                       AudioDecoding
-                                       ; 1 << 2
-                                       VideoEncoding
-                                       ; 1 << 3
-                                       VideoDecoding)))
-         (define _ToxAvCapabilities-index
-           (lambda (x)
-             (if (enum-set-member? x _ToxAvCapabilities)
-                 (let ((i (enum-set-indexer _ToxAvCapabilities)))
-                   (expt 2 (i x)))
+         
+         (define (_ToxAvCapabilities sym)
+           (let ([enum (make-enumeration
+                        ; 1 << 0
+                        '(AudioEncoding
+                          ; 1 << 1
+                          AudioDecoding
+                          ; 1 << 2
+                          VideoEncoding
+                          ; 1 << 3
+                          VideoDecoding))])
+             (if (enum-set-member? sym enum)
+                 (let ((i (enum-set-indexer enum)))
+                   (expt 2 (i sym)))
                  #f))))

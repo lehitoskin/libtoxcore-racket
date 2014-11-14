@@ -42,7 +42,9 @@
 (define TOX_FRIEND_ADDRESS_SIZE (+ TOX_CLIENT_ID_SIZE
                                    (ctype-sizeof _uint32_t) (ctype-sizeof _uint16_t)))
 (define TOX_ENABLE_IPV6_DEFAULT #t)
-
+(define TOX_AVATAR_MAX_DATA_LENGTH 16384)
+(define TOX_AVATAR_HASH_LENGTH 32)
+(define TOX_HASH_LENGTH TOX_AVATAR_HASH_LENGTH)
 
 (define-cstruct _Tox-Options
  #|
@@ -630,18 +632,19 @@
 #|
  # Set the callback for group invites.
  #
- # Function(Tox *tox, int32_t friendnumber, uint8_t *data, uint16_t length, void *userdata)
+ # Function(Tox *tox, int32_t friendnumber, uint8_t type, uint8_t *data, uint16_t length, void *userdata)
  #
  # data of length is what needs to be passed to join_groupchat().
  #
- # void tox_callback_group_invite(Tox *tox, void (*function)(Tox *tox, int32_t, const uint8_t *,
+ # void tox_callback_group_invite(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t, const uint8_t *,
  #                                                           uint16_t, void *), void *userdata);
  |#
 (define-tox callback-group-invite (_fun [tox : _Tox-pointer]
                                         [anonproc : (_fun [tox : _Tox-pointer]
                                                           [friendnumber : _int32_t]
+                                                          [type : _uint8_t]
                                                           [data : _bytes]
-                                                          [len : _int]
+                                                          [len : _uint16_t]
                                                           [userdata : _pointer] -> _void)]
                                         [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_group_invite)
@@ -649,7 +652,7 @@
 #|
  # Set the callback for group messages.
  #
- #  Function(Tox *tox, int groupnumber, int friendgroupnumber, uint8_t * message,
+ #  Function(Tox *tox, int groupnumber, int peernumber, uint8_t * message,
  #                                      uint16_t length, void *userdata)
  #
  # void tox_callback_group_message(Tox *tox, void (*function)(Tox *tox, int, int, uint8_t *,
@@ -658,7 +661,7 @@
 (define-tox callback-group-message (_fun [tox : _Tox-pointer]
                                          [anonproc : (_fun [tox : _Tox-pointer]
                                                            [groupnumber : _int]
-                                                           [friendgroupnumber : _int]
+                                                           [peernumber : _int]
                                                            [message : _string]
                                                            [len : _uint16_t]
                                                            [userdata : _pointer] -> _void)]
@@ -668,7 +671,7 @@
 #|
  # Set the callback for group actions.
  #
- #  Function(Tox *tox, int groupnumber, int friendgroupnumber, uint8_t * action,
+ #  Function(Tox *tox, int groupnumber, int peernumber, uint8_t * action,
  #                     uint16_t length, void *userdata)
  #
  # void tox_callback_group_action(Tox *tox, void (*function)(Tox *tox, int, int, uint8_t *,
@@ -677,7 +680,7 @@
 (define-tox callback-group-action (_fun [tox : _Tox-pointer]
                                         [anonproc : (_fun [tox : _Tox-pointer]
                                                           [groupnumber : _int]
-                                                          [friendgroupnumber : _int]
+                                                          [peernumber : _int]
                                                           [action : _string]
                                                           [len : _uint16_t]
                                                           [userdata : _pointer] -> _void)]
@@ -778,7 +781,7 @@
 (define-tox group-message-send (_fun [tox : _Tox-pointer]
                                      [groupnumber : _int]
                                      [message : _string]
-                                     [len : _uint32_t] -> _int)
+                                     [len : _uint16_t] -> _int)
   #:c-id tox_group_message_send)
 
 #|
@@ -791,8 +794,20 @@
 (define-tox group-action-send (_fun [tox : _Tox-pointer]
                                     [groupnumber : _int]
                                     [action : _string]
-                                    [len : _uint32_t] -> _int)
+                                    [len : _uint16_t] -> _int)
   #:c-id tox_group_action_send)
+
+#|
+ # Check if the current peernumber corresponds to ours.
+ #
+ # return 1 if the peernumber corresponds to ours.
+ # return 0 on failure.
+ #
+ # unsigned int tox_group_peernumber_is_ours(const Tox *tox, int groupnumber, int peernumber);
+ |#
+(define-tox group-peernumber-is-ours? (_fun [tox : _Tox-pointer] [groupnumber : _int]
+                                            [peernumber : _int] -> _bool)
+  #:c-id tox_group_peernumber_is_ours)
 
 #|
  # Return the number of peers in the group chat on success.
@@ -848,6 +863,194 @@
                                [out-list : _bytes]
                                [list-size : _uint32_t] -> _uint32_t)
   #:c-id tox_get_chatlist)
+
+#| ############### AVATAR FUNCTIONS ################ |#
+
+#|
+ # Set the callback function for avatar information.
+ # This callback will be called when avatar information are received from friends. These events
+ # can arrive at anytime, but are usually received upon connection and in reply of avatar
+ # information requests.
+ #
+ # Function format is:
+ # function(Tox *tox, int32_t friendnumber, uint8_t format, uint8_t *hash, void *userdata)
+ #
+ # where 'format' is the avatar image format (see TOX_AVATAR_FORMAT) and 'hash' is the hash of
+ # the avatar data for caching purposes and it is exactly TOX_HASH_LENGTH long. If the
+ # image format is NONE, the hash is zeroed.
+ #
+ # void tox_callback_avatar_info(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t, uint8_t *, void *),
+ #                               void *userdata);
+ |#
+(define-tox callback-avatar-info
+  (_fun [tox : _Tox-pointer]
+        [anonproc : (_fun [tox : _Tox-pointer]
+                          [friendnumber : _int]
+                          [format : _int]
+                          [hash : _bytes]
+                          [userdata : _pointer] -> _void)]
+        [userdata : _pointer = #f] -> _void)
+  #:c-id tox_callback_avatar_info)
+
+#|
+ # Set the callback function for avatar data.
+ # This callback will be called when the complete avatar data was correctly received from a
+ # friend. This only happens in reply of an avatar data request (see tox_request_avatar_data);
+ #
+ # Function format is:
+ # function(Tox *tox, int32_t friendnumber, uint8_t format, uint8_t *hash, uint8_t *data, uint32_t datalen, void *userdata)
+ #
+ # where 'format' is the avatar image format (see TOX_AVATARFORMAT); 'hash' is the
+ # locally-calculated cryptographic hash of the avatar data and it is exactly
+ # TOX_HASH_LENGTH long; 'data' is the avatar image data and 'datalen' is the length
+ # of such data.
+ #
+ # If format is NONE, 'data' is NULL, 'datalen' is zero, and the hash is zeroed. The hash is
+ # always validated locally with the function tox_avatar_hash and ensured to match the image
+ # data, so this value can be safely used to compare with cached avatars.
+ #
+ # WARNING: users MUST treat all avatar image data received from another peer as untrusted and
+ # potentially malicious. The library only ensures that the data which arrived is the same the
+ # other user sent, and does not interpret or validate any image data.
+ #
+ # void tox_callback_avatar_data(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t, uint8_t *, uint8_t *, uint32_t,
+ #                               void *), void *userdata);
+ |#
+(define-tox callback-avatar-data
+  (_fun [tox : _Tox-pointer]
+        [anonproc : (_fun [tox : _Tox-pointer]
+                          [friendnumber : _int]
+                          [format : _int]
+                          [hash : _bytes]
+                          [data : _bytes]
+                          [datalen : _int]
+                          [userdata : _pointer] -> _void)]
+        [userdata : _pointer = #f] -> _void)
+  #:c-id tox_callback_avatar_data)
+
+#|
+ # Set the user avatar image data.
+ # This should be made before connecting, so we will not announce that the user have no avatar
+ # before setting and announcing a new one, forcing the peers to re-download it.
+ #
+ # Notice that the library treats the image as raw data and does not interpret it by any way.
+ #
+ # Arguments:
+ # format - Avatar image format or NONE for user with no avatar (see TOX_AVATARFORMAT);
+ # data - pointer to the avatar data (may be NULL it the format is NONE);
+ # length - length of image data. Must be <= TOX_MAX_AVATAR_DATA_LENGTH.
+ #
+ # returns 0 on success
+ # returns -1 on failure.
+ #
+ # int tox_set_avatar(Tox *tox, uint8_t format, const uint8_t *data, uint32_t length);
+ |#
+(define-tox set-avatar (_fun [tox : _Tox-pointer]
+                             [format : _int]
+                             [data : _bytes]
+                             [len : _int] -> _int)
+  #:c-id tox_set_avatar)
+
+#|
+ # Unsets the user avatar.
+ #
+ # returns 0 on success (currently always returns 0)
+ # int tox_unset_avatar(Tox *tox);
+ |#
+(define-tox unset-avatar (_fun [tox : _Tox-pointer] -> _int)
+  #:c-id tox_unset_avatar)
+
+#|
+ # Get avatar data from the current user.
+ # Copies the current user avatar data to the destination buffer and sets the image format
+ # accordingly.
+ #
+ # If the avatar format is NONE, the buffer 'buf' isleft uninitialized, 'hash' is zeroed, and
+ # 'length' is set to zero.
+ #
+ # If any of the pointers format, buf, length, and hash are NULL, that particular field will be ignored.
+ #
+ # Arguments:
+ # format - destination pointer to the avatar image format (see TOX_AVATARFORMAT);
+ # buf - destination buffer to the image data. Must have at least 'maxlen' bytes;
+ # length - destination pointer to the image data length;
+ # maxlen - length of the destination buffer 'buf';
+ # hash - destination pointer to the avatar hash (it must be exactly TOX_HASH_LENGTH bytes long).
+ #
+ # returns 0 on success;
+ # returns -1 on failure.
+ #
+ #
+ # int tox_get_self_avatar(const Tox *tox, uint8_t *format, uint8_t *buf, uint32_t *length, uint32_t maxlen,
+ #                         uint8_t *hash);
+ |#
+(define-tox get-self-avatar (_fun [tox : _Tox-pointer] [format : _int]
+                                  [buf : _bytes] [len : _int]
+                                  [maxlen : _int] [hash : _bytes] -> _int)
+  #:c-id tox_get_self_avatar)
+
+#|
+ # Generates a cryptographic hash of the given data.
+ # This function may be used by clients for any purpose, but is provided primarily for
+ # validating cached avatars.
+ # This function is a wrapper to internal message-digest functions.
+ #
+ # Arguments:
+ # hash - destination buffer for the hash data, it must be exactly TOX_HASH_LENGTH bytes long.
+ # data - data to be hashed;
+ # datalen - length of the data; for avatars, should be TOX_AVATAR_MAX_DATA_LENGTH
+*
+ #
+ # returns 0 on success
+ # returns -1 on failure.
+ #
+ # int tox_hash(uint8_t *hash, const uint8_t *data, const uint32_t datalen);
+ |#
+(define-tox tox-hash (_fun [hash : _bytes] [data : _bytes] [datalen : _int] -> _int)
+  #:c-id tox_hash)
+
+#|
+ # Request avatar information from a friend.
+ # Asks a friend to provide their avatar information (image format and hash). The friend may
+ # or may not answer this request and, if answered, the information will be provided through
+ # the callback 'avatar_info'.
+ #
+ # returns 0 on success
+ # returns -1 on failure.
+ #
+ # int tox_request_avatar_info(const Tox *tox, const int32_t friendnumber);
+ |#
+(define-tox request-avatar-info (_fun [tox : _Tox-pointer] [friendnumber : _int] -> _int)
+  #:c-id tox_request_avatar_info)
+
+#|
+ # Send an unrequested avatar information to a friend.
+ # Sends our avatar format and hash to a friend; he/she can use this information to validate
+ # an avatar from the cache and may (or not) reply with an avatar data request.
+ #
+ # Notice: it is NOT necessary to send these notification after changing the avatar or
+ # connecting. The library already does this.
+ #
+ # returns 0 on success
+ # returns -1 on failure.
+ #
+ # int tox_send_avatar_info(Tox *tox, const int32_t friendnumber);
+ |#
+(define-tox send-avatar-info (_fun [tox : _Tox-pointer] [friendnumber : _int] -> _int)
+  #:c-id tox_send_avatar_info)
+
+#|
+ # Request the avatar data from a friend.
+ # Ask a friend to send their avatar data. The friend may or may not answer this request and,
+ # if answered, the information will be provided in callback 'avatar_data'.
+ #
+ # returns 0 on sucess
+ # returns -1 on failure.
+ #
+ # int tox_request_avatar_data(const Tox *tox, const int32_t friendnumber);
+ |#
+(define-tox request-avatar-data (_fun [tox : _Tox-pointer] [friendnumber : _int] -> _int)
+  #:c-id tox_request_avatar_data)
 
 #|
  #################FILE SENDING FUNCTIONS#####################
