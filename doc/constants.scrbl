@@ -26,11 +26,17 @@ with the enums, especially.
 
 @defthing[RTP_PAYLOAD_SIZE 65535]
 
+@defthing[TOX_AVATAR_MAX_DATA_LENGTH 16384]
+
+@defthing[TOX_AVATAR_HASH_LENGTH 32]
+
+@defthing[TOX_HASH_LENGTH TOX_AVATAR_HASH_LENGTH]
+
 @section[#:tag "enums"]{Enums}
 
 The enums that Tox uses should be accessed through the following procedures.
 
-@defproc[(_TOX_FAERR-index [sym (or/c 'TOOLONG
+@defproc[(_TOX_FAERR [sym (or/c 'TOOLONG
                                       'NOMESSAGE
                                       'OWNKEY
                                       'ALREADYSENT
@@ -41,18 +47,18 @@ The enums that Tox uses should be accessed through the following procedures.
   FAERR - friend add errors.
 }
 
-@defproc[(_TOX_USERSTATUS-index [sym (or/c 'NONE
+@defproc[(_TOX_USERSTATUS [sym (or/c 'NONE
                                            'AWAY
                                            'BUSY
                                            'INVALID)]) integer?]{
   Represents the types of statuses a user can have.
 }
 
-@defproc[(_TOX_CHAT_CHANGE_PEER-index [sym (or/c 'ADD
+@defproc[(_TOX_CHAT_CHANGE_PEER [sym (or/c 'ADD
                                                  'DEL
                                                  'NAME)]) integer?]
 
-@defproc[(_TOX_FILECONTROL-index [sym (or/c 'ACCEPT
+@defproc[(_TOX_FILECONTROL [sym (or/c 'ACCEPT
                                             'PAUSE
                                             'KILL
                                             'FINISHED
@@ -60,7 +66,7 @@ The enums that Tox uses should be accessed through the following procedures.
   Types allowed in filecontrols.
 }
 
-@defproc[(_ToxAvCallbackID-index [sym (or/c 'av_OnInvite
+@defproc[(_ToxAvCallbackID [sym (or/c 'av_OnInvite
                                             'av_OnStart
                                             'av_OnCancel
                                             'av_OnReject
@@ -120,7 +126,7 @@ The enums that Tox uses should be accessed through the following procedures.
   @racket['PacketTooLarge] represents buffer exceeds size while encoding.
 }
 
-@defproc[(_ToxAvCapabilities-index [sym (or/c 'AudioEncoding
+@defproc[(_ToxAvCapabilities [sym (or/c 'AudioEncoding
                                               'AudioDecoding
                                               'VideoEncoding
                                               'VideoDecoding)]) integer?]{
@@ -131,4 +137,16 @@ The enums that Tox uses should be accessed through the following procedures.
   @racket['VideoEncoding] is equivalent to 1 << 2 or @racket[(expt 2 2)]
   
   @racket['VideoDecoding] is equivalent to 1 << 3 or @racket[(expt 2 3)]
+}
+
+@defproc[(_TOX_AVATAR_FORMAT [sym (or/c 'None 'PNG)]) integer?]{
+  Represents the format of the avatar.
+}
+
+@defproc[(_TOX_GROUPCHAT_FORMAT [sym (or/c 'TEXT 'AV)]) integer?]{
+  Represents the format of the groupchat.
+  
+  @racket[TOX_GROUPCHAT_TYPE_TEXT] groupchats must be accepted with the @racket[join-groupchat] function.
+  
+  The function to accept @racket[TOX_GROUPCHAT_TYPE_AV] is in toxav.
 }

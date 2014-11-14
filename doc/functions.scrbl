@@ -347,6 +347,15 @@ for the functions found in libtoxcore.
   return -1 on failure.
 }
 
+@defproc[(group-peernumber-is-ours? [tox _Tox-pointer] [groupnumber integer?]
+                                    [peernumber integer?]) boolean?]{
+  Check if the current peernumber corresponds to ours.
+
+  returns @racket[#t] if it does
+
+  returns @racket[#f] if it does not.
+}
+
 @defstruct[Tox-Options ([ipv6-enabled? boolean?]
                         [udp-disabled? boolean?]
                         [proxy-enabled? boolean?]
@@ -559,6 +568,122 @@ for the functions found in libtoxcore.
   return 0 on failure
 }
 
+@section[#:tag "avatars"]{Avatar Handling and Manipulation}
+
+@defproc[(set-avatar [tox _Tox-pointer] [format integer?] [data bytes?] [len integer?]) integer?]{
+  Set the user avatar image data.
+  
+  This should be made before connecting, so we will not announce that the user have no avatar
+  before setting and announcing a new one, forcing the peers to re-download it.
+ 
+  Notice that the library treats the image as raw data and does not interpret it by any way.
+ 
+  Arguments:
+  
+  format - Avatar image format or NONE for user with no avatar (see @racket[_TOX_AVATAR_FORMAT]);
+  
+  data - bytes containing the avatar data (may be NULL it the format is NONE);
+  
+  len - length of image data. Must be <= @racket[TOX_AVATAR_MAX_DATA_LENGTH].
+ 
+  returns 0 on success
+  
+  returns -1 on failure.
+}
+
+@defproc[(unset-avatar [tox _Tox-pointer]) integer?]{
+  Unsets the user avatar.
+
+  returns 0 on success (currently always returns 0).
+}
+
+@defproc[(get-self-avatar [tox _Tox-pointer] [format integer?] [buf bytes?]
+                          [len integer?] [maxlen integer?] [hash bytes?]) integer?]{
+  Get avatar data from the current user.
+
+  Copies the current user avatar data to the destination buffer and sets the image format
+  accordingly.
+ 
+  If the avatar format is NONE, the buffer 'buf' is left uninitialized, 'hash' is zeroed, and
+  'length' is set to zero.
+ 
+  If any of the pointers format, buf, length, and hash are NULL, that particular field will be ignored.
+ 
+  Arguments:
+
+  format - destination pointer to the avatar image format (see @racket[_TOX_AVATAR_FORMAT]);
+
+  buf - destination buffer to the image data. Must have at least 'maxlen' bytes;
+
+  length - destination pointer to the image data length;
+
+  maxlen - length of the destination buffer 'buf';
+
+  hash - destination pointer to the avatar hash (it must be exactly @racket[TOX_HASH_LENGTH] bytes long).
+ 
+  returns 0 on success;
+
+  returns -1 on failure.
+}
+
+@defproc[(tox-hash [hash bytes?] [data bytes?] [datalen integer?]) integer?]{
+  Generates a cryptographic hash of the given data.
+
+  This function may be used by clients for any purpose, but is provided primarily for
+  validating cached avatars.
+  
+  This function is a wrapper to internal message-digest functions.
+ 
+  Arguments:
+  
+  hash - destination buffer for the hash data, it must be exactly TOX_HASH_LENGTH bytes long.
+  
+  data - data to be hashed;
+  
+  datalen - length of the data; for avatars, should be @racket[TOX_AVATAR_MAX_DATA_LENGTH]
+ 
+  returns 0 on success
+  
+  returns -1 on failure.
+}
+
+@defproc[(request-avatar-info [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+  Request avatar information from a friend.
+
+  Asks a friend to provide their avatar information (image format and hash). The friend may
+  or may not answer this request and, if answered, the information will be provided through
+  the callback 'avatar_info'.
+ 
+  returns 0 on success
+
+  returns -1 on failure.
+}
+
+@defproc[(send-avatar-info [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+  Send an unrequested avatar information to a friend.
+
+  Sends our avatar format and hash to a friend; he/she can use this information to validate
+  an avatar from the cache and may (or not) reply with an avatar data request.
+ 
+  Notice: it is NOT necessary to send this notification after changing the avatar or
+  connecting. The library already does this.
+ 
+  returns 0 on success
+
+  returns -1 on failure.
+}
+
+@defproc[(request-avatar-data [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+  Request the avatar data from a friend.
+
+  Ask a friend to send their avatar data. The friend may or may not answer this request and,
+  if answered, the information will be provided in callback 'avatar_data'.
+ 
+  returns 0 on sucess
+
+  returns -1 on failure.
+}
+
 @section[#:tag "callbacks"]{Callbacks}
 
 @subsection[#:tag "general-callbacks"]{General Callbacks}
@@ -685,15 +810,15 @@ WARNING: Groupchats will be rewritten so these might change
                                 [userdata cpointer? #f]) void?]{
   Set the callback for group invites.
   
-  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber
-                                                     group-public-key userdata)]
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber type
+                                                     data len userdata)]
 }
 
 @defproc[(callback-group-message [tox _Tox-pointer] [anonproc procedure?]
                                  [userdata cpointer? #f]) void?]{
   Set the callback for group messages.
   
-  @racket[anonproc] is in the form @racket[(anonproc tox groupnumber friendgroupnumber
+  @racket[anonproc] is in the form @racket[(anonproc tox groupnumber peernumber
                                                      message len userdata)]
 }
 
@@ -701,7 +826,7 @@ WARNING: Groupchats will be rewritten so these might change
                                 [userdata cpointer? #f]) void?]{
   Set the callback for group actions.
   
-  @racket[anonproc] is in the form @racket[(anonproc tox groupnumber friendgroupnumber
+  @racket[anonproc] is in the form @racket[(anonproc tox groupnumber peernumber
                                                      action len userdata)]
 }
 
@@ -715,4 +840,45 @@ WARNING: Groupchats will be rewritten so these might change
                                                      change userdata)]
   
   @racket[change] is a @racket[TOX_CHAT_CHANGE] enum value.
+}
+
+@subsection[#:tag "avatar-callbacks"]{Avatar Callbacks}
+
+Avatars must be in PNG format.
+
+@defproc[(callback-avatar-info [tox _Tox-pointer] [anonproc procedure?]
+                               [userdata cpointer? #f]) void?]{
+  Set the callback function for avatar information.
+  
+  This callback will be called when avatar information are received from friends. These events
+  can arrive at anytime, but are usually received uppon connection and in reply of avatar
+  information requests.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber format hash userdata)]
+  where 'format' is the avatar image format (see @racket[_TOX_AVATAR_FORMAT]) and 'hash' is the
+  hash of the avatar data (in a byte-string) for caching purposes and it is exactly
+  @racket[TOX_HASH_LENGTH] long. If the image format is NONE, the hash is zeroed.
+}
+
+@defproc[(callback-avatar-data [tox _Tox-pointer] [anonproc procedure?]
+                               [userdata cpointer? #f]) void?]{
+  Set the callback function for avatar data.
+
+  This callback will be called when the complete avatar data was correctly received from a
+  friend. This only happens in reply of an avatar data request (see tox_request_avatar_data);
+ 
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber format hash
+                                                     data datalen userdata)] 
+  where 'format' is the avatar image format (see @racket[_TOX_AVATAR_FORMAT]); 'hash' is the
+  locally-calculated cryptographic hash of the avatar data (in a byte-string) and it is exactly
+  @racket[TOX_HASH_LENGTH long]; 'data' is the avatar image data (in a byte-string) and
+  'datalen' is the length of such data.
+ 
+  If format is NONE, 'data' is NULL, 'datalen' is zero, and the hash is zeroed. The hash is
+  always validated locally with the function @racket[tox-hash] and ensured to match the image
+  data, so this value can be safely used to compare with cached avatars.
+ 
+  WARNING: users MUST treat all avatar image data received from another peer as untrusted and
+  potentially malicious. The library only ensures that the data which arrived is the same the
+  other user sent, and does not interpret or validate any image data.
 }
