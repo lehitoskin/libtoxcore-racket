@@ -11,6 +11,7 @@
                  _TOX_FILECONTROL
                  _ToxAvCallbackID
                  _ToxAvCallType
+                 _ToxAvCallState
                  _ToxAvError
                  _ToxAvCapabilities
                  _TOX_AVATAR_FORMAT
@@ -31,7 +32,7 @@
                           SETNEWNOSPAM
                           NOMEM))])
              (if (enum-set-member? sym enum)
-                 (let ((i (enum-set-indexer enum)))
+                 (let ([i (enum-set-indexer enum)])
                    (- (+ (i sym) 1)))
                  #f)))
          
@@ -44,7 +45,7 @@
                           BUSY
                           INVALID))])
              (if (enum-set-member? sym enum)
-                 (let ((i (enum-set-indexer enum)))
+                 (let ([i (enum-set-indexer enum)])
                    (i sym))
                  #f)))
          
@@ -54,7 +55,7 @@
                           DEL
                           NAME))])
              (if (enum-set-member? sym enum)
-                 (let ((i (enum-set-indexer enum)))
+                 (let ([i (enum-set-indexer enum)])
                    (i sym))
                  #f)))
          
@@ -67,7 +68,7 @@
                           FINISHED
                           RESUME_BROKEN))])
              (if (enum-set-member? sym enum)
-                 (let ((i (enum-set-indexer enum)))
+                 (let ([i (enum-set-indexer enum)])
                    (i sym))
                  #f)))
          
@@ -91,21 +92,21 @@
          (define (_ToxAvCallbackID sym)
            (let ([enum (make-enumeration
                         ; requests
-                        '(av_OnInvite
-                          av_OnStart
-                          av_OnCancel
-                          av_OnReject
-                          av_OnEnd
+                        '(Invite
+                          Start
+                          Cancel
+                          Reject
+                          End
                           ; responses
-                          av_OnRinging
-                          av_OnStarting
-                          av_OnEnding
+                          Ringing
+                          Starting
+                          Ending
                           ; protocol
-                          av_OnError
-                          av_OnRequestTimeout
-                          av_OnPeerTimeout))])
+                          RequestTimeout
+                          PeerTimeout
+                          MediaChange))])
              (if (enum-set-member? sym enum)
-                 (let ((i (enum-set-indexer enum)))
+                 (let ([i (enum-set-indexer enum)])
                    (i sym))
                  #f)))
          
@@ -114,8 +115,24 @@
                         '(Audio
                           Video))])
              (if (enum-set-member? sym enum)
-                 (let ((i (enum-set-indexer enum)))
+                 (let ([i (enum-set-indexer enum)])
                    (+ (i sym) 192))
+                 #f)))
+         
+         (define (_ToxAvCallState sym)
+           (let ([enum (make-enumeration
+                        ; = -1
+                        '(CallNonExistant
+                          ; when sending call invite
+                          CallInviting
+                          ; when getting call invite
+                          CallStarting
+                          CallActive
+                          CallHold
+                          CallHanged_up))])
+             (if (enum-set-member? sym enum)
+                 (let ([i (enum-set-indexer enum)])
+                   (- (i sym) 1))
                  #f)))
          
          (define (_ToxAvError sym)
@@ -144,7 +161,7 @@
                           ; buffer exceeds size while encoding
                           PacketTooLarge))])
              (if (enum-set-member? sym enum)
-                 (let ((i (enum-set-indexer enum)))
+                 (let ([i (enum-set-indexer enum)])
                    (- (+ (i sym) 1)))
                  #f)))
          
@@ -159,6 +176,6 @@
                           ; 1 << 3
                           VideoDecoding))])
              (if (enum-set-member? sym enum)
-                 (let ((i (enum-set-indexer enum)))
+                 (let ([i (enum-set-indexer enum)])
                    (expt 2 (i sym)))
                  #f))))

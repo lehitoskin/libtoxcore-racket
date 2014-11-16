@@ -43,52 +43,65 @@ The enums that Tox uses should be accessed through the following procedures.
                                 'UNKNOWN
                                 'BADCHECKSUM
                                 'SETNEWNOSPAM
-                                'NOMEM)]) integer?]{
+                                'NOMEM)]) (or/c false? integer?)]{
   FAERR - friend add errors.
 }
 
 @defproc[(_TOX_USERSTATUS [sym (or/c 'NONE
                                      'AWAY
                                      'BUSY
-                                     'INVALID)]) integer?]{
+                                     'INVALID)]) (or/c false? integer?)]{
   Represents the types of statuses a user can have.
 }
 
 @defproc[(_TOX_CHAT_CHANGE_PEER [sym (or/c 'ADD
                                                  'DEL
-                                                 'NAME)]) integer?]
+                                                 'NAME)]) (or/c false? integer?)]
 
 @defproc[(_TOX_FILECONTROL [sym (or/c 'ACCEPT
                                             'PAUSE
                                             'KILL
                                             'FINISHED
-                                            'RESUME_BROKEN)]) integer?]{
+                                            'RESUME_BROKEN)]) (or/c false? integer?)]{
   Types allowed in filecontrols.
 }
 
-@defproc[(_ToxAvCallbackID [sym (or/c 'av_OnInvite
-                                      'av_OnStart
-                                      'av_OnCancel
-                                      'av_OnReject
-                                      'av_OnEnd
-                                      'av_OnRinging
-                                      'av_OnStarting
-                                      'av_OnEnding
-                                      'av_OnError
-                                      'av_OnRequestTimeout
-                                      'av_OnPeerTimeout)]) integer?]{
-  @racket['av_OnInvite], @racket['av_OnStart], @racket['av_OnCancel], @racket['av_OnReject],
-  and @racket['av_OnEnd] are all for A/V requests.
+@defproc[(_ToxAvCallbackID [sym (or/c 'OnInvite
+                                      'OnStart
+                                      'OnCancel
+                                      'OnReject
+                                      'OnEnd
+                                      'OnRinging
+                                      'OnStarting
+                                      'OnEnding
+                                      'OnRequestTimeout
+                                      'OnPeerTimeout
+                                      'OnMediaChange)]) (or/c false? integer?)]{
+  @racket['OnInvite], @racket['OnStart], @racket['OnCancel], @racket['OnReject],
+  and @racket['OnEnd] are all for A/V requests.
   
-  @racket['av_OnRinging], @racket['av_OnStarting], and @racket['av_OnEnding] are for
+  @racket['OnRinging], @racket['OnStarting], and @racket['OnEnding] are for
   A/V responses.
   
-  @racket['av_OnError], @racket['av_OnRequestTimeout], and @racket['av_OnPeerTimeout] are
+  @racket['OnRequestTimeout], @racket['OnPeerTimeout], and @racket['OnMediaChange] are
   protocol errors.
 }
 
-@defproc[(_ToxAvCallType [sym (or/c 'Audio 'Video)]) integer?]{
+@defproc[(_ToxAvCallType [sym (or/c 'Audio 'Video)]) (or/c false? integer?)]{
   Represents the type of A/V call.
+}
+
+@defproc[(_ToxAvCallState [sym (or/c 'CallNonExistant
+                                     'CallInviting
+                                     'CallStarting
+                                     'CallActive
+                                     'CallHold
+                                     'CallHanged_up)]) (or/c false? integer?)]{
+  Represents the state of the current call.
+  
+  @racket['CallInviting] is for when we're sending a call invite.
+  
+  @racket['CallStarting] is for when we're getting a call invite.
 }
 
 @defproc[(_ToxAvError [sym (or/c 'None
@@ -102,7 +115,7 @@ The enums that Tox uses should be accessed through the following procedures.
                                  'StartingVideoRtp
                                  'TerminatingAudioRtp
                                  'TerminatingVideoRtp
-                                 'PacketTooLarge)]) integer?]{
+                                 'PacketTooLarge)]) (or/c false? integer?)]{
   @racket['Internal] represents an internal error.
   
   @racket['AlreadyInCall] means we already have a call in progress.
@@ -129,7 +142,7 @@ The enums that Tox uses should be accessed through the following procedures.
 @defproc[(_ToxAvCapabilities [sym (or/c 'AudioEncoding
                                         'AudioDecoding
                                         'VideoEncoding
-                                        'VideoDecoding)]) integer?]{
+                                        'VideoDecoding)]) (or/c false? integer?)]{
   @racket['AudioEncoding] is equivalent to 1 << 0 or @racket[(expt 2 0)]
   
   @racket['AudioDecoding] is equivalent to 1 << 1 or @racket[(expt 2 1)]
@@ -139,11 +152,11 @@ The enums that Tox uses should be accessed through the following procedures.
   @racket['VideoDecoding] is equivalent to 1 << 3 or @racket[(expt 2 3)]
 }
 
-@defproc[(_TOX_AVATAR_FORMAT [sym (or/c 'None 'PNG)]) integer?]{
+@defproc[(_TOX_AVATAR_FORMAT [sym (or/c 'None 'PNG)]) (or/c false? integer?)]{
   Represents the format of the avatar.
 }
 
-@defproc[(_TOX_GROUPCHAT_TYPE [sym (or/c 'TEXT 'AV)]) integer?]{
+@defproc[(_TOX_GROUPCHAT_TYPE [sym (or/c 'TEXT 'AV)]) (or/c false? integer?)]{
   Represents the type of the groupchat.
   
   @racket[TOX_GROUPCHAT_TYPE_TEXT] groupchats must be accepted with the @racket[join-groupchat] function.

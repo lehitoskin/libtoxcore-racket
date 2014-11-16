@@ -13,7 +13,8 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   A cstruct for the callback functions.
 }
 
-@defstruct[_ToxAvCodecSettings ([video_bitrate integer?]
+@defstruct[_ToxAvCodecSettings ([call_type integer?]
+                                [video_bitrate integer?]
                                 [video_width integer?]
                                 [video_height integer?]
                                 [audio_bitrate integer?]
@@ -22,6 +23,8 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
                                 [audio_channels integer?]
                                 [audio_VAD_tolerance integer?]
                                 [jbuf_capacity integer?])]{
+  @racket[call_type] is a @racket[_ToxAvCallType] enum value.
+  
   @racket[video_bitrate] is in kbit/s
   
   @racket[video_width] is in px
@@ -54,8 +57,8 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   return void
 }
 
-@defproc[(callback-callstate [callback _ToxAVCallback-pointer]
-                             [id integer?] [userdata pointer?]) void?]{
+@defproc[(callback-callstate [av _ToxAv-pointer] [callback integer?]
+                             [id integer?] [userdata cpointer? #f]) void?]{
   Register callback for call state.
  
   @racket[callback] is the callback procedure.
@@ -65,7 +68,9 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   return void
 }
 
-@defproc[(callback-audio-recv [av _ToxAv-pointer] [callback procedure?]) void?]{
+@defproc[(callback-audio-recv [av _ToxAv-pointer] [callback procedure?]
+                              [userdata cpointer? #f])
+         void?]{
   Register callback for receiving audio data.
   
   @racket[callback] is in the form @racket[(callback _ToxAv-pointer
@@ -98,7 +103,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   
   return 0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(av-hangup [av  _ToxAv-pointer]
@@ -107,17 +112,17 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
  
   return 0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(av-answer [av _ToxAv-pointer]
                     [call-index integer?]
-                    [call-type integer?]) integer?]{
+                    [csettings cpointer?]) integer?]{
   Answer incoming call.
  
   return 0 on success.
   
-  return @racket[ToxAvError] On error.
+  return @racket[_ToxAvError] On error.
 }
 
 @defproc[(av-reject [av _ToxAv-pointer]
@@ -129,7 +134,16 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   
   return 0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
+}
+
+@defproc[(av-change-settings [av _ToxAv-pointer] [call-index integer?]
+                             [csettings cpointer?]) integer?]{
+  Notify peer that we are changing call settings.
+
+  return 0 on success
+
+  return @racket[_ToxAvError]
 }
 
 @defproc[(av-cancel [av _ToxAv-pointer]
@@ -142,7 +156,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   
   return 0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(av-stop-call [av _ToxAv-pointer]
@@ -152,18 +166,19 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
  
   return 0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(prepare-transmission [av _ToxAv-pointer]
                                [call-index integer?]
-                               [codec-settings cpointer?]
+                               [jbuf-size integer?]
+                               [VAD-threshold integer?]
                                [support-video? boolean?]) integer?]{
   Must be called before any RTP transmission occurs.
   
   return 0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(kill-transmission [av _ToxAv-pointer]
@@ -172,7 +187,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   
   return 0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(recv-video [av _ToxAv-pointer]
@@ -182,7 +197,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   
   return 0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(recv-audio [av _ToxAv-pointer]
@@ -200,7 +215,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   
   return >=0 size of received data in frames/samples.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(send-video [av _ToxAv-pointer]
@@ -211,7 +226,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   
   return 0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(send-audio [av _ToxAv-pointer]
@@ -227,7 +242,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   
   return 0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(prepare-video-frame [av _ToxAv-pointer]
@@ -239,7 +254,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   
   return >0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(prepare-audio-frame [av _ToxAv-pointer]
@@ -252,17 +267,17 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   
   return >0 on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
-@defproc[(get-peer-transmission-type [av _ToxAv-pointer]
-                                     [call-index integer?]
-                                     [peer integer?]) integer?]{
+@defproc[(get-peer-csettings [av _ToxAv-pointer]
+                             [call-index integer?]
+                             [peer integer?]) integer?]{
   Get peer transmission type. It can either be audio or video.
  
-  return @racket[ToxAvCallType] on success.
+  return @racket[_ToxAvCallType] on success.
   
-  return @racket[ToxAvError] on error.
+  return @racket[_ToxAvError] on error.
 }
 
 @defproc[(get-peer-id [av _ToxAv-pointer]
@@ -270,7 +285,13 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
                       [peer integer?]) integer?]{
   Get id of peer participating in conversation
   
-  return @racket[ToxAvError] when there is no peer id
+  return @racket[_ToxAvError] when there is no peer id
+}
+
+@defproc[(get-call-state [av _ToxAv-pointer] [call-index integer?]) integer?]{
+  Get current call state.
+
+  returns integer from @racket[_ToxAvCallState].
 }
 
 @defproc[(capability-supported? [av _ToxAv-pointer]
@@ -279,18 +300,6 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   Is a certain capability supported?
   
   @racket[capability] is on of @racket[ToxAvCapabilities].
-}
-
-@defproc[(set-audio-queue-limit [av _ToxAv-pointer]
-                                [call-index integer?]
-                                [limit integer?]) integer?]{
-  Set queue limit.
-}
-
-@defproc[(set-video-queue-limit [av _ToxAv-pointer]
-                                [call-index integer?]
-                                [limit integer?]) integer?]{
-  Set queue limit.
 }
 
 @defproc[(av-get-tox [av _ToxAv-pointer]) _Tox-pointer]{
@@ -303,4 +312,58 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
                            [frame-size integer]
                            [ref-energy inexact?]) boolean?]{
   Return whether or not there is A/V activity.
+}
+
+@defproc[(add-av-groupchat [tox _Tox-pointer]
+                           [audio-callback procedure?]
+                           [userdata cpointer? #f]) integer?]{
+  Create a new ToxAV group.
+
+  @racket[audio-callback] is in the form @racket[(audio-callback tox groupnumber
+                                                                peernumber pcm
+                                                                samples channels
+                                                                sample-rate userdata)]
+  where @racket[pcm] is a byte string of the size
+        @racket[(* samples channels (ctype-sizeof _int16_t))].
+
+  return @racket[groupnumber] on success.
+
+  return -1 on failure.
+}
+
+@defproc[(join-av-groupchat [tox _Tox-pointer]
+                            [audio-callback procedure?]
+                            [userdata cpointer? #f]) integer?]{
+  Join AV group (you need to have been invited first).
+
+  @racket[audio-callback] is in the form @racket[(audio-callback tox groupnumber peernumber
+                                                                 pcm samples channels
+                                                                 sample-rate userdata)]
+  where @racket[pcm] is a byte string of the size
+        @racket[(* samples channels (ctype-sizeof _int16_t))].
+
+  return @racket[groupnumber] on success.
+
+  return -1 on failure.
+}
+
+@defproc[(group-send-audio [tox _Tox-pointer] [groupnumber integer?] [pcm bytes?]
+                           [samples integer?] [channels integer?] [sample-rate integer?])
+         integer?]{
+  Send audio to the groupchat.
+
+  Note that @racket[pcm] is a byte string of the size
+            @racket[(* samples channels (ctype-sizeof _int16_t))].
+
+  Valid number of samples are @racket[(/ (* sample-rate audio-length) 1000)]
+
+  Valid number of channels are 1 or 2.
+
+  Recommended values are: samples = 960, channels = 1, sample-rate = 48000
+
+  Currently the only supported sample rate is 48000.
+
+  return 0 on success
+
+  return -1 on failure.
 }
