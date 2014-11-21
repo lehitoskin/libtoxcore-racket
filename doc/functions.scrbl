@@ -90,7 +90,7 @@ for the functions found in libtoxcore.
   Get name of friendnumber and put it in name.
 
   name needs to be a valid memory location with a size of at least
-  @racket[MAX_NAME_LENGTH] (128) bytes.
+  @racket[TOX_MAX_NAME_LENGTH] (128) bytes.
 
   return length of name if success.
 
@@ -109,7 +109,7 @@ for the functions found in libtoxcore.
 
 @defproc[(get-self-name [tox _Tox-pointer] [name bytes?]) integer?]{
   name - needs to be a valid bytes buffer with a size of
-  at least @racket[MAX_NAME_LENGTH] (128) bytes.
+  at least @racket[TOX_MAX_NAME_LENGTH] (128) bytes.
 
   return length of name.
 
@@ -169,7 +169,7 @@ for the functions found in libtoxcore.
                                                         (string->bytes/utf-8))]) integer?]{
   Set our nickname.
   
-  name must be a string of maximum @racket[MAX_NAME_LENGTH] length.
+  name must be a string of maximum @racket[TOX_MAX_NAME_LENGTH] length.
   
   length must be at least 1 byte.
   
@@ -279,6 +279,31 @@ for the functions found in libtoxcore.
  @racket[public-key] and @racket[secret-key] must be 32 bytes long.
  
  if the pointer is NULL, no data will be copied to it.
+}
+
+@defproc[(group-set-title [tox _Tox-pointer]
+                          [groupnumber integer?]
+                          [title bytes?]
+                          [len integer?]) integer?]{
+  Set the group's title, limited to @racket[TOX_MAX_NAME_LENGTH].
+
+  return 0 on success
+
+  return -1 on failure.
+}
+
+@defproc[(group-get-title [tox _Tox-pointer]
+                          [groupnumber integer?]
+                          [title bytes?]
+                          [max-len integer? TOX_MAX_NAME_LENGTH]) integer?]{
+  Get group's title from @racket[groupnumber] and put it in @racket[title].
+
+  @racket[title] needs to be a byte string with a @racket[max-len] size of at least
+  @racket[TOX_MAX_NAME_LENGTH] bytes.
+
+  return length of copied title on success
+
+  return -1 on failure.
 }
 
 @section[#:tag "interactors"]{Interact with Tox}
@@ -828,6 +853,15 @@ WARNING: Groupchats will be rewritten so these might change
   
   @racket[anonproc] is in the form @racket[(anonproc tox groupnumber peernumber
                                                      action len userdata)]
+}
+
+@defproc[(callback-group-title [tox _Tox-pointer] [anonproc procedure?]
+                               [userdata cpointer? #f]) void?]{
+  Set callback function for groupchat title changes.
+  
+  @racket[anonproc] is in the form @racket[(anonproc tox groupnumber peernumber
+                                                     title len userdata)]
+  where @racket[title] is a byte string.
 }
 
 @defproc[(callback-group-namelist-change [tox _Tox-pointer] [anonproc procedure?]
