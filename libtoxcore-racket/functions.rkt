@@ -688,6 +688,26 @@
   #:c-id tox_callback_group_action)
 
 #|
+ # Set callback function for title changes.
+ #
+ # Function(Tox *tox, int groupnumber, int peernumber, uint8_t * title, uint8_t length, void *userdata)
+ # if peernumber == -1, then author is unknown (e.g. initial joining the group)
+ #
+ # void tox_callback_group_title(Tox *tox, void (*function)(Tox *tox, int, int, const uint8_t *, uint8_t,
+ #                                                          void *), void *userdata);
+ |#
+(define-tox callback-group-title
+  (_fun [tox : _Tox-pointer]
+        [anonproc : (_fun [tox : _Tox-pointer]
+                          [groupnumber : _int]
+                          [peernumber : _int]
+                          [title : _bytes]
+                          [len : _uint8_t]
+                          [userdata : _pointer] -> _void)]
+        [userdata : _pointer = #f] -> _void)
+  #:c-id tox_callback_group_title)
+
+#|
  # Set callback function for peer name list changes.
  #
  # It gets called every time the name list changes(new peer/name, deleted peer)
@@ -796,6 +816,35 @@
                                     [action : _string]
                                     [len : _uint16_t] -> _int)
   #:c-id tox_group_action_send)
+
+#|
+ # set the group's title, limited to MAX_NAME_LENGTH
+ # return 0 on success
+ # return -1 on failure
+ #
+ # int tox_group_set_title(Tox *tox, int groupnumber, const uint8_t *title, uint8_t length);
+ |#
+(define-tox group-set-title (_fun [tox : _Tox-pointer]
+                                  [groupnumber : _int]
+                                  [title : _bytes]
+                                  [len : _uint8_t] -> _int)
+  #:c-id tox_group_set_title)
+
+#|
+ # Get group title from groupnumber and put it in title.
+ # title needs to be a valid memory location with a max_length
+ # size of at least MAX_NAME_LENGTH (128) bytes.
+ #
+ # return length of copied title if success.
+ # return -1 if failure.
+ #
+ # int tox_group_get_title(Tox *tox, int groupnumber, uint8_t *title, uint32_t max_length);
+ |#
+(define-tox group-get-title (_fun [tox : _Tox-pointer]
+                                  [groupnumber : _int]
+                                  [title : _bytes]
+                                  [max-len : _uint32_t = TOX_MAX_NAME_LENGTH] -> _int)
+  #:c-id tox_group_get_title)
 
 #|
  # Check if the current peernumber corresponds to ours.
