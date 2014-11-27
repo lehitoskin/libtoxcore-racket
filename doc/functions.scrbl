@@ -885,7 +885,7 @@ Avatars must be in PNG format.
   Set the callback function for avatar information.
   
   This callback will be called when avatar information are received from friends. These events
-  can arrive at anytime, but are usually received uppon connection and in reply of avatar
+  can arrive at anytime, but are usually received upon connection and in reply of avatar
   information requests.
   
   @racket[anonproc] is in the form @racket[(anonproc tox friendnumber format hash userdata)]
