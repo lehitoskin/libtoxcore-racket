@@ -971,7 +971,7 @@
                           [friendnumber : _int]
                           [format : _int]
                           [hash : _bytes]
-                          [data : _bytes]
+                          [data : _pointer]
                           [datalen : _int]
                           [userdata : _pointer] -> _void)]
         [userdata : _pointer = #f] -> _void)

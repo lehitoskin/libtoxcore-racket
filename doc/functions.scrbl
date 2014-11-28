@@ -661,7 +661,7 @@ for the functions found in libtoxcore.
  
   Arguments:
   
-  hash - destination buffer for the hash data, it must be exactly TOX_HASH_LENGTH bytes long.
+  hash - destination buffer for the hash data, it must be exactly @racket[TOX_HASH_LENGTH] bytes long.
   
   data - data to be hashed;
   
@@ -752,7 +752,7 @@ for the functions found in libtoxcore.
                                [userdata cpointer? #f]) void?]{
   Set the callback for status type changes.
   
-  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber TOX_USERSTATUS userdata)]
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber _TOX_USERSTATUS userdata)]
 }
 
 @defproc[(callback-typing-change [tox _Tox-pointer] [anonproc prodecure?]
@@ -899,18 +899,19 @@ Avatars must be in PNG format.
   Set the callback function for avatar data.
 
   This callback will be called when the complete avatar data was correctly received from a
-  friend. This only happens in reply of an avatar data request (see tox_request_avatar_data);
+  friend. This only happens in reply of an avatar data request (see @racket[request-avatar-data]);
  
-  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber format hash
-                                                     data datalen userdata)] 
-  where 'format' is the avatar image format (see @racket[_TOX_AVATAR_FORMAT]); 'hash' is the
-  locally-calculated cryptographic hash of the avatar data (in a byte-string) and it is exactly
-  @racket[TOX_HASH_LENGTH long]; 'data' is the avatar image data (in a byte-string) and
-  'datalen' is the length of such data.
+  @racket[anonproc] is in the form @racket[(anonproc tox friendnumber img-format img-hash
+                                                     data-ptr datalen userdata)] 
+  where @racket[img-format] is the avatar image format (see @racket[_TOX_AVATAR_FORMAT]);
+  @racket[img-hash] is the locally-calculated cryptographic hash of the avatar data (in a
+  byte-string) and it is exactly @racket[TOX_HASH_LENGTH long]; @racket[data-ptr] is the
+  avatar image data (as a pointer) and @racket[datalen] is the length of such data.
  
-  If format is NONE, 'data' is NULL, 'datalen' is zero, and the hash is zeroed. The hash is
-  always validated locally with the function @racket[tox-hash] and ensured to match the image
-  data, so this value can be safely used to compare with cached avatars.
+  If format is @racket['NONE], @racket[data-ptr] is @racket[#f], @racket[datalen] is zero,
+  and the hash is zeroed. The hash is always validated locally with the function
+  @racket[tox-hash] and ensured to match the image data, so this value can be safely used
+  to compare with cached avatars.
  
   WARNING: users MUST treat all avatar image data received from another peer as untrusted and
   potentially malicious. The library only ensures that the data which arrived is the same the
