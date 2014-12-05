@@ -32,6 +32,8 @@ with the enums, especially.
 
 @defthing[TOX_HASH_LENGTH TOX_AVATAR_HASH_LENGTH]
 
+@defthing[TOXDNS_MAX_RECOMMENDED_NAME_LENGTH 32]
+
 @section[#:tag "enums"]{Enums}
 
 The enums that Tox uses should be accessed through the following procedures.

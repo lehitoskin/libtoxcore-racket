@@ -1,4 +1,5 @@
-#lang racket
+(module libtoxcore-racket/av
+  racket/base
 ; libtoxcore-racket/av.rkt
 ; ffi implementation of libtoxav
 (require ffi/unsafe
@@ -534,3 +535,4 @@
                                   [channels : _uint8_t]
                                   [sample-rate : _int] -> _int)
   #:c-id toxav_group_send_audio)
+)

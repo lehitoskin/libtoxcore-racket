@@ -1,4 +1,5 @@
-#lang r6rs
+(module libtoxcore-racket/enums
+  r6rs
 ; enums.rkt
 ; implements the TOX enums so that we can access
 ; and manipulate them. using the _enum from ffi/unsafe
@@ -179,3 +180,4 @@
                  (let ([i (enum-set-indexer enum)])
                    (expt 2 (i sym)))
                  #f))))
+)
