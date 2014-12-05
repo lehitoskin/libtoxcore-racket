@@ -1,8 +1,8 @@
---- functions.rkt.old	2014-05-22 13:38:52.705977658 -0700
-+++ functions.rkt	2014-05-22 13:39:15.641977495 -0700
-@@ -7,7 +7,17 @@
- (provide (all-from-out "enums.rkt")
-          (all-defined-out))
+--- functions.rkt.old	2014-12-05 00:00:58.249552410 -0800
++++ functions.rkt	2014-12-05 00:02:04.519547377 -0800
+@@ -12,7 +12,17 @@
+                      _uint32_t
+                      _uint64_t))
  
 -(define-ffi-definer define-tox (ffi-lib "libtoxcore"))
 +; jenkins junk
@@ -17,5 +17,5 @@
 +
 +(define-ffi-definer define-tox (ffi-lib lib-path))
  
- #|
-  # this code is verbose, messy, and probably doesn't work at all.
+ #|###################
+  # type definitions #
