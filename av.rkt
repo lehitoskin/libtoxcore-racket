@@ -81,6 +81,14 @@
  |#
 (define-av av-kill! (_fun [av : _ToxAv-pointer] -> _void)
   #:c-id toxav_kill)
+  
+#|
+ # Main loop for the session. Best called right after tox_do();
+ #
+ # void toxav_do(ToxAv *av);
+ |#
+(define-av toxav-do (_fun [av : _ToxAv-pointer] -> _void)
+  #:c-id toxav_do)
 
 #|
  # @brief Register callback for call state.
@@ -115,7 +123,7 @@
                                                        _int
                                                        _pointer -> _void)]
                                      [userdata : _pointer = #f] -> _void)
-  #:c-id toxav_register_audio_recv_callback)
+  #:c-id toxav_register_audio_callback)
 
 #|
  # @brief Register callback for recieving video data
@@ -133,7 +141,7 @@
                                                        _pointer ; vpx_image_t*
                                                        _pointer -> _void)]
                                      -> _void)
-  #:c-id toxav_register_video_recv_callback)
+  #:c-id toxav_register_video_callback)
 
 #|
  # @brief Call user. Use its friend_id.
@@ -433,15 +441,11 @@
   #:c-id toxav_get_tox)
 
 #|
- # int toxav_has_activity (ToxAv *av, int32_t call_index, int16_t *PCM, uint16_t frame_size,
- #                                    float ref_energy);
-|#
-(define-av av-has-activity? (_fun [av : _ToxAv-pointer]
-                                  [call-index : _int32_t]
-                                  [pcm : _pointer]
-                                  [frame-size : _uint16_t]
-                                  [ref-energy : _float] -> _bool)
-  #:c-id toxav_has_activity)
+ # Returns number of active calls or -1 on error.
+ # int toxav_get_active_count (ToxAv *av);
+ |#
+(define-av get-active-count (_fun [av : _ToxAv-pointer] -> _int)
+  #:c-id toxav_get_active_count)
 
 #|
  # Create a new toxav group.

@@ -95,8 +95,8 @@
  |#
 (define-dns dns3-decrypt-TXT
   (_fun [dns3-obj : _pointer]
-        [tox-id : _string]
-        [id-record : _string]
+        [tox-id : _bytes]
+        [id-record : _bytes]
         [id-record-len : _uint32_t]
         [request-id : _uint32_t] -> _int)
   #:c-id tox_decrypt_dns3_TXT)

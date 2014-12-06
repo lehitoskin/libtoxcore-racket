@@ -57,6 +57,10 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   return void
 }
 
+@defproc[(toxav-do [av _ToxAv-pointer]) void?]{
+  Main loop for the session. Best called right after @racket[tox-do].
+}
+
 @defproc[(callback-callstate [av _ToxAv-pointer] [callback integer?]
                              [id integer?] [userdata cpointer? #f]) void?]{
   Register callback for call state.
@@ -306,12 +310,8 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   Return the @racket[_Tox-pointer] being used with the @racket[_ToxAv-pointer].
 }
 
-@defproc[(av-has-activity? [av _ToxAv-pointer]
-                           [call-index integer?]
-                           [pcm cpointer?]
-                           [frame-size integer]
-                           [ref-energy inexact?]) boolean?]{
-  Return whether or not there is A/V activity.
+@defproc[(get-active-count [av _ToxAv-pointer]) integer?]{
+  Returns number of active calls or -1 on error.
 }
 
 @defproc[(add-av-groupchat [tox _Tox-pointer]

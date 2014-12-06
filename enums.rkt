@@ -138,32 +138,64 @@
          
          (define (_ToxAvError sym)
            (let ([enum (make-enumeration
+                        ; = 0
                         '(None
-                          ; internal error
-                          Internal
-                          ; already has an active call
-                          AlreadyInCall
-                          ; trying to perform call action while not in a call
+                          ; = -1, /* Unknown error */
+                          Unknown
+                          ; = -20, /* Trying to perform call action while not in a call */
                           NoCall
-                          ; trying to perform call action while in invalid state
+                          ; = -21, /* Trying to perform call action while in invalid state*/
                           InvalidState
-                          ; trying to perform rtp action on invalid session
+                          ; = -22, /* Trying to call peer when already in a call with peer */
+                          AlreadyInCallWithPeer
+                          ; = -23, /* Cannot handle more calls */
+                          ReachedCallLimit
+                          ; = -30, /* Failed creating CSSession */
+                          InitializingCodecs
+                          ; = -31, /* Error setting resolution */
+                          SettingVideoResolution
+                          ; = -32, /* Error setting bitrate */
+                          SettingVideoBitrate
+                          ; = -33, /* Error splitting video payload */
+                          SplittingVideoPayload
+                          ; = -34, /* vpx_codec_encode failed */
+                          EncodingVideo
+                          ; = -35, /* opus_encode failed */
+                          EncodingAudio
+                          ; = -40, /* Sending lossy packet failed */
+                          SendingPayload
+                          ; = -41, /* One of the rtp sessions failed to initialize */
+                          CreatingRtpSessions
+                          ; = -50, /* Trying to perform rtp action on invalid session */
                           NoRtpSession
-                          ; indicating packet loss
-                          AudioPacketLost
-                          ; error in toxav_prepare_transmission()
-                          StartingAudioRtp
-                          ; error in toxav_prepare_transmission()
-                          StartingVideoRtp
-                          ; returned in toxav_kill_transmission()
-                          TerminatingAudioRtp
-                          ; returned in toxav_kill_transmission()
-                          TerminatingVideoRtp
-                          ; buffer exceeds size while encoding
+                          ; = -51, /* Codec state not initialized */
+                          InvalidCodecState
+                          ; = -52, /* Split packet exceeds it's limit */
                           PacketTooLarge))])
              (if (enum-set-member? sym enum)
                  (let ([i (enum-set-indexer enum)])
-                   (- (+ (i sym) 1)))
+                   (cond [(or (eq? sym 'None)
+                              (eq? sym 'Unknown))
+                          (- (i sym))]
+                         [(or (eq? sym 'NoCall)
+                              (eq? sym 'InvalidState)
+                              (eq? sym 'AlreadyInCallWithPeer)
+                              (eq? sym 'ReachedCallLimit))
+                          (- (+ (i sym) 18))]
+                         [(or (eq? sym 'InitializingCodecs)
+                              (eq? sym 'SettingVideoResolution)
+                              (eq? sym 'SettingVideoBitrate)
+                              (eq? sym 'SplittingVideoPayload)
+                              (eq? sym 'EncodingVideo)
+                              (eq? sym 'EncodingAudio))
+                          (- (+ (i sym) 24))]
+                         [(or (eq? sym 'SendingPayload)
+                              (eq? sym 'CreatingRtpSessions))
+                          (- (+ (i sym) 28))]
+                         [(or (eq? sym 'NoRtpSession)
+                              (eq? sym 'InvalidCodecState)
+                              (eq? sym 'PacketTooLarge))
+                          (- (+ (i sym) 36))]))
                  #f)))
          
          (define (_ToxAvCapabilities sym)
