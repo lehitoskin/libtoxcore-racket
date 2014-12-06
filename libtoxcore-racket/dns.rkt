@@ -1,9 +1,14 @@
-#lang racket
+(module libtoxcore-racket/dns
+  racket/base
 ; dns.rkt
 (require ffi/unsafe
          ffi/unsafe/define)
 
-(provide (all-defined-out))
+(provide (except-out (all-defined-out)
+                     define-dns
+                     _uint8_t
+                     _uint16_t
+                     _uint32_t))
 
 (define-ffi-definer define-dns (ffi-lib "libtoxdns"))
 
@@ -11,7 +16,17 @@
 (define _uint16_t _uint16)
 (define _uint32_t _uint32)
 
-#| How to use this api to make secure tox dns3 requests:
+; The _string type supports conversion between Racket strings
+; and char* strings using a parameter-determined conversion.
+; instead of using _bytes, which is unnatural, use _string
+; of specified type _string*/utf-8.
+(default-_string-type _string*/utf-8)
+
+; Clients are encouraged to set this as the maximum length names can have.
+(define TOXDNS_MAX_RECOMMENDED_NAME_LENGTH 32)
+
+#|
+ # How to use this api to make secure tox dns3 requests:
  #
  # 1. Get the public key of a server that supports tox dns3.
  # 2. use tox_dns3_new() to create a new object to create DNS requests
@@ -30,11 +45,14 @@
  #
  # return Null on failure.
  # return pointer object on success.
+ # void *tox_dns3_new(uint8_t *server_public_key);
  |#
-(define-dns tox_dns3_new (_fun _string -> _pointer))
+(define-dns dns3-new (_fun [server-public-key : _string] -> _pointer)
+  #:c-id tox_dns3_new)
 
 ; Destroy the tox dns3 object.
-(define-dns tox_dns3_kill (_fun _pointer -> _void))
+(define-dns dns3-kill! (_fun _pointer -> _void)
+  #:c-id tox_dns3_kill)
 
 #| Generate a dns3 string of string_max_len used to query the dns server referred to by to
  # dns3_object for a tox id registered to user with name of name_len.
@@ -51,8 +69,14 @@
  # int tox_generate_dns3_string(void *dns3_object, uint8_t *string, uint16_t string_max_len, uint32_t *request_id, 
  #                             uint8_t *name, uint8_t name_len)
  |#
-(define-dns tox_generate_dns3_string
-  (_fun _pointer _pointer _uint16_t _pointer _string _uint8_t -> _int))
+(define-dns dns3-generate-string
+  (_fun [dns3-obj : _pointer]
+        [str : _bytes]
+        [str-max-len : _uint16_t]
+        [request-id : _bytes]
+        [name : _string]
+        [name-len : _uint8_t] -> _int)
+  #:c-id tox_generate_dns3_string)
 
 #| Decode and decrypt the id_record returned of length id_record_len into
  # tox_id (needs to be at least TOX_FRIEND_ADDRESS_SIZE).
@@ -69,4 +93,11 @@
  # int tox_decrypt_dns3_TXT(void *dns3_object, uint8_t *tox_id, uint8_t *id_record, uint32_t id_record_len,
  #                         uint32_t request_id)
  |#
-(define-dns tox_decrypt_dns3_TXT (_fun _pointer _string _string _uint32_t _uint32_t -> _int))
+(define-dns dns3-decrypt-TXT
+  (_fun [dns3-obj : _pointer]
+        [tox-id : _bytes]
+        [id-record : _bytes]
+        [id-record-len : _uint32_t]
+        [request-id : _uint32_t] -> _int)
+  #:c-id tox_decrypt_dns3_TXT)
+)

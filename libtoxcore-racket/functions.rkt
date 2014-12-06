@@ -1,4 +1,5 @@
-#lang racket
+(module libtoxcore-racket/functions
+  racket/base
 ; libtoxcore-racket/functions.rkt
 ; FFI implementation of libtoxcore
 (require ffi/unsafe
@@ -1370,3 +1371,4 @@
                            [data : _bytes]
                            [len : _uint32_t] -> _int)
   #:c-id tox_load)
+)
