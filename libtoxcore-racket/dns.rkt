@@ -98,6 +98,6 @@
         [tox-id : _bytes]
         [id-record : _bytes]
         [id-record-len : _uint32_t]
-        [request-id : _uint32_t] -> _int)
+        [request-id : _bytes] -> _int)
   #:c-id tox_decrypt_dns3_TXT)
 )
