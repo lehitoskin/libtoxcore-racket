@@ -11,3 +11,7 @@
 (define release-notes '("Initial release."))
 
 (define required-core-version "5.3")
+
+(define deps '("base"
+	       "scribble-lib"
+	       "r6rs-lib"))
