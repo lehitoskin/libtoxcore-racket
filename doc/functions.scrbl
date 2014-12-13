@@ -451,14 +451,14 @@ for the functions found in libtoxcore.
 
 @section[#:tag "friend-group"]{Friend and Group Manipulation}
 
-@defproc[(add-friend [tox _Tox-pointer] [address bytes?]
-                     [message string?] [message-length integer?
-                                                       (bytes-length
-                                                        (string->bytes/utf-8 message))])
-         integer?]{
+@defproc[(add-friend [tox _Tox-pointer]
+                     [address bytes?]
+                     [message bytes?]
+                     [message-length integer? (bytes-length message)]) integer?]{
   Add a friend.
   
-  Set the message that will be sent along with friend request.
+  Set the message that will be sent along with friend request. Must not be longer than
+  @racket[TOX_MAX_FRIENDREQUEST_LENGTH] length in bytes.
   
   @racket[address] is the address of the friend (returned by getaddress of the friend
   you wish to add) it must be @racket[TOX_FRIEND_ADDRESS_SIZE] bytes.

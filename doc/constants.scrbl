@@ -17,6 +17,8 @@ with the enums, especially.
 
 @defthing[TOX_MAX_STATUSMESSAGE_LENGTH 1007]
 
+@defthing[TOX_MAX_FRIENDREQUEST_LENGTH 1016]
+
 @defthing[TOX_CLIENT_ID_SIZE 32]
 
 @defthing[TOX_FRIEND_ADDRESS_SIZE (+ TOX_CLIENT_ID_SIZE

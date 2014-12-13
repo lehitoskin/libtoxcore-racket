@@ -332,6 +332,9 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 }
 
 @defproc[(join-av-groupchat [tox _Tox-pointer]
+                            [friendnumber integer?]
+                            [data bytes?]
+                            [data-len integer?]
                             [audio-callback procedure?]
                             [userdata cpointer? #f]) integer?]{
   Join AV group (you need to have been invited first).
