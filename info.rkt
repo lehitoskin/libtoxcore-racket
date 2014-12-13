@@ -12,4 +12,6 @@
 
 (define required-core-version "6.0")
 
-(define deps '("base" "scribble-lib"))
+(define deps '("base"
+               "scribble-lib"
+               "r6rs-lib"))
