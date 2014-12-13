@@ -501,6 +501,9 @@
  |#
 (define-av join-av-groupchat
   (_fun [tox : _Tox-pointer]
+        [friendnumber : _int32_t]
+        [data : _bytes]
+        [data-len : _uint16_t]
         [audio-callback : (_fun [tox : _Tox-pointer]
                                 [groupnumber : _int]
                                 [peernumber : _int]

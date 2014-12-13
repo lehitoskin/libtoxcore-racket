@@ -38,6 +38,7 @@
 ; Maximum length of single messages after which they should be split.
 (define TOX_MAX_MESSAGE_LENGTH 1368)
 (define TOX_MAX_STATUSMESSAGE_LENGTH 1007)
+(define TOX_MAX_FRIENDREQUEST_LENGTH 1016)
 (define TOX_CLIENT_ID_SIZE 32)
 
 (define TOX_FRIEND_ADDRESS_SIZE (+ TOX_CLIENT_ID_SIZE
@@ -117,9 +118,8 @@
  |#
 (define-tox add-friend (_fun [tox : _Tox-pointer]
                              [address : _bytes]
-                             [message : _string]
-                             [message-length : _uint16_t = (bytes-length
-                                                            (string->bytes/utf-8 message))]
+                             [message : _bytes]
+                             [message-length : _uint16_t = (bytes-length message)]
                              -> _int32_t)
   #:c-id tox_add_friend)
 
