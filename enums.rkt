@@ -5,7 +5,7 @@
 ; and manipulate them. using the _enum from ffi/unsafe
 ; wasn't working out
 
-(library (examples hello)
+(library (libtoxcore-racket enums)
          (export _TOX_FAERR
                  _TOX_USERSTATUS
                  _TOX_CHAT_CHANGE_PEER
