@@ -1311,21 +1311,18 @@
   #:c-id tox_isconnected)
 
 #|
- #  Run this function at startup.
+ # Run this function at startup.
  #
- #  Initializes a tox structure
- #  The type of communication socket depends on ipv6enabled:
- #  If set to 0 (zero), creates an IPv4 socket which subsequently only allows
- #    IPv4 communication
- #  If set to anything else, creates an IPv6 socket which allows both IPv4 AND
- #    IPv6 communication
+ # Options are some options that can be passed to the Tox instance (see above struct).
  #
- #  return allocated instance of tox on success.
- #  return 0 if there are problems.
+ # If options is NULL, tox_new() will use default settings.
  #
- # Tox *tox_new(uint8_t ipv6enabled);
+ # Initializes a tox structure
+ # return allocated instance of tox on success.
+ # return NULL on failure.
+ # Tox *tox_new(Tox_Options *options);
  |#
-(define-tox tox-new (_fun [ipv6? : _bool] -> _Tox-pointer)
+(define-tox tox-new (_fun [options : _pointer] -> _Tox-pointer)
   #:c-id tox_new)
 
 #|

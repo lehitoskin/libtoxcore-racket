@@ -16,7 +16,8 @@
                  _ToxAvError
                  _ToxAvCapabilities
                  _TOX_AVATAR_FORMAT
-                 _TOX_GROUPCHAT_TYPE)
+                 _TOX_GROUPCHAT_TYPE
+                 _TOX_PROXY_TYPE)
          (import (rnrs))
          ; enum definitions
          ; Errors for m_addfriend
