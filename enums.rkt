@@ -89,6 +89,13 @@
                    (i sym))
                  #f)))
          
+         (define (_TOX_PROXY_TYPE sym)
+           (let ([enum (make-enumeration '(NONE SOCKS5 HTTP))])
+             (if (enum-set-member? sym enum)
+                 (let ([i (enum-set-indexer enum)])
+                   (i sym))
+                 #f)))
+         
          #| ############### BEGIN AV ENUMERATIONS ############# |#
          (define (_ToxAvCallbackID sym)
            (let ([enum (make-enumeration
@@ -130,7 +137,7 @@
                           CallStarting
                           CallActive
                           CallHold
-                          CallHanged_up))])
+                          CallHangedUp))])
              (if (enum-set-member? sym enum)
                  (let ([i (enum-set-indexer enum)])
                    (- (i sym) 1))
@@ -144,7 +151,7 @@
                           Unknown
                           ; = -20, /* Trying to perform call action while not in a call */
                           NoCall
-                          ; = -21, /* Trying to perform call action while in invalid state*/
+                          ; = -21, /* Trying to perform call action while in an invalid state */
                           InvalidState
                           ; = -22, /* Trying to call peer when already in a call with peer */
                           AlreadyInCallWithPeer
@@ -170,7 +177,7 @@
                           NoRtpSession
                           ; = -51, /* Codec state not initialized */
                           InvalidCodecState
-                          ; = -52, /* Split packet exceeds it's limit */
+                          ; = -52, /* Split packet exceeds its limit */
                           PacketTooLarge))])
              (if (enum-set-member? sym enum)
                  (let ([i (enum-set-indexer enum)])

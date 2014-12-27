@@ -70,24 +70,40 @@ The enums that Tox uses should be accessed through the following procedures.
   Types allowed in filecontrols.
 }
 
-@defproc[(_ToxAvCallbackID [sym (or/c 'OnInvite
-                                      'OnStart
-                                      'OnCancel
-                                      'OnReject
-                                      'OnEnd
-                                      'OnRinging
-                                      'OnStarting
-                                      'OnEnding
-                                      'OnRequestTimeout
-                                      'OnPeerTimeout
-                                      'OnMediaChange)]) (or/c false? integer?)]{
-  @racket['OnInvite], @racket['OnStart], @racket['OnCancel], @racket['OnReject],
-  and @racket['OnEnd] are all for A/V requests.
+@defproc[(_TOX_AVATAR_FORMAT [sym (or/c 'None 'PNG)]) (or/c false? integer?)]{
+  Represents the format of the avatar.
+}
+
+@defproc[(_TOX_GROUPCHAT_TYPE [sym (or/c 'TEXT 'AV)]) (or/c false? integer?)]{
+  Represents the type of the groupchat.
   
-  @racket['OnRinging], @racket['OnStarting], and @racket['OnEnding] are for
+  @racket[TOX_GROUPCHAT_TYPE_TEXT] groupchats must be accepted with the @racket[join-groupchat] function.
+  
+  The function to accept @racket[TOX_GROUPCHAT_TYPE_AV] is in toxav.
+}
+
+@defproc[(_TOX_PROXY_TYPE [sym (or/c 'NONE 'SOCKS5 'HTTP)]) (or/c false? integer?)]{
+  Represents the type of proxy being used.
+}
+
+@defproc[(_ToxAvCallbackID [sym (or/c 'OnInvite
+                                      'Start
+                                      'Cancel
+                                      'Reject
+                                      'End
+                                      'Ringing
+                                      'Starting
+                                      'Ending
+                                      'RequestTimeout
+                                      'PeerTimeout
+                                      'MediaChange)]) (or/c false? integer?)]{
+  @racket['Invite], @racket['Start], @racket['Cancel], @racket['Reject],
+  and @racket['End] are all for A/V requests.
+  
+  @racket['Ringing], @racket['Starting], and @racket['Ending] are for
   A/V responses.
   
-  @racket['OnRequestTimeout], @racket['OnPeerTimeout], and @racket['OnMediaChange] are
+  @racket['RequestTimeout], @racket['PeerTimeout], and @racket['MediaChange] are
   protocol errors.
 }
 
@@ -100,7 +116,7 @@ The enums that Tox uses should be accessed through the following procedures.
                                      'CallStarting
                                      'CallActive
                                      'CallHold
-                                     'CallHanged_up)]) (or/c false? integer?)]{
+                                     'CallHangedUp)]) (or/c false? integer?)]{
   Represents the state of the current call.
   
   @racket['CallInviting] is for when we're sending a call invite.
@@ -108,39 +124,50 @@ The enums that Tox uses should be accessed through the following procedures.
   @racket['CallStarting] is for when we're getting a call invite.
 }
 
-@defproc[(_ToxAvError [sym (or/c 'None
-                                 'Internal
-                                 'AlreadyInCall
-                                 'NoCall
-                                 'InvalidState
-                                 'NoRtpSession
-                                 'AudioPacketLost
-                                 'StartingAudioRtp
-                                 'StartingVideoRtp
-                                 'TerminatingAudioRtp
-                                 'TerminatingVideoRtp
-                                 'PacketTooLarge)]) (or/c false? integer?)]{
-  @racket['Internal] represents an internal error.
-  
-  @racket['AlreadyInCall] means we already have a call in progress.
-  
+@defproc[(_ToxAvError [sym (or/c 'None = 0
+                                 'Unknown = -1
+                                 'NoCall = -20
+                                 'InvalidState = -21
+                                 'AlreadyInCallWithPeer = -22
+                                 'ReachedCallLimit = -23
+                                 'InitializingCodecs = -30
+                                 'SettingVideoResolution = -31
+                                 'SettingVideoBitrate = -32
+                                 'SplittingVideoPayload = -33
+                                 'EncodingVideo = -34
+                                 'EncodingAudio = -35
+                                 'SendingPayload = -40
+                                 'CreatingRtpSessions = -41
+                                 'NoRtpSession = -50
+                                 'InvalidCodecState = -51
+                                 'PacketTooLarge = -52)]) (or/c false? integer?)]{
   @racket['NoCall] means we are trying to perform a call action while not in a call.
   
   @racket['InvalidState] means we are trying to perform a call action while in an invalid state.
   
-  @racket['NoRtpSession] means we are trying to perform an rtp action on an invalid session.
+  @racket['AlreadyInCallWithPeer] means we are trying to call peer when already in a call with peer.
   
-  @racket['AudioPacketLost] represents packet loss.
+  @racket['ReachedCallLimit] means we cannot handle more calls.
   
-  @racket['StartingAudioRtp] represents an error in @tt{prepare-transmission}.
+  @racket['InitializingCodecs] means we failed to create a CSSession.
   
-  @racket['StartingVideoRtp] represents an error in @tt{prepare-transmission}.
+  @racket['SplittingVideoPayload] means there was an error splitting the video payload
   
-  @racket['TerminatingAudioRtp] represents an error in @tt{kill-transmission}.
+  @racket['EncodingVideo] means @racket[vpx_codec_encode] failed.
   
-  @racket['TerminatingVideoRtp] represents an error in @tt{kill-transmission}.
+  @racket['EncodingAudio] means @racket[opus_encode] failed.
   
-  @racket['PacketTooLarge] represents buffer exceeds size while encoding.
+  @racket['SendingPayload] means sending lossy packet failed.
+  
+  @racket['CreatingRtpSessions] means one of the rtp sessions failed to initialize.
+  
+  @racket['NoRtpSession] means we tried to perform an rtp action on an invalid session.
+  
+  @racket['InvalidCodecState] means the codec state was not initialized.
+  
+  @racket['PacketTooLarge] means the buffer exceeds size while encoding.
+  
+  Those not listed above are self-explanatory.
 }
 
 @defproc[(_ToxAvCapabilities [sym (or/c 'AudioEncoding
@@ -154,16 +181,4 @@ The enums that Tox uses should be accessed through the following procedures.
   @racket['VideoEncoding] is equivalent to 1 << 2 or @racket[(expt 2 2)]
   
   @racket['VideoDecoding] is equivalent to 1 << 3 or @racket[(expt 2 3)]
-}
-
-@defproc[(_TOX_AVATAR_FORMAT [sym (or/c 'None 'PNG)]) (or/c false? integer?)]{
-  Represents the format of the avatar.
-}
-
-@defproc[(_TOX_GROUPCHAT_TYPE [sym (or/c 'TEXT 'AV)]) (or/c false? integer?)]{
-  Represents the type of the groupchat.
-  
-  @racket[TOX_GROUPCHAT_TYPE_TEXT] groupchats must be accepted with the @racket[join-groupchat] function.
-  
-  The function to accept @racket[TOX_GROUPCHAT_TYPE_AV] is in toxav.
 }

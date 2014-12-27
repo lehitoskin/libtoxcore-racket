@@ -244,6 +244,14 @@ for the functions found in libtoxcore.
   return -1 if failure
 }
 
+@defproc[(get-group-peer-pubkey! [tox _Tox-pointer] [groupnumber integer?]
+                                 [peernumber integer?] [pubkey bytes?]) integer?]{
+  Copy the public key of @racket[peernumber] who is in @racket[groupnumber]
+  into @racket[pubkey].
+
+  @racket[pubkey] must be at least @racket[TOX_CLIENT_ID_SIZE].
+}
+
 @defproc[(count-chatlist [tox _Tox-pointer]) integer?]{
   Return the number of group chats in the instance @racket[tox].
  
@@ -383,7 +391,7 @@ for the functions found in libtoxcore.
 
 @defstruct[Tox-Options ([ipv6-enabled? boolean?]
                         [udp-disabled? boolean?]
-                        [proxy-enabled? boolean?]
+                        [proxy-type integer?]
                         [proxy-address string?]
                         [proxy-port integer?])]{
   The type of UDP socket created depends on @racket[ipv6-enabled?]:
@@ -396,8 +404,11 @@ for the functions found in libtoxcore.
   This will force Tox to use TCP only which may slow things down.
   Disabling udp support is necessary when using anonymous proxies or Tor.
   
-  Set @racket[proxy-enabled?] to enable proxy support. (Only basic TCP socks5 proxy
-  currently supported.) (default: @racket[#f] (disabled))
+  @racket[proxy-type] is a value from @racket[TOX_PROXY_TYPE] enumerator.
+  
+  @racket[proxy-address] is the IP or domain of the proxy.
+  
+  @racket[proxy-port] is the port of the proxy in host byte order.
 }
 
 @defproc[(tox-new [opts _Tox-Options-pointer]) _Tox-pointer]{

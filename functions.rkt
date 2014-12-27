@@ -50,26 +50,23 @@
 
 (define-cstruct _Tox-Options
  #|
- # The type of UDP socket created depends on ipv6enabled:
- # If set to 0 (zero), creates an IPv4 socket which subsequently only allows
- # IPv4 communication
- # If set to anything else (default), creates an IPv6 socket which allows both IPv4 AND
- # IPv6 communication
- |#
+  # The type of UDP socket created depends on ipv6enabled:
+  # If set to 0 (zero), creates an IPv4 socket which subsequently only allows
+  # IPv4 communication
+  # If set to anything else (default), creates an IPv6 socket which allows both IPv4 AND
+  # IPv6 communication
+  |#
  ([ipv6-enabled? _bool]
 
- #| Set to 1 to disable udp support. (default: 0)
- This will force Tox to use TCP only which may slow things down.
- Disabling udp support is necessary when using anonymous proxies or Tor.|#
+ #|
+  # Set to 1 to disable udp support. (default: 0)
+  # This will force Tox to use TCP only which may slow things down.
+  # Disabling udp support is necessary when using proxies or Tor.
+  |#
  [udp-disabled? _bool]
-
- ; Enable proxy support. (only basic TCP socks5 proxy currently supported.)
- ; (default: 0 (disabled))
- [proxy-enabled? _bool]
- [proxy-address _string] ; Proxy ip or domain in NULL terminated string format.
- [proxy-port _uint16_t]) ; Proxy port: in host byte order.
-)
-
+ [proxy-type _uint8_t] ; a value from TOX_PROXY_TYPE
+ [proxy-address _string] ; proxy IP or domain
+ [proxy-port _uint16_t])) ; proxy port in host byte order
 
 #| ############# enum definitions have moved to enums.rkt which uses r6rs ################# |#
 
@@ -764,6 +761,21 @@
                                       [peernumber : _int]
                                       [name : _bytes] -> _int)
   #:c-id tox_group_peername)
+
+#|
+ # Copy the public key of peernumber who is in groupnumber to pk.
+ # pk must be TOX_CLIENT_ID_SIZE long.
+ #
+ # returns 0 on success
+ # returns -1 on failure
+ #
+ # int tox_group_peer_pubkey(const Tox *tox, int groupnumber, int peernumber, uint8_t *pk);
+ |#
+(define-tox get-group-peer-pubkey! (_fun [tox : _Tox-pointer]
+                                         [groupnumber : _int]
+                                         [peernumber : _int]
+                                         [pubkey : _bytes] -> _int)
+  #:c-id tox_group_peer_pubkey)
 
 #|
  # invite friendnumber to groupnumber
