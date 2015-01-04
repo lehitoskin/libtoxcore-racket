@@ -85,7 +85,7 @@
  # int tox_pass_encrypt(const uint8_t *data, uint32_t data_len, uint8_t *passphrase,
  #                      uint32_t pplength, uint8_t *out);
  |#
-(define-encrypt pass-encrypt
+(define-encrypt pass-encrypt!
   (_fun [data : _bytes]
         [data-len : _uint32_t]
         [passphrase : _string]
@@ -103,11 +103,11 @@
  # int tox_encrypted_save(const Tox *tox, uint8_t *data, uint8_t *passphrase,
  #                        uint32_t pplength);
  |#
-(define-encrypt encrypted-save
+(define-encrypt encrypted-save!
   (_fun [tox : _Tox-pointer]
         [data : _bytes]
         [passphrase : _string]
-        [pplength : _uint32_t] -> _int)
+        [pplength : _uint32_t = (string-length passphrase)] -> _int)
   #:c-id tox_encrypted_save)
 
 #|
@@ -136,7 +136,7 @@
         [data : _bytes]
         [len : _uint32_t]
         [passphrase : _string]
-        [pplength : _uint32_t] -> _int)
+        [pplength : _uint32_t = (string-length passphrase)] -> _int)
   #:c-id tox_encrypted_load)
 
 #|
@@ -224,7 +224,7 @@
  #
  # int tox_encrypted_key_save(const Tox *tox, uint8_t *data, uint8_t *key);
  |#
-(define-encrypt encrypted-key-save
+(define-encrypt encrypted-key-save!
   (_fun [tox : _Tox-pointer]
         [data : _bytes]
         [key : _bytes] -> _int)
@@ -271,11 +271,10 @@
  #
  # int tox_is_data_encrypted(const uint8_t *data);
  # int tox_is_save_encrypted(const uint8_t *data);
- # poorly-named alias for backwards compat (oh irony...)
  |#
-(define-encrypt is-data-encrypted? (_fun [data : _bytes] -> _bool)
+(define-encrypt data-encrypted? (_fun [data : _bytes] -> _bool)
   #:c-id tox_is_data_encrypted)
-
-(define-encrypt is-save-encrypted? (_fun [data : _bytes] -> _bool)
+; poorly-named alias for backwards compat (oh irony...)
+(define-encrypt save-encrypted? (_fun [data : _bytes] -> _bool)
   #:c-id tox_is_save_encrypted)
 )
