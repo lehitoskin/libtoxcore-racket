@@ -166,7 +166,7 @@ for the functions found in libtoxcore.
 
 @defproc[(set-name [tox _Tox-pointer] [name string?] [len integer?
                                                        (bytes-length
-                                                        (string->bytes/utf-8))]) integer?]{
+                                                        (string->bytes/utf-8 name))]) integer?]{
   Set our nickname.
   
   name must be a string of maximum @racket[TOX_MAX_NAME_LENGTH] length.
