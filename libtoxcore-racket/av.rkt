@@ -37,7 +37,7 @@
 
 (define RTP_PAYLOAD_SIZE 65535)
 
-(define-cstruct _ToxAvCodecSettings
+(define-cstruct _ToxAvCSettings
   ([call_type _int] ; _ToxAvCallType enum value
    
    [video_bitrate _uint32_t] ; In kbits/s
@@ -49,7 +49,7 @@
    [audio_sample_rate _uint32_t] ; In Hz
    [audio_channels _uint32_t]))
 
-(define av_DefaultSettings _ToxAvCodecSettings)
+(define av_DefaultSettings _ToxAvCSettings)
 
 #|
  # These are the callbacks' prototypes that will be used throughout the wrapper
@@ -68,12 +68,12 @@
         [call-idx : _int32_t]
         [pcm : _pointer]
         [size : _uint16_t]
-        [data : _pointer] -> _void))
+        [data : _bytes] -> _void))
 (define ToxAvVideoCallback
   (_fun [agent : _pointer]
         [call-idx : _int32_t]
         [img : _bytes]
-        [data : _pointer] -> _void))
+        [data : _bytes] -> _void))
 
 #|
  # @brief Start new A/V session. There can only be one session at the time. If you register more
@@ -139,7 +139,7 @@
   #:c-id toxav_register_callstate_callback)
 
 #|
- #  Register callback for audio data.
+ # Register callback for audio data.
  #
  # void toxav_register_audio_callback (ToxAv *av, ToxAvAudioCallback cb, void *userdata);
  |#
@@ -159,23 +159,18 @@
   #:c-id toxav_register_video_callback)
 
 #|
- # @brief Call user. Use its friend_id.
+ # Call user. Use its friend_id.
  #
- # @param av Handler.
- # @param user The user.
- # @param call_type Call type.
- # @param ringing_seconds Ringing timeout.
- # @return int
- # @retval 0 Success.
- # @retval ToxAvError On error.
- #
- # int toxav_call(ToxAv *av, int32_t *call_index, int user,
- #                const ToxAvCSettings *csettings, int ringing_seconds);
+ # int toxav_call(ToxAv *av,
+ #                int32_t *call_index,
+ #                int friend_id,
+ #                const ToxAvCSettings *csettings,
+ #                int ringing_seconds);
  |#
 (define-av av-call (_fun [av : _ToxAv-pointer]
-                         [call-index : _pointer]
-                         [user : _int]
-                         [callsettings : _pointer] ; enum value
+                         [call-index : _bytes]
+                         [friend-id : _int]
+                         [csettings : _pointer]
                          [ringing-seconds : _int] -> _int)
   #:c-id toxav_call)
 
@@ -274,37 +269,37 @@
   #:c-id toxav_stop_call)
 
 #|
- # @brief Must be call before any RTP transmission occurs.
+ # Allocates transmission data. Must be called before calling toxav_prepare_* and toxav_send_*.
+ # Also, it must be called when call is started
  #
- # @param av Handler.
- # @param support_video Is video supported ? 1 : 0
- # @return int
- # @retval 0 Success.
- # @retval ToxAvError On error.
- #
- # int toxav_prepare_transmission(ToxAv *av, int32_t call_index, uint32_t jbuf_size,
- #                                uint32_t VAD_treshold, int support_video);
+ # int toxav_prepare_transmission(ToxAv *av, int32_t call_index, int support_video);
  |#
 (define-av prepare-transmission (_fun [av : _ToxAv-pointer]
                                       [call-index : _int32_t]
-                                      [jbuf-size : _uint32_t]
-                                      [VAD-threshold : _uint32_t]
                                       [support-video? : _bool] -> _int)
   #:c-id toxav_prepare_transmission)
 
 #|
- # @brief Call this at the end of the transmission.
- #
- # @param av Handler.
- # @return int
- # @retval 0 Success.
- # @retval ToxAvError On error.
+ # Clears transmission data. Call this at the end of the transmission.
  #
  # int toxav_kill_transmission(ToxAv *av, int32_t call_index);
  |#
 (define-av kill-transmission (_fun [av : _ToxAv-pointer]
                                    [call-index : _int32_t] -> _int)
   #:c-id toxav_kill_transmission)
+
+#|
+ # Encode video frame
+ #
+ # int toxav_prepare_video_frame ( ToxAv *av, int32_t call_index, uint8_t *dest, int dest_max,
+ #                                            vpx_image_t *input );
+ |#
+(define-av prepare-video-frame (_fun [av : _ToxAv-pointer]
+                                     [call-index : _int32_t]
+                                     [dest : _pointer]
+                                     [dest-max : _int]
+                                     [input : _bytes] -> _int)
+  #:c-id toxav_prepare_video_frame)
 
 #|
  # @brief Encode and send video packet.
@@ -321,9 +316,23 @@
  |#
 (define-av send-video (_fun [av : _ToxAv-pointer]
                             [call-index : _int32_t]
-                            [frame : _pointer]
+                            [frame : _bytes]
                             [frame-size : _int] -> _int)
   #:c-id toxav_send_video)
+
+#|
+ # Encode audio frame.
+ #
+ # int toxav_prepare_audio_frame ( ToxAv *av, int32_t call_index, uint8_t *dest, int dest_max,
+ #                                            const int16_t *frame, int frame_size);
+ |#
+(define-av prepare-audio-frame (_fun [av : _ToxAv-pointer]
+                                     [call-index : _int32_t]
+                                     [dest : _pointer]
+                                     [dest-max : _int]
+                                     [frame : _bytes]
+                                     [frame-size : _int] -> _int)
+  #:c-id toxav_prepare_audio_frame)
 
 #|
  # @brief Send audio frame.
@@ -346,50 +355,6 @@
   #:c-id toxav_send_audio)
 
 #|
- # @brief Encode video frame
- #
- # @param av Handler
- # @param dest Where to
- # @param dest_max Max size
- # @param input What to encode
- # @return int
- # @retval ToxAvError On error.
- # @retval >0 On success
- #
- # int toxav_prepare_video_frame ( ToxAv *av, int32_t call_index, uint8_t *dest, int dest_max,
- #                                            vpx_image_t *input );
- |#
-(define-av prepare-video-frame (_fun [av : _ToxAv-pointer]
-                                     [call-index : _int32_t]
-                                     [dest : _pointer]
-                                     [dest-max : _int]
-                                     [input : _pointer] -> _int)
-  #:c-id toxav_prepare_video_frame)
-
-#|
- # @brief Encode audio frame
- #
- # @param av Handler
- # @param dest dest
- # @param dest_max Max dest size
- # @param frame The frame
- # @param frame_size The frame size
- # @return int
- # @retval ToxAvError On error.
- # @retval >0 On success
- #
- # int toxav_prepare_audio_frame ( ToxAv *av, int32_t call_index, uint8_t *dest, int dest_max,
- #                                            const int16_t *frame, int frame_size);
- |#
-(define-av prepare-audio-frame (_fun [av : _ToxAv-pointer]
-                                     [call-index : _int32_t]
-                                     [dest : _pointer]
-                                     [dest-max : _int]
-                                     [frame : _pointer]
-                                     [frame-size : _int] -> _int)
-  #:c-id toxav_prepare_audio_frame)
-
-#|
  # @brief Get peer transmission type. It can either be audio or video.
  #
  # @param av Handler.
@@ -404,7 +369,7 @@
 (define-av get-peer-csettings (_fun [av : _ToxAv-pointer]
                                     [call-index : _int32_t]
                                     [peer : _int]
-                                    [dest : _bytes] -> _int)
+                                    [dest : _pointer] -> _int)
   #:c-id toxav_get_peer_csettings)
 
 #|
@@ -423,12 +388,7 @@
   #:c-id toxav_get_peer_id)
 
 #|
- # @brief Get current call state
- #
- # @param av Handler
- # @param call_index What call
- # @return int
- # @retval ToxAvCallState State id
+ # Get current call state.
  #
  # ToxAvCallState toxav_get_call_state ( ToxAv *av, int32_t call_index );
  |#
@@ -538,14 +498,12 @@
  #
  # Note that total size of pcm in bytes is equal to (samples * channels * sizeof(int16_t)).
  #
- # Valid number of samples are ((sample rate) * (audio length
- #                              (Valid ones are: 2.5, 5, 10, 20, 40 or 60 ms)) / 1000)
+ # Valid number of samples are
+ # ((sample rate) * (audio length (Valid ones are: 2.5, 5, 10, 20, 40 or 60 ms)) / 1000)
  # Valid number of channels are 1 or 2.
  # Valid sample rates are 8000, 12000, 16000, 24000, or 48000.
  #
  # Recommended values are: samples = 960, channels = 1, sample_rate = 48000
- #
- # TODO: currently the only supported sample rate is 48000.
  #
  # int toxav_group_send_audio(Tox *tox, int groupnumber, const int16_t *pcm,
  #                            unsigned int samples, uint8_t channels, unsigned int sample_rate);

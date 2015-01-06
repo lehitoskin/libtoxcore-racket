@@ -100,20 +100,27 @@
          #| ############### BEGIN AV ENUMERATIONS ############# |#
          (define (_ToxAvCallbackID sym)
            (let ([enum (make-enumeration
-                        ; requests
+                        ; incoming call
                         '(Invite
-                          Start
-                          Cancel
-                          Reject
-                          End
-                          ; responses
+                          ; when peer is ready to accept/reject call
                           Ringing
-                          Starting
-                          Ending
-                          ; protocol
+                          ; call (rtp transmission) started
+                          Start
+                          ; the side that initiated the call canceled invite
+                          Cancel
+                          ; the side that was invited rejected the call
+                          Reject
+                          ; the call that was active has ended
+                          End
+                          ; when the request didn't get a response in time
                           RequestTimeout
+                          ; peer timed out; stop the call
                           PeerTimeout
-                          MediaChange))])
+                          ; peer changed csettings. prepare for changed av
+                          PeerCSChange
+                          ; csettings change confirmation. once triggered peer
+                          ; is ready to receive changed av
+                          SelfCSChange))])
              (if (enum-set-member? sym enum)
                  (let ([i (enum-set-indexer enum)])
                    (i sym))
