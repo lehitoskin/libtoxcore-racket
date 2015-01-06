@@ -1,9 +1,14 @@
 diff -Naur a/av.rkt b/av.rkt
---- a/av.rkt	2015-01-05 23:28:29.881287886 -0800
-+++ b/av.rkt	2015-01-05 23:30:16.785297236 -0800
-@@ -14,7 +14,16 @@
+--- a/av.rkt	2015-01-05 23:43:46.308368035 -0800
++++ b/av.rkt	2015-01-05 23:47:21.157386825 -0800
+@@ -12,9 +12,21 @@
+                      _int32_t
+                      _uint16_t
                       _uint32_t
-                      _uint64_t))
+-                     _uint64_t))
++                     _uint64_t
++		     exe-path
++		     lib-path))
  
 -(define-ffi-definer define-av (ffi-lib "libtoxav"))
 +; jenkins junk
@@ -15,16 +20,22 @@ diff -Naur a/av.rkt b/av.rkt
 +					    (- (string-length exe-path) 6))
 +				 "../lib/libtoxav")))
 +
++
 +(define-ffi-definer define-av (ffi-lib lib-path))
  
  ; The _string type supports conversion between Racket strings
  ; and char* strings using a parameter-determined conversion.
 diff -Naur a/dns.rkt b/dns.rkt
---- a/dns.rkt	2015-01-05 23:28:33.329288188 -0800
-+++ b/dns.rkt	2015-01-05 23:30:16.818297239 -0800
-@@ -10,7 +10,16 @@
+--- a/dns.rkt	2015-01-05 23:43:48.628368238 -0800
++++ b/dns.rkt	2015-01-05 23:47:21.224386831 -0800
+@@ -8,9 +8,20 @@
+                      define-dns
+                      _uint8_t
                       _uint16_t
-                      _uint32_t))
+-                     _uint32_t))
++                     _uint32_t
++		     exe-path
++		     lib-path))
  
 -(define-ffi-definer define-dns (ffi-lib "libtoxdns"))
 +; jenkins junk
@@ -41,11 +52,16 @@ diff -Naur a/dns.rkt b/dns.rkt
  (define _uint8_t _uint8)
  (define _uint16_t _uint16)
 diff -Naur a/encrypt.rkt b/encrypt.rkt
---- a/encrypt.rkt	2015-01-05 23:28:35.641288390 -0800
-+++ b/encrypt.rkt	2015-01-05 23:30:16.851297242 -0800
-@@ -9,7 +9,16 @@
+--- a/encrypt.rkt	2015-01-05 23:43:51.300368472 -0800
++++ b/encrypt.rkt	2015-01-05 23:47:21.324386840 -0800
+@@ -7,9 +7,20 @@
+ (provide (except-out (all-defined-out)
+                      define-encrypt
                       _Tox-pointer
-                      _uint32_t))
+-                     _uint32_t))
++                     _uint32_t
++		     exe-path
++		     lib-path))
  
 -(define-ffi-definer define-encrypt (ffi-lib "libtoxencryptsave"))
 +; jenkins junk
@@ -62,11 +78,16 @@ diff -Naur a/encrypt.rkt b/encrypt.rkt
  #|###################
   # type definitions #
 diff -Naur a/functions.rkt b/functions.rkt
---- a/functions.rkt	2015-01-05 23:28:26.609287600 -0800
-+++ b/functions.rkt	2015-01-05 23:26:52.443279364 -0800
-@@ -12,7 +12,16 @@
+--- a/functions.rkt	2015-01-05 23:43:57.589369022 -0800
++++ b/functions.rkt	2015-01-05 23:47:21.425386849 -0800
+@@ -10,9 +10,20 @@
+                      _uint8_t
+                      _uint16_t
                       _uint32_t
-                      _uint64_t))
+-                     _uint64_t))
++                     _uint64_t
++		     exe-path
++		     lib-path))
  
 -(define-ffi-definer define-tox (ffi-lib "libtoxcore"))
 +; jenkins junk
