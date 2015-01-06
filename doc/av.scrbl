@@ -9,10 +9,6 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 
 @section[#:tag "structs"]{Structs}
 
-@defstruct[_ToxAvCallback ([num integer?] [arg cpointer?])]{
-  A cstruct for the callback functions.
-}
-
 @defstruct[_ToxAvCodecSettings ([call_type integer?]
                                 [video_bitrate integer?]
                                 [video_width integer?]
@@ -20,9 +16,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
                                 [audio_bitrate integer?]
                                 [audio_frame_duration integer?]
                                 [audio_sample_rate integer?]
-                                [audio_channels integer?]
-                                [audio_VAD_tolerance integer?]
-                                [jbuf_capacity integer?])]{
+                                [audio_channels integer?])]{
   @racket[call_type] is a @racket[_ToxAvCallType] enum value.
   
   @racket[video_bitrate] is in kbit/s
@@ -36,11 +30,25 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   @racket[audio_frame_duration] is in ms
   
   @racket[audio_sample_rate] is in Hz
-  
-  @racket[audio_VAD_tolerance] is in ms
 }
 
 @section[#:tag "procedures"]{Procedures}
+
+@defproc[(ToxAVCallback [agent cpointer?] [call-idx integer?]
+                        [arg cpointer?]) void?]{
+  Commonly reused callback form.
+}
+
+@defproc[(ToxAvAudioCallback [agent cpointer?] [call-idx integer?]
+                             [pcm cpointer?] [size integer?]
+                             [data cpointer?]) void?]{
+  Commonly reused audio callback form.
+}
+
+@defproc[(ToxAvVideoCallback [agent cpointer?] [call-idx integer?]
+                             [img bytes?] [data cpointer?]) void?]{
+  Commonly reused video callback form.
+}
 
 @defproc[(av-new [messenger _Tox-pointer] [max_calls integer?]) _ToxAv-pointer]{
   Start new A/V session. There can only be one session at the time.
@@ -57,15 +65,20 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   return void
 }
 
+@defproc[(toxav-do-interval [av _ToxAv-pointer]) integer?]{
+  Returns the amount of time you should sleep before running @tt{tox-do}
+  again. If there is no call at the moment, it returns 200.
+}
+
 @defproc[(toxav-do [av _ToxAv-pointer]) void?]{
   Main loop for the session. Best called right after @racket[tox-do].
 }
 
-@defproc[(callback-callstate [av _ToxAv-pointer] [callback integer?]
+@defproc[(callback-callstate [av _ToxAv-pointer] [callback procedure?]
                              [id integer?] [userdata cpointer? #f]) void?]{
   Register callback for call state.
  
-  @racket[callback] is the callback procedure.
+  @racket[callback] is the ToxAvCallback procedure.
   
   @racket[id] is one of the @racket[ToxAvCallbackID] values
   
@@ -77,8 +90,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
          void?]{
   Register callback for receiving audio data.
   
-  @racket[callback] is in the form @racket[(callback _ToxAv-pointer
-                                                     integer? cpointer? integer?)]
+  @racket[callback] is in the ToxAvAudioCallback procedure.
   
   return void
 }
@@ -86,8 +98,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 @defproc[(callback-video-recv [av _Tox-Av-pointer] [callback procedure?]) void?]{
   Register callback for receiving video data.
   
-  @racket[callback] is in the form @racket[(callback _ToxAv-pointer
-                                                     integer? cpointer? integer?)]
+  @racket[callback] is in the ToxAvAudioCallback procedure.
   
   return void
 }
@@ -194,34 +205,6 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   return @racket[_ToxAvError] on error.
 }
 
-@defproc[(recv-video [av _ToxAv-pointer]
-                     [call-index integer?]
-                     [output cpointer?]) integer?]{
-  Receive decoded video packet.
-  
-  return 0 on success.
-  
-  return @racket[_ToxAvError] on error.
-}
-
-@defproc[(recv-audio [av _ToxAv-pointer]
-                     [call-index integer?]
-                            [frame-size integer?]
-                            [dest cpointer?]) integer?]{
-  Receive decoded audio frame.
- 
-  @racket[frame-size] is the size of dest in frames/samples
-  (one frame/sample is 16 bits or 2 bytes and corresponds to one sample of audio.)
-  
-  @racket[dest] is the destination of the raw audio (16 bit signed pcm with
-  AUDIO_CHANNELS channels). Make sure it has enough space for @racket[frame-size]
-  frames/samples.
-  
-  return >=0 size of received data in frames/samples.
-  
-  return @racket[_ToxAvError] on error.
-}
-
 @defproc[(send-video [av _ToxAv-pointer]
                      [call-index integer?]
                      [frame cpointer?]
@@ -276,7 +259,8 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 
 @defproc[(get-peer-csettings [av _ToxAv-pointer]
                              [call-index integer?]
-                             [peer integer?]) integer?]{
+                             [peer integer?]
+                             [dest bytes?]) integer?]{
   Get peer transmission type. It can either be audio or video.
  
   return @racket[_ToxAvCallType] on success.

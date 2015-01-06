@@ -30,7 +30,6 @@
 (define _uint64_t _uint64)
 
 ; Tox stuff
-(define-cstruct _ToxAVCallback ([agent _pointer] [call_idx _int32_t] [arg _pointer]))
 ; define ToxAv struct
 (define _ToxAv-pointer (_cpointer 'ToxAv))
 ; define Tox struct
@@ -40,19 +39,41 @@
 
 (define-cstruct _ToxAvCodecSettings
   ([call_type _int] ; _ToxAvCallType enum value
+   
    [video_bitrate _uint32_t] ; In kbits/s
    [video_width _uint16_t] ; In px
    [video_height _uint16_t] ; In px
+   
    [audio_bitrate _uint32_t] ; In bits/s
    [audio_frame_duration _uint16_t] ; In ms
    [audio_sample_rate _uint32_t] ; In Hz
-   [audio_channels _uint32_t]
-   [audio_VAD_tolerance _uint32_t] ; In ms
-   [jbuf_capacity _uint32_t]))
+   [audio_channels _uint32_t]))
 
 (define av_DefaultSettings _ToxAvCodecSettings)
-(define av_jbufdc 0) ; Jitter buffer default capacity
-(define av_VADd 0) ; VAD default threshold
+
+#|
+ # These are the callbacks' prototypes that will be used throughout the wrapper
+ # typedef void ( *ToxAVCallback ) ( void *agent, int32_t call_idx, void *arg );
+ # typedef void ( *ToxAvAudioCallback ) (void *agent, int32_t call_idx,
+ #                const int16_t *PCM, uint16_t size, void *data);
+ # typedef void ( *ToxAvVideoCallback ) (void *agent, int32_t call_idx,
+ #                const vpx_image_t *img, void *data);
+ |#
+(define ToxAVCallback
+  (_fun [agent : _pointer]
+        [call-idx : _int32_t]
+        [arg : _pointer] -> _void))
+(define ToxAvAudioCallback
+  (_fun [agent : _pointer]
+        [call-idx : _int32_t]
+        [pcm : _pointer]
+        [size : _uint16_t]
+        [data : _pointer] -> _void))
+(define ToxAvVideoCallback
+  (_fun [agent : _pointer]
+        [call-idx : _int32_t]
+        [img : _bytes]
+        [data : _pointer] -> _void))
 
 #|
  # @brief Start new A/V session. There can only be one session at the time. If you register more
@@ -81,6 +102,16 @@
  |#
 (define-av av-kill! (_fun [av : _ToxAv-pointer] -> _void)
   #:c-id toxav_kill)
+
+
+#|
+ * Returns the interval in milliseconds when the next toxav_do() should be called.
+ * If no call is active at the moment returns 200.
+ #
+ # uint32_t toxav_do_interval(ToxAv *av);
+ |#
+(define-av toxav-do-interval (_fun [av : _ToxAv-pointer] -> _uint32_t)
+  #:c-id toxav_do_interval)
   
 #|
  # Main loop for the session. Best called right after tox_do();
@@ -102,45 +133,29 @@
  #                                         ToxAvCallbackID id, void *userdata);
  |#
 (define-av callback-callstate (_fun [av : _ToxAv-pointer]
-                                    [callback : _int] ; _ToxAVCallback enum value
-                                    [id : _int] ; _ToxAVCallbackID enum value
+                                    [callback : ToxAVCallback]
+                                    [cb-id : _int] ; _ToxAVCallbackID enum value
                                     [userdata : _pointer = #f] -> _void)
   #:c-id toxav_register_callstate_callback)
 
 #|
- # @brief Register callback for recieving audio data
+ #  Register callback for audio data.
  #
- # @param callback The callback
- # @return void
- #
- # void toxav_register_audio_recv_callback (ToxAv *av, void (*callback)(ToxAv*, int32_t,
- #                                          int16_t*, int, void*), void *user_data);
+ # void toxav_register_audio_callback (ToxAv *av, ToxAvAudioCallback cb, void *userdata);
  |#
 (define-av callback-audio-recv (_fun [av : _ToxAv-pointer]
-                                     [callback : (_fun _ToxAv-pointer
-                                                       _int32_t
-                                                       _bytes
-                                                       _int
-                                                       _pointer -> _void)]
+                                     [callback : ToxAvAudioCallback]
                                      [userdata : _pointer = #f] -> _void)
   #:c-id toxav_register_audio_callback)
 
 #|
- # @brief Register callback for recieving video data
+ # Register callback for video data.
  #
- # @param av Handler.
- # @param callback The callback
- # @return void
- #
- # void toxav_register_video_recv_callback (ToxAv *av, void (*callback)(ToxAv*, int32_t,
- #                                          vpx_image_t*, void*), void *user_data);
+ # void toxav_register_video_callback (ToxAv *av, ToxAvVideoCallback cb, void *userdata);
  |#
 (define-av callback-video-recv (_fun [av : _ToxAv-pointer]
-                                     [callback : (_fun _ToxAv-pointer
-                                                       _int32_t
-                                                       _pointer ; vpx_image_t*
-                                                       _pointer -> _void)]
-                                     -> _void)
+                                     [callback : ToxAvVideoCallback]
+                                     [userdata : _pointer = #f] -> _void)
   #:c-id toxav_register_video_callback)
 
 #|
@@ -389,7 +404,7 @@
 (define-av get-peer-csettings (_fun [av : _ToxAv-pointer]
                                     [call-index : _int32_t]
                                     [peer : _int]
-                                    [dest : _pointer] -> _int)
+                                    [dest : _bytes] -> _int)
   #:c-id toxav_get_peer_csettings)
 
 #|
@@ -444,7 +459,7 @@
  # Returns number of active calls or -1 on error.
  # int toxav_get_active_count (ToxAv *av);
  |#
-(define-av get-active-count (_fun [av : _ToxAv-pointer] -> _int)
+(define-av get-active-calls (_fun [av : _ToxAv-pointer] -> _int)
   #:c-id toxav_get_active_count)
 
 #|
