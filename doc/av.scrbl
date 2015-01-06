@@ -9,7 +9,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 
 @section[#:tag "structs"]{Structs}
 
-@defstruct[_ToxAvCodecSettings ([call_type integer?]
+@defstruct[_ToxAvCSettings ([call_type integer?]
                                 [video_bitrate integer?]
                                 [video_width integer?]
                                 [video_height integer?]
@@ -104,21 +104,11 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 }
 
 @defproc[(av-call [av _ToxAv-pointer]
-                  [call-index cpointer?]
-                  [user integer?]
-                  [call-type integer?]
+                  [call-index bytes?]
+                  [friend-id integer?]
+                  [csettings cpointer?]
                   [ringing-seconds integer?]) integer?]{
-  Call user. Use its friend_id.
- 
-  @racket[user] is the user.
-  
-  @racket[call-type] is the call type, an enum value
-  
-  @racket[ringing-seconds] is the ringing timeout.
-  
-  return 0 on success.
-  
-  return @racket[_ToxAvError] on error.
+  Call user. Use its @racket[friend-id].
 }
 
 @defproc[(av-hangup [av  _ToxAv-pointer]
@@ -186,14 +176,10 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 
 @defproc[(prepare-transmission [av _ToxAv-pointer]
                                [call-index integer?]
-                               [jbuf-size integer?]
-                               [VAD-threshold integer?]
                                [support-video? boolean?]) integer?]{
-  Must be called before any RTP transmission occurs.
-  
-  return 0 on success.
-  
-  return @racket[_ToxAvError] on error.
+  Allocates transmission data. Must be called before calling toxav_prepare_* and toxav_send_*.
+
+  Also, it must be called when call is started
 }
 
 @defproc[(kill-transmission [av _ToxAv-pointer]
@@ -205,6 +191,14 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   return @racket[_ToxAvError] on error.
 }
 
+@defproc[(prepare-video-frame [av _ToxAv-pointer]
+                              [call-index integer?]
+                              [dest cpointer?]
+                              [dest-max integer?]
+                              [input bytes?]) integer?]{
+  Encode video frame.
+}
+
 @defproc[(send-video [av _ToxAv-pointer]
                      [call-index integer?]
                      [frame cpointer?]
@@ -212,34 +206,6 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   Encode and send video packet.
   
   return 0 on success.
-  
-  return @racket[_ToxAvError] on error.
-}
-
-@defproc[(send-audio [av _ToxAv-pointer]
-                     [call-index inteder?]
-                     [frame cpointer?]
-                     [frame-size integer?]) integer?]{
-  Send audio frame.
-  
-  @racket[frame] is the frame (raw 16 bit signed pcm with AUDIO_CHANNELS channels audio.)
-  
-  @racket[frame-size] is its size in number of frames/samples (one frame/sample is 16
-  bits or 2 bytes). @racket[frame-size] should be AUDIO_FRAME_SIZE.
-  
-  return 0 on success.
-  
-  return @racket[_ToxAvError] on error.
-}
-
-@defproc[(prepare-video-frame [av _ToxAv-pointer]
-                              [call-index integer?]
-                              [dest cpointer?]
-                              [dest-max integer?]
-                              [input cpointer?]) integer?]{
-  Encode video frame.
-  
-  return >0 on success.
   
   return @racket[_ToxAvError] on error.
 }
@@ -257,10 +223,26 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   return @racket[_ToxAvError] on error.
 }
 
+@defproc[(send-audio [av _ToxAv-pointer]
+                     [call-index inteder?]
+                     [frame bytes?]
+                     [frame-size integer?]) integer?]{
+  Send audio frame.
+  
+  @racket[frame] is the frame (raw 16 bit signed pcm with AUDIO_CHANNELS channels audio.)
+  
+  @racket[frame-size] is its size in number of frames/samples (one frame/sample is 16
+  bits or 2 bytes). @racket[frame-size] should be AUDIO_FRAME_SIZE.
+  
+  return 0 on success.
+  
+  return @racket[_ToxAvError] on error.
+}
+
 @defproc[(get-peer-csettings [av _ToxAv-pointer]
                              [call-index integer?]
                              [peer integer?]
-                             [dest bytes?]) integer?]{
+                             [dest cpointer?]) integer?]{
   Get peer transmission type. It can either be audio or video.
  
   return @racket[_ToxAvCallType] on success.
@@ -342,13 +324,14 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   Note that @racket[pcm] is a byte string of the size
             @racket[(* samples channels (ctype-sizeof _int16_t))].
 
-  Valid number of samples are @racket[(/ (* sample-rate audio-length) 1000)]
+  Valid number of samples are
+  ((sample rate) * (audio length (Valid ones are: 2.5, 5, 10, 20, 40 or 60 ms)) / 1000)
 
   Valid number of channels are 1 or 2.
+  
+  Valid sample rates are 8000, 12000, 16000, 24000, or 48000.
 
-  Recommended values are: samples = 960, channels = 1, sample-rate = 48000
-
-  Currently the only supported sample rate is 48000.
+  Recommended values are: samples = 960, channels = 1, sample_rate = 48000
 
   return 0 on success
 

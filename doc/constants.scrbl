@@ -59,14 +59,14 @@ The enums that Tox uses should be accessed through the following procedures.
 }
 
 @defproc[(_TOX_CHAT_CHANGE_PEER [sym (or/c 'ADD
-                                                 'DEL
-                                                 'NAME)]) (or/c false? integer?)]
+                                           'DEL
+                                           'NAME)]) (or/c false? integer?)]
 
 @defproc[(_TOX_FILECONTROL [sym (or/c 'ACCEPT
-                                            'PAUSE
-                                            'KILL
-                                            'FINISHED
-                                            'RESUME_BROKEN)]) (or/c false? integer?)]{
+                                      'PAUSE
+                                      'KILL
+                                      'FINISHED
+                                      'RESUME_BROKEN)]) (or/c false? integer?)]{
   Types allowed in filecontrols.
 }
 
@@ -77,7 +77,8 @@ The enums that Tox uses should be accessed through the following procedures.
 @defproc[(_TOX_GROUPCHAT_TYPE [sym (or/c 'TEXT 'AV)]) (or/c false? integer?)]{
   Represents the type of the groupchat.
   
-  @racket[TOX_GROUPCHAT_TYPE_TEXT] groupchats must be accepted with the @racket[join-groupchat] function.
+  @racket[TOX_GROUPCHAT_TYPE_TEXT] groupchats must be accepted with the
+  @racket[join-groupchat] function.
   
   The function to accept @racket[TOX_GROUPCHAT_TYPE_AV] is in toxav.
 }
@@ -86,25 +87,36 @@ The enums that Tox uses should be accessed through the following procedures.
   Represents the type of proxy being used.
 }
 
-@defproc[(_ToxAvCallbackID [sym (or/c 'OnInvite
+@defproc[(_ToxAvCallbackID [sym (or/c 'Invite
+                                      'Ringing
                                       'Start
                                       'Cancel
                                       'Reject
                                       'End
-                                      'Ringing
-                                      'Starting
-                                      'Ending
                                       'RequestTimeout
                                       'PeerTimeout
-                                      'MediaChange)]) (or/c false? integer?)]{
-  @racket['Invite], @racket['Start], @racket['Cancel], @racket['Reject],
-  and @racket['End] are all for A/V requests.
+                                      'PeerCSChange
+                                      'SelfCSChange)]) (or/c false? integer?)]{
+  @racket['Invite] is when there has been a call invitation.
   
-  @racket['Ringing], @racket['Starting], and @racket['Ending] are for
-  A/V responses.
+  @racket['Ringing] is when the peer is ready to accept/reject the call.
   
-  @racket['RequestTimeout], @racket['PeerTimeout], and @racket['MediaChange] are
-  protocol errors.
+  @racket['Start] is when the call (rtp transmission) has started.
+  
+  @racket['Cancel] is when the side that initiated the call has canceled the invite.
+  
+  @racket['Reject] is when the side that was invited rejected the call.
+  
+  @racket['End] is when the call that was active has ended.
+  
+  @racket['RequestTimeout] is when the request didn't get a response in time.
+  
+  @racket['PeerTimeout] peer timed out; stop the call.
+  
+  @racket['PeerCSChange] is when the peer changed csettings. Prepare for changed AV.
+  
+  @racket['SelfCSChange] is for csettings change confirmation. Once triggered, the
+  peer is ready to receive changed AV.
 }
 
 @defproc[(_ToxAvCallType [sym (or/c 'Audio 'Video)]) (or/c false? integer?)]{
@@ -145,7 +157,8 @@ The enums that Tox uses should be accessed through the following procedures.
   
   @racket['InvalidState] means we are trying to perform a call action while in an invalid state.
   
-  @racket['AlreadyInCallWithPeer] means we are trying to call peer when already in a call with peer.
+  @racket['AlreadyInCallWithPeer] means we are trying to call peer when already in a call with
+  peer.
   
   @racket['ReachedCallLimit] means we cannot handle more calls.
   
