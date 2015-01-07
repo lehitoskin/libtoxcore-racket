@@ -1,6 +1,6 @@
 diff -Naur a/av.rkt b/av.rkt
---- a/av.rkt	2015-01-05 23:43:46.308368035 -0800
-+++ b/av.rkt	2015-01-06 18:54:10.472028608 -0800
+--- a/av.rkt	2015-01-06 19:40:55.258260202 -0800
++++ b/av.rkt	2015-01-06 19:45:42.651283932 -0800
 @@ -12,9 +12,21 @@
                       _int32_t
                       _uint16_t
@@ -26,26 +26,20 @@ diff -Naur a/av.rkt b/av.rkt
  ; The _string type supports conversion between Racket strings
  ; and char* strings using a parameter-determined conversion.
 diff -Naur a/dns.rkt b/dns.rkt
---- a/dns.rkt	2015-01-05 23:43:48.628368238 -0800
-+++ b/dns.rkt	2015-01-06 18:56:53.482042068 -0800
-@@ -5,12 +5,31 @@
-          ffi/unsafe/define)
- 
- (provide (except-out (all-defined-out)
--                     define-dns
--                     _uint8_t
--                     _uint16_t
+--- a/dns.rkt	2015-01-06 19:41:01.791260742 -0800
++++ b/dns.rkt	2015-01-06 19:47:00.517290362 -0800
+@@ -9,10 +9,27 @@
+                      define-blight
+                      _uint8_t
+                      _uint16_t
 -                     _uint32_t))
-+		     define-dns
-+		     define-blight
-+		     _uint8_t
-+		     _uint16_t
-+		     _uint32_t
++                     _uint32_t
 +		     exe-path
 +		     lib-path
 +		     blib-path))
  
 -(define-ffi-definer define-dns (ffi-lib "libtoxdns"))
+-(define-ffi-definer define-blight (ffi-lib "libblight"))
 +; jenkins junk
 +(define exe-path (path->string (find-system-path 'run-file)))
 +
@@ -56,18 +50,18 @@ diff -Naur a/dns.rkt b/dns.rkt
 +				 "../lib/libtoxdns")))
 +
 +(define blib-path (string->path (string-append
-+				  (substring exe-path 0
-+					     (- (string-length exe-path) 6))
-+				  "../lib/libblight")))
++				 (substring exe-path 0
++					    (- (string-length exe-path) 6))
++				 "../lib/libblight")))
 +
-+(define-ffi-definer define-dns (ffi-lib lib-path))
++(define-ffi-definer define-av (ffi-lib lib-path))
 +(define-ffi-definer define-blight (ffi-lib blib-path))
  
  (define _uint8_t _uint8)
  (define _uint16_t _uint16)
 diff -Naur a/encrypt.rkt b/encrypt.rkt
---- a/encrypt.rkt	2015-01-05 23:43:51.300368472 -0800
-+++ b/encrypt.rkt	2015-01-06 18:54:10.479028609 -0800
+--- a/encrypt.rkt	2015-01-06 19:41:04.488260964 -0800
++++ b/encrypt.rkt	2015-01-06 19:48:56.319299924 -0800
 @@ -7,9 +7,20 @@
  (provide (except-out (all-defined-out)
                       define-encrypt
@@ -92,8 +86,8 @@ diff -Naur a/encrypt.rkt b/encrypt.rkt
  #|###################
   # type definitions #
 diff -Naur a/functions.rkt b/functions.rkt
---- a/functions.rkt	2015-01-05 23:43:57.589369022 -0800
-+++ b/functions.rkt	2015-01-06 18:54:10.479028609 -0800
+--- a/functions.rkt	2015-01-06 19:41:07.184261187 -0800
++++ b/functions.rkt	2015-01-06 19:48:48.559299283 -0800
 @@ -10,9 +10,20 @@
                       _uint8_t
                       _uint16_t
