@@ -1,7 +1,7 @@
 DESTDIR=/usr/local
 
 libblight.so: blight.o
-	gcc -shared -ltoxdns -o libblight.so blight.o
+	gcc -shared -Wl,-soname=blight -ltoxdns -o libblight.so blight.o
 
 blight.o: blight.c
 	gcc -Wall -fPIC -c blight.c
