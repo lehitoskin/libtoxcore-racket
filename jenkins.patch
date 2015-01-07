@@ -1,6 +1,6 @@
 diff -Naur a/av.rkt b/av.rkt
 --- a/av.rkt	2015-01-05 23:43:46.308368035 -0800
-+++ b/av.rkt	2015-01-05 23:47:21.157386825 -0800
++++ b/av.rkt	2015-01-06 18:54:10.472028608 -0800
 @@ -12,9 +12,21 @@
                       _int32_t
                       _uint16_t
@@ -27,15 +27,23 @@ diff -Naur a/av.rkt b/av.rkt
  ; and char* strings using a parameter-determined conversion.
 diff -Naur a/dns.rkt b/dns.rkt
 --- a/dns.rkt	2015-01-05 23:43:48.628368238 -0800
-+++ b/dns.rkt	2015-01-05 23:47:21.224386831 -0800
-@@ -8,9 +8,20 @@
-                      define-dns
-                      _uint8_t
-                      _uint16_t
++++ b/dns.rkt	2015-01-06 18:56:53.482042068 -0800
+@@ -5,12 +5,31 @@
+          ffi/unsafe/define)
+ 
+ (provide (except-out (all-defined-out)
+-                     define-dns
+-                     _uint8_t
+-                     _uint16_t
 -                     _uint32_t))
-+                     _uint32_t
++		     define-dns
++		     define-blight
++		     _uint8_t
++		     _uint16_t
++		     _uint32_t
 +		     exe-path
-+		     lib-path))
++		     lib-path
++		     blib-path))
  
 -(define-ffi-definer define-dns (ffi-lib "libtoxdns"))
 +; jenkins junk
@@ -47,13 +55,19 @@ diff -Naur a/dns.rkt b/dns.rkt
 +					    (- (string-length exe-path) 6))
 +				 "../lib/libtoxdns")))
 +
++(define blib-path (string->path (string-append
++				  (substring exe-path 0
++					     (- (string-length exe-path) 6))
++				  "../lib/libblight")))
++
 +(define-ffi-definer define-dns (ffi-lib lib-path))
++(define-ffi-definer define-blight (ffi-lib blib-path))
  
  (define _uint8_t _uint8)
  (define _uint16_t _uint16)
 diff -Naur a/encrypt.rkt b/encrypt.rkt
 --- a/encrypt.rkt	2015-01-05 23:43:51.300368472 -0800
-+++ b/encrypt.rkt	2015-01-05 23:47:21.324386840 -0800
++++ b/encrypt.rkt	2015-01-06 18:54:10.479028609 -0800
 @@ -7,9 +7,20 @@
  (provide (except-out (all-defined-out)
                       define-encrypt
@@ -79,7 +93,7 @@ diff -Naur a/encrypt.rkt b/encrypt.rkt
   # type definitions #
 diff -Naur a/functions.rkt b/functions.rkt
 --- a/functions.rkt	2015-01-05 23:43:57.589369022 -0800
-+++ b/functions.rkt	2015-01-05 23:47:21.425386849 -0800
++++ b/functions.rkt	2015-01-06 18:54:10.479028609 -0800
 @@ -10,9 +10,20 @@
                       _uint8_t
                       _uint16_t

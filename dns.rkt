@@ -6,11 +6,13 @@
 
 (provide (except-out (all-defined-out)
                      define-dns
+                     define-blight
                      _uint8_t
                      _uint16_t
                      _uint32_t))
 
 (define-ffi-definer define-dns (ffi-lib "libtoxdns"))
+(define-ffi-definer define-blight (ffi-lib "libblight"))
 
 (define _uint8_t _uint8)
 (define _uint16_t _uint16)
@@ -93,11 +95,11 @@
  # int tox_decrypt_dns3_TXT(void *dns3_object, uint8_t *tox_id, uint8_t *id_record, uint32_t id_record_len,
  #                         uint32_t request_id)
  |#
-(define-dns dns3-decrypt-TXT
+(define-blight dns3-decrypt-TXT
   (_fun [dns3-obj : _pointer]
         [tox-id : _bytes]
         [id-record : _bytes]
         [id-record-len : _uint32_t]
         [request-id : _bytes] -> _int)
-  #:c-id tox_decrypt_dns3_TXT)
+  #:c-id blight_decrypt_dns3)
 )
