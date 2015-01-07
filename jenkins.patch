@@ -27,7 +27,7 @@ diff -Naur a/av.rkt b/av.rkt
  ; and char* strings using a parameter-determined conversion.
 diff -Naur a/dns.rkt b/dns.rkt
 --- a/dns.rkt	2015-01-06 19:41:01.791260742 -0800
-+++ b/dns.rkt	2015-01-06 19:47:00.517290362 -0800
++++ b/dns.rkt	2015-01-06 20:55:00.916627285 -0800
 @@ -9,10 +9,27 @@
                       define-blight
                       _uint8_t
@@ -54,7 +54,7 @@ diff -Naur a/dns.rkt b/dns.rkt
 +					    (- (string-length exe-path) 6))
 +				 "../lib/libblight")))
 +
-+(define-ffi-definer define-av (ffi-lib lib-path))
++(define-ffi-definer define-dns (ffi-lib lib-path))
 +(define-ffi-definer define-blight (ffi-lib blib-path))
  
  (define _uint8_t _uint8)
