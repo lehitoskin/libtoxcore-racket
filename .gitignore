@@ -2,6 +2,10 @@
 compiled
 *.bak
 
+# C
+*.o
+*.so
+
 # Editors
 *.swp
 *.swo

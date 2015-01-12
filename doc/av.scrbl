@@ -276,7 +276,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   Return the @racket[_Tox-pointer] being used with the @racket[_ToxAv-pointer].
 }
 
-@defproc[(get-active-count [av _ToxAv-pointer]) integer?]{
+@defproc[(get-active-calls [av _ToxAv-pointer]) integer?]{
   Returns number of active calls or -1 on error.
 }
 
@@ -299,7 +299,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 
 @defproc[(join-av-groupchat [tox _Tox-pointer]
                             [friendnumber integer?]
-                            [data bytes?]
+                            [data cpointer?]
                             [data-len integer?]
                             [audio-callback procedure?]
                             [userdata cpointer? #f]) integer?]{
@@ -308,8 +308,7 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
   @racket[audio-callback] is in the form @racket[(audio-callback tox groupnumber peernumber
                                                                  pcm samples channels
                                                                  sample-rate userdata)]
-  where @racket[pcm] is a byte string of the size
-        @racket[(* samples channels (ctype-sizeof _int16_t))].
+  where @racket[pcm] is of size @racket[(* samples channels)].
 
   return @racket[groupnumber] on success.
 

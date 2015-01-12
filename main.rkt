@@ -4,8 +4,12 @@
   (require "functions.rkt"
             "av.rkt"
             "enums.rkt"
-            "encrypt.rkt")
+            "encrypt.rkt"
+            "dns.rkt"
+            "blight.rkt")
   (provide (all-from-out "functions.rkt"
                          "av.rkt"
                          "enums.rkt"
-                         "encrypt.rkt")))
+                         "encrypt.rkt"
+                         "dns.rkt"
+                         "blight.rkt")))

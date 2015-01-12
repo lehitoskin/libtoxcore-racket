@@ -6,13 +6,11 @@
 
 (provide (except-out (all-defined-out)
                      define-dns
-                     define-blight
                      _uint8_t
                      _uint16_t
                      _uint32_t))
 
 (define-ffi-definer define-dns (ffi-lib "libtoxdns"))
-(define-ffi-definer define-blight (ffi-lib "libblight"))
 
 (define _uint8_t _uint8)
 (define _uint16_t _uint16)
@@ -71,13 +69,30 @@
  # int tox_generate_dns3_string(void *dns3_object, uint8_t *string, uint16_t string_max_len, uint32_t *request_id, 
  #                             uint8_t *name, uint8_t name_len)
  |#
-(define-dns dns3-generate-string
+; good to go!
+(define-dns dns3-encrypt
+  (_fun (dns3-obj nick) ::
+        [dns3-obj : _pointer]
+        [bstr : _bytes = (make-bytes 256)]
+        [bstr-max-len : _uint16_t = (bytes-length bstr)]
+        [request-id : _bytes = (make-bytes 4)]
+        [nick : _string]
+        [nick-len : _uint8_t = (string-length nick)]
+        -> (copied : _int)
+        -> (if (= -1 copied)
+               (values request-id #f)
+               (values request-id (subbytes bstr 0 copied))))
+  #:c-id tox_generate_dns3_string)
+
+; older, but proven to work
+#;(define-dns dns3-generate-string
   (_fun [dns3-obj : _pointer]
-        [str : _bytes]
-        [str-max-len : _uint16_t]
+        [bstr : _bytes]
+        [bstr-max-len : _uint16_t = (bytes-length bstr)]
         [request-id : _bytes]
-        [name : _string]
-        [name-len : _uint8_t] -> _int)
+        [nick : _string]
+        [nick-len : _uint8_t = (string-length nick)]
+        -> _int)
   #:c-id tox_generate_dns3_string)
 
 #| Decode and decrypt the id_record returned of length id_record_len into
@@ -95,11 +110,13 @@
  # int tox_decrypt_dns3_TXT(void *dns3_object, uint8_t *tox_id, uint8_t *id_record, uint32_t id_record_len,
  #                         uint32_t request_id)
  |#
-(define-blight dns3-decrypt-TXT
+; the original
+; doesn't work because of the way the toxdns code is written
+#;(define-dns dns3-decrypt-TXT
   (_fun [dns3-obj : _pointer]
         [tox-id : _bytes]
         [id-record : _bytes]
         [id-record-len : _uint32_t]
         [request-id : _bytes] -> _int)
-  #:c-id blight_decrypt_dns3)
+  #:c-id tox_decrypt_dns3_TXT)
 )

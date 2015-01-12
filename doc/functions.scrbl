@@ -541,7 +541,7 @@ for the functions found in libtoxcore.
 }
 
 @defproc[(join-groupchat [tox _Tox-pointer] [friendnumber integer?]
-                         [group-id string?]) integer?]{
+                         [data bytes?] [len integer?]) integer?]{
   Join a group (you need to have been invited first.)
   
   return groupnumber on success.
