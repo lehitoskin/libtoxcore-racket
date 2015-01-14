@@ -2,6 +2,10 @@
 #include <tox/toxdns.h>
 #include <AL/al.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int blight_decrypt_dns3(void *dns3_object, uint8_t *tox_id, uint8_t *id_record, uint32_t id_record_len,
                         uint32_t *request_id)
 {
@@ -56,3 +60,6 @@ void blight_play_audio_buffer(ALuint alSource, const int16_t *data, int samples,
 	if (state != AL_PLAYING)
 		alSourcePlay(alSource);
 }
+#ifdef __cplusplus
+}
+#endif

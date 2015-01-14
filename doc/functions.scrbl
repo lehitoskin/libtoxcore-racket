@@ -25,24 +25,19 @@ for the functions found in libtoxcore.
   return @racket[#f] if friend doesn't exist.
 }
 
-@defproc[(get-address [tox _Tox-pointer] [address bytes?]) void?]{
+@defproc[(get-self-address [tox _Tox-pointer] [address bytes?]) void?]{
   format: [client_id (32 bytes)][nospam number (4 bytes)][checksum (2 bytes)]
   
-  @racket[address] should be a buffer of @racket[(make-bytes TOX_FRIEND_ADDRESS_SIZE)].
-  
-  Modify @racket[address] to be a byte address to give to others. (Must be transformed
-  into hex format for ordinary usage).
+  Return an address to give to others. (Must be transformed into hex format for ordinary usage).
 }
 
-@defproc[(get-client-id [tox _Tox-pointer] [friendnumber integer?] [client-id bytes?])
+@defproc[(get-client-id [tox _Tox-pointer] [friendnumber integer?])
          integer?]{
-  Copies the public key associated to that friend id into @racket[client-id] buffer.
+  Returns the client id associated to that friend id.
 
-  Make sure that client-id is of size @tt{TOX_CLIENT_ID_SIZE}.
+  return client id if success.
 
-  return 0 if success.
-
-  return -1 if failure.
+  return @racket[#f] if failure.
 }
 
 @defproc[(get-friend-connection-status [tox _Tox-pointer] [friendnumber integer?]) integer?]{
@@ -55,81 +50,74 @@ for the functions found in libtoxcore.
   return -1 on failure.
 }
 
-@defproc[(get-friendlist [tox _Tox-pointer] [out-list bytes?] [list-size integer?]) integer?]{
+@defproc[(get-friendlist [tox _Tox-pointer] [list-size integer?]) (or/c integer? bytes?)]{
   Copy a list of valid friend IDs into the array @racket[out-list].
 
-  If @racket[out-list] is NULL, returns 0.
+  Returns the friend list (in bytes).
 
-  Otherwise, returns the number of elements copied.
-
-  If the array was too small, the contents
-  of @racket[out-list] will be truncated to @racket[list-size].
+  If the @racket[list-size] was too small, the contents
+  of the return value will be truncated to @racket[list-size].
 }
 
-@defproc[(get-friend-number [tox _Tox-pointer] [client-id bytes?]) integer?]{
+@defproc[(get-friend-number [tox _Tox-pointer] [client-id bytes?]) (or/c integer? boolean?)]{
   return the friend number associated to that client id.
   
-  return -1 if no such friend
+  return @racket[#f] if no such friend
 }
 
 @defproc[(is-typing? [tox _Tox-pointer] [friendnumber integer?]) boolean?]{
   Get the typing status of a friend.
 
-  returns 0 if friend is not typing.
+  returns @racket[#t] if friend is typing.
 
-  returns 1 if friend is typing.
+  returns @racket[#f] if friend is not typing.
 }
 
-@defproc[(get-last-online [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+@defproc[(get-last-online [tox _Tox-pointer] [friendnumber integer?])
+         (or/c integer? boolean?)]{
   returns timestamp of last time @racket[friendnumber] was seen online, or 0 if never seen.
 
-  returns -1 on error.
+  returns @racket[#f] on error.
 }
 
-@defproc[(get-name [tox _Tox-pointer] [friendnumber integer?] [name bytes?]) integer?]{
-  Get name of friendnumber and put it in name.
+@defproc[(get-name [tox _Tox-pointer] [friendnumber integer?]) (or/c boolean? bytes?)]{
+  return name (in bytes) if success.
 
-  name needs to be a valid memory location with a size of at least
-  @racket[TOX_MAX_NAME_LENGTH] (128) bytes.
-
-  return length of name if success.
-
-  return -1 if failure.
+  return @racket[#f] if failure.
 }
 
-@defproc[(get-name-size [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+@defproc[(get-name-size [tox _Tox-pointer] [friendnumber integer?]) (or/c integer? boolean?)]{
   returns the length of name on success.
 
-  returns -1 on failure.
+  returns @racket[#f] on failure.
 }
 
 @defproc[(get-num-online-friends [tox _Tox-pointer]) integer?]{
   Return the number of online friends in the instance m.
 }
 
-@defproc[(get-self-name [tox _Tox-pointer] [name bytes?]) integer?]{
-  name - needs to be a valid bytes buffer with a size of
-  at least @racket[TOX_MAX_NAME_LENGTH] (128) bytes.
-
-  return length of name.
+@defproc[(get-self-name [tox _Tox-pointer]) (or/c integer? bytes?)]{
+  return name (in bytes) on success
 
   return 0 on error.
 }
 
-@defproc[(get-self-name-size [tox _Tox-pointer]) integer?]{
-  The @tt{self} variant returns the length of @italic{our} name on success,
-  and returns -1 on failure.
+@defproc[(get-self-name-size [tox _Tox-pointer]) (or/c boolean? bytes?)]{
+  The @tt{self} variant returns the length of @italic{our} name on success
+      
+  return @racket[#f] on failure.
 }
 
-@defproc[(get-self-status-message [tox _Tox-pointer] [buf bytes?] [maxlen integer?]
-                                  (bytes-length buf)) integer?]{
-  Like @tt{get-status-message}, the @tt{self} variant copies the @italic{our}
-  status message into buf, truncating if size is over maxlen.
+@defproc[(get-self-status-message [tox _Tox-pointer]) (or/c boolean? bytes?)]{
+  Like @tt{get-status-message}, the @tt{self} variant returns @italic{our}
+  status message.
 }
 
-@defproc[(get-self-status-message-size [tox _Tox-pointer]) integer?]{
+@defproc[(get-self-status-message-size [tox _Tox-pointer]) (or/c integer? boolean?)]{
   Like @tt{get-status-message-size}, the @tt{self} variant returns the length of our
-  status message on success, and returns -1 on failure.
+  status message on success
+  
+  return @racket[#f] on failure.
 }
 
 @defproc[(get-user-status [tox _Tox-pointer] [friendnumber integer?]) integer?]{
@@ -145,28 +133,25 @@ for the functions found in libtoxcore.
   @racket[TOX_USERSTATUS].
 }
 
-@defproc[(get-status-message [tox _Tox-pointer] [friendnumber integer?]
-                             [buf bytes?] [maxlen integer?]) integer?]{
-  Copy friendnumber's status message into buf, truncating if size is over maxlen.
+@defproc[(get-status-message [tox _Tox-pointer] [friendnumber integer?])
+         (or/c boolean? bytes?)]{
+  Return friendnumber's status message.
 
-  Get the size you need to allocate from @tt{get-status-message-size}.
+  The self variant will return our own status message.
 
-  The self variant will copy our own status message.
+  returns the status message (in bytes) of the friend on success.
 
-  returns the length of the copied data on success.
-
-  returns -1 on failure.
+  return @racket[#f] on failure.
 }
 
 @defproc[(get-status-message-size [tox _Tox-pointer] [friendnumber integer?]) integer?]{
   returns the length of status message on success.
 
-  returns -1 on failure.
+  returns @racket[#f] on failure.
 }
 
-@defproc[(set-name [tox _Tox-pointer] [name string?] [len integer?
-                                                       (bytes-length
-                                                        (string->bytes/utf-8 name))]) integer?]{
+@defproc[(set-name [tox _Tox-pointer] [name string?])
+         boolean?]{
   Set our nickname.
   
   name must be a string of maximum @racket[TOX_MAX_NAME_LENGTH] length.
@@ -175,81 +160,70 @@ for the functions found in libtoxcore.
   
   length is the length of name with the NULL terminator.
  
-  return 0 if success.
+  return @racket[#t] if success.
   
-  return -1 if failure.
+  return @racket[#f] if failure.
 }
 
-@defproc[(set-status-message [tox _Tox-pointer] [status string?]
+@defproc[(set-status-message! [tox _Tox-pointer] [status string?]
                              [len integer? (bytes-length
-                                            (string->bytes/utf-8 status))]) integer?]{
+                                            (string->bytes/utf-8 status))]) boolean?]{
   Set our status message.
   
   max length of the status is @racket[TOX_MAX_STATUSMESSAGE_LENGTH].
   
-  returns 0 on success.
+  returns @racket[#t] on success.
   
-  returns -1 on failure.
+  returns @racket[#f] on failure.
 }
 
-@defproc[(set-user-status [tox _Tox-pointer] [userstatus integer?]) integer?]{
+@defproc[(set-user-status! [tox _Tox-pointer] [userstatus integer?]) boolean?]{
   Set our user status.
  
   userstatus must be one of @racket[TOX_USERSTATUS] values.
  
-  returns 0 on success.
+  returns @racket[#t] on success.
   
-  returns -1 on failure.
+  returns @racket[#f] on failure.
 }
 
-@defproc[(set-user-is-typing [tox _Tox-pointer] [friendnumber integer?]
-                             [istyping? boolean?]) integer?]{
+@defproc[(set-user-is-typing! [tox _Tox-pointer] [friendnumber integer?]
+                             [istyping? boolean?]) boolean?]{
   Set our typing status for a friend.
 
   You are responsible for turning it on or off.
 
-  returns 0 on success.
+  returns @racket[#t] on success.
 
-  returns -1 on failure.
+  returns @racket[#f] on failure.
 }
 
-@defproc[(get-group-number-peers [tox _Tox-pointer] [groupnumber integer?]) integer?]{
+@defproc[(get-group-number-peers [tox _Tox-pointer] [groupnumber integer?]) (or/c integer? boolean?)]{
   Return the number of peers in the group chat on success.
   
-  return -1 on failure
+  return @racket[#f] on failure
 }
 
-@defproc[(get-group-names [tox _Tox-pointer] [groupnumber integer?]
-                          [names (list-of/c string?)] [lengths (list-of/c integer?)]
-                          [len integer?]) integer?]{
+@defproc[(get-group-names [tox _Tox-pointer]
+                          [groupnumber integer?]
+                          [len integer?]) (or/c boolean? list?)]{
   List all the peers in the group chat.
  
-  Copies the names of the peers to the name[length][TOX_MAX_NAME_LENGTH] array.
+  Returns a list whose @racket[car] is the lengths if the names in its @racket[cdr] on success.
  
-  Copies the lengths of the names to lengths[length]
- 
-  returns the number of peers on success.
- 
-  return -1 on failure.
+  return @racket[#f] on failure.
 }
 
-@defproc[(get-group-peername! [tox _Tox-pointer] [groupnumber integer?]
-                              [peernumber integer?] [name bytes?]) integer?]{
-  Copy the name of peernumber who is in groupnumber to name.
+@defproc[(get-group-peername [tox _Tox-pointer] [groupnumber integer?]
+                              [peernumber integer?]) (or/c boolean? bytes?)]{
+  Return the name of peernumber who is in groupnumber.
   
-  name must be at least @racket[TOX_MAX_NAME_LENGTH] long in bytes.
- 
-  return length of name if success
-  
-  return -1 if failure
+  return @racket[#f] on failure
 }
 
-@defproc[(get-group-peer-pubkey! [tox _Tox-pointer] [groupnumber integer?]
-                                 [peernumber integer?] [pubkey bytes?]) integer?]{
-  Copy the public key of @racket[peernumber] who is in @racket[groupnumber]
-  into @racket[pubkey].
-
-  @racket[pubkey] must be at least @racket[TOX_CLIENT_ID_SIZE].
+@defproc[(get-group-peer-pubkey [tox _Tox-pointer] [groupnumber integer?]
+                                 [peernumber integer?]) (or/c integer? bytes?)]{
+  Return the public key (in bytes) of @racket[peernumber] who is in @racket[groupnumber].
 }
 
 @defproc[(count-chatlist [tox _Tox-pointer]) integer?]{
@@ -259,16 +233,13 @@ for the functions found in libtoxcore.
   for copy_chatlist.
 }
 
-@defproc[(get-chatlist [tox _Tox-pointer] [out-list bytes?]
-                       [list-size integer?]) integer?]{
-  Copy a list of valid chat IDs into @racket[out-list].
+@defproc[(get-chatlist [tox _Tox-pointer] [list-size integer?]) (or/c integer? list?)]{
+  Returns a list of valid chat ID's.
   
-  If @racket[out-list] is NULL, returns 0.
-  
-  Otherwise, returns the number of elements copied.
-  
-  If the array was too small, the contents of @racket[out-list] will be truncated
+  If @racket[list-size] was too small, the contents of the return value will be truncated
   to @racket[list-size].
+  
+  return 0 on failure.
 }
 
 @defproc[(get-nospam [tox _Tox-pointer]) integer?]{
@@ -289,29 +260,23 @@ for the functions found in libtoxcore.
  if the pointer is NULL, no data will be copied to it.
 }
 
-@defproc[(group-set-title [tox _Tox-pointer]
+@defproc[(group-set-title! [tox _Tox-pointer]
                           [groupnumber integer?]
-                          [title bytes?]
-                          [len integer?]) integer?]{
+                          [title bytes?]) boolean?]{
   Set the group's title, limited to @racket[TOX_MAX_NAME_LENGTH].
 
-  return 0 on success
+  return @racket[#t] on success
 
-  return -1 on failure.
+  return @racket[#f] on failure.
 }
 
 @defproc[(group-get-title [tox _Tox-pointer]
-                          [groupnumber integer?]
-                          [title bytes?]
-                          [max-len integer? TOX_MAX_NAME_LENGTH]) integer?]{
-  Get group's title from @racket[groupnumber] and put it in @racket[title].
+                          [groupnumber integer?]) (or/c boolean? bytes?)]{
+  Get group's title from @racket[groupnumber].
 
-  @racket[title] needs to be a byte string with a @racket[max-len] size of at least
-  @racket[TOX_MAX_NAME_LENGTH] bytes.
+  Return title (in bytes) on success.
 
-  return length of copied title on success
-
-  return -1 on failure.
+  return @racket[#f] on failure.
 }
 
 @section[#:tag "interactors"]{Interact with Tox}
@@ -336,7 +301,7 @@ for the functions found in libtoxcore.
 }
 
 @defproc[(send-message [tox _Tox-pointer] [friendnumber integer?]
-                       [message string?] [len integer?]) integer?]{
+                       [message bytes?]) integer?]{
   Send a text chat message to an online friend.
  
   return the message id if packet was successfully put into the send queue.
@@ -350,8 +315,7 @@ for the functions found in libtoxcore.
   if one is received.
 }
 
-@defproc[(send-action [tox _Tox-pointer] [friendnumber integer?] [action string?]
-                      [len integer?]) integer?]{
+@defproc[(send-action [tox _Tox-pointer] [friendnumber integer?] [action bytes?]) integer?]{
   Send an action to an online friend.
 
   return the message id if packet was successfully put into the send queue.
@@ -363,21 +327,21 @@ for the functions found in libtoxcore.
 }
 
 @defproc[(group-message-send [tox _Tox-pointer] [groupnumber integer?]
-                             [message string?] [len integer?]) integer?]{
+                             [message bytes?]) boolean?]{
   Send a group message.
   
-  return 0 on success.
+  return @racket[#t] on success.
   
-  return -1 on failure.
+  return @racket[#f] on failure.
 }
 
 @defproc[(group-action-send [tox _Tox-pointer] [groupnumber integer?]
-                            [action string?] [len integer?]) integer?]{
+                            [action bytes?]) boolean?]{
   Send a group action.
   
-  return 0 on success.
+  return @racket[#t] on success.
   
-  return -1 on failure.
+  return @racket[#f] on failure.
 }
 
 @defproc[(group-peernumber-is-ours? [tox _Tox-pointer] [groupnumber integer?]
@@ -446,25 +410,23 @@ for the functions found in libtoxcore.
   return size of messenger data (for saving).
 }
 
-@defproc[(tox-save! [tox _Tox-pointer] [data bytes?]) void?]{
-  Save the messenger in @racket[data].
-  
-  @racket[data] must be a byte string of size @tt{tox-size}
+@defproc[(tox-save [tox _Tox-pointer]) bytes?]{
+  Return a byte string containing the saved Tox data.
 }
 
-@defproc[(tox-load [tox _Tox-pointer] [data bytes?] [len integer?]) integer?]{
+@defproc[(tox-load [tox _Tox-pointer] [data bytes?]) boolean?]{
   Load the messenger from data of size length.
  
-  returns 0 on success
+  returns @racket[#t] on success
   
-  returns -1 on failure
+  returns @racket[#f] on failure
 }
 
 @section[#:tag "friend-group"]{Friend and Group Manipulation}
 
 @defproc[(add-friend [tox _Tox-pointer]
                      [address bytes?]
-                     [message bytes?]
+                     [message string?]
                      [message-length integer? (bytes-length message)]) integer?]{
   Add a friend.
   
@@ -497,12 +459,12 @@ for the functions found in libtoxcore.
   return @racket[TOX_FAERR_NOMEM] if increasing the friend list size fails.
 }
 
-@defproc[(add-friend-norequest [tox _Tox-pointer] [client-id bytes?]) integer?]{
+@defproc[(add-friend-norequest [tox _Tox-pointer] [client-id bytes?]) (or/c integer? boolean?)]{
   Add a friend without sending a friendrequest.
   
-  return the friend number if success.
+  return the friend number on success.
   
-  return -1 if failure.
+  return @racket[#f] on failure.
   
   @racket[client-id] is the bytes form of the Tox ID; e.g. @racket[(hex-string->bytes str)].
 }
@@ -510,43 +472,43 @@ for the functions found in libtoxcore.
 @defproc[(del-friend! [tox _Tox-pointer] [friendnumber integer?]) integer?]{
   Remove a friend.
  
-  return 0 if success.
+  return @racket[#t] if success.
 
-  return -1 if failure.
+  return @racket[#f] if failure.
 }
 
-@defproc[(add-groupchat [tox _Tox-pointer]) integer?]{
+@defproc[(add-groupchat [tox _Tox-pointer]) (or/c integer? boolean?)]{
   Creates a new groupchat and puts it in the chats array.
 
   return group number on success.
   
-  return -1 on failure.
+  return @racket[#f] on failure.
 }
 
-@defproc[(del-groupchat! [tox _Tox-pointer] [groupnumber integer?]) integer?]{
+@defproc[(del-groupchat! [tox _Tox-pointer] [groupnumber integer?]) boolean?]{
   Delete a groupchat.
   
-  return 0 on success.
+  return @racket[#t] on success.
   
-  return -1 on failure.
+  return @racket[#f] on failure.
 }
 
 @defproc[(invite-friend [tox _Tox-pointer] [friendnumber integer?]
-                        [groupnumber integer?]) integer?]{
+                        [groupnumber integer?]) boolean?]{
   Invite friendnumber to groupnumber.
   
-  return 0 on success.
+  return @racket[#t] on success.
   
-  return -1 on failure.
+  return @racket[#f] on failure.
 }
 
 @defproc[(join-groupchat [tox _Tox-pointer] [friendnumber integer?]
-                         [data bytes?] [len integer?]) integer?]{
+                         [data bytes?] [len integer?]) (or/c integer? boolean?)]{
   Join a group (you need to have been invited first.)
   
   return groupnumber on success.
   
-  return -1 on failure.
+  return @racket[#f] on failure.
 }
 
 @section[#:tag "filesending"]{Filesending Functions}
@@ -555,58 +517,61 @@ for the functions found in libtoxcore.
                           [filename string?] [filename-length integer?
                                                               (bytes-length
                                                                (string->bytes/utf-8 filename))])
-         integer?]{
+         (or/c integer? boolean)]{
   Send a file send request.
   
   Maximum filename length is 255 bytes.
   
   return file number on success
   
-  return -1 on failure
+  return @racket[#f] on failure
 }
 
 @defproc[(send-file-control [tox _Tox-pointer] [friendnumber integer?] [receiving? boolean?]
                             [filenumber integer?] [message-id integer?] [data bytes?]
-                            [len integer?]) integer?]{
+                            [len integer?]) boolean?]{
   Send a file control request.
  
-  return 0 on success
+  return @racket[#t] on success
   
-  return -1 on failure
+  return @racket[#f] on failure
 }
 
 @defproc[(send-file-data [tox _Tox-pointer] [friendnumber integer?] [filenumber integer?]
-                         [data bytes?] [len integer?]) integer?]{
+                         [data bytes?] [len integer?]) boolean?]{
   Send file data.
  
-  return 0 on success
+  return @racket[#t] on success
   
-  return -1 on failure
+  return @racket[#f] on failure
   
-  If this function returns -1, you must @tt{tox-do}, sleep @tt{tox-do-interval}
+  If this function returns @racket[#f], you must @tt{tox-do}, sleep @tt{tox-do-interval}
   miliseconds, then attempt to send the data again.
 }
 
-@defproc[(file-data-size [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+@defproc[(file-data-size [tox _Tox-pointer] [friendnumber integer?])
+         (or/c integer? boolean?)]{
   Returns the recommended/maximum size of the filedata you send with @tt{send-file-data}
  
   return size on success
   
-  return -1 on failure (currently will never return -1)
+  return @racket[#f] on failure (currently will never return @racket[#f])
 }
 
 @defproc[(file-data-remaining [tox _Tox-pointer] [friendnumber integer?] [filenumber integer?]
-                              [receiving? boolean?]) integer?]{
+                              [receiving? boolean?]) (or/c integer? boolean?)]{
   Give the number of bytes left to be sent/received.
   
   return number of bytes remaining to be sent/received on success
   
-  return 0 on failure
+  return @racket[#f] on failure
 }
 
 @section[#:tag "avatars"]{Avatar Handling and Manipulation}
 
-@defproc[(set-avatar [tox _Tox-pointer] [format integer?] [data bytes?] [len integer?]) integer?]{
+@defproc[(set-avatar! [tox _Tox-pointer] [format integer?]
+                      [data bytes?] [len integer? (bytes-length data)])
+         boolean?]{
   Set the user avatar image data.
   
   This should be made before connecting, so we will not announce that the user have no avatar
@@ -616,53 +581,34 @@ for the functions found in libtoxcore.
  
   Arguments:
   
-  format - Avatar image format or NONE for user with no avatar (see @racket[_TOX_AVATAR_FORMAT]);
+  format - Avatar image format or NONE for user with no avatar
+  (see @racket[_TOX_AVATAR_FORMAT]);
   
   data - bytes containing the avatar data (may be NULL it the format is NONE);
   
   len - length of image data. Must be <= @racket[TOX_AVATAR_MAX_DATA_LENGTH].
  
-  returns 0 on success
+  returns @racket[#t] on success
   
-  returns -1 on failure.
+  returns @racket[#f] on failure.
 }
 
-@defproc[(unset-avatar [tox _Tox-pointer]) integer?]{
+@defproc[(unset-avatar! [tox _Tox-pointer]) integer?]{
   Unsets the user avatar.
 
   returns 0 on success (currently always returns 0).
 }
 
-@defproc[(get-self-avatar [tox _Tox-pointer] [format integer?] [buf bytes?]
-                          [len integer?] [maxlen integer?] [hash bytes?]) integer?]{
+@defproc[(get-self-avatar [tox _Tox-pointer] [format integer?] [len integer?])
+         (or/c boolean? list?)]{
   Get avatar data from the current user.
 
-  Copies the current user avatar data to the destination buffer and sets the image format
-  accordingly.
- 
-  If the avatar format is NONE, the buffer 'buf' is left uninitialized, 'hash' is zeroed, and
-  'length' is set to zero.
- 
-  If any of the pointers format, buf, length, and hash are NULL, that particular field will be ignored.
- 
-  Arguments:
-
-  format - destination pointer to the avatar image format (see @racket[_TOX_AVATAR_FORMAT]);
-
-  buf - destination buffer to the image data. Must have at least 'maxlen' bytes;
-
-  length - destination pointer to the image data length;
-
-  maxlen - length of the destination buffer 'buf';
-
-  hash - destination pointer to the avatar hash (it must be exactly @racket[TOX_HASH_LENGTH] bytes long).
- 
-  returns 0 on success;
-
-  returns -1 on failure.
+  returns a list containing the image hash and the image data.
+  
+  returns @racket[#f] on failure.
 }
 
-@defproc[(tox-hash [hash bytes?] [data bytes?] [datalen integer?]) integer?]{
+@defproc[(tox-hash [data bytes?]) (or/c boolean? bytes?)]{
   Generates a cryptographic hash of the given data.
 
   This function may be used by clients for any purpose, but is provided primarily for
@@ -670,32 +616,24 @@ for the functions found in libtoxcore.
   
   This function is a wrapper to internal message-digest functions.
  
-  Arguments:
+  returns hash (in bytes) on success
   
-  hash - destination buffer for the hash data, it must be exactly @racket[TOX_HASH_LENGTH] bytes long.
-  
-  data - data to be hashed;
-  
-  datalen - length of the data; for avatars, should be @racket[TOX_AVATAR_MAX_DATA_LENGTH]
- 
-  returns 0 on success
-  
-  returns -1 on failure.
+  returns @racket[#f] on failure.
 }
 
-@defproc[(request-avatar-info [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+@defproc[(request-avatar-info [tox _Tox-pointer] [friendnumber integer?]) boolean?]{
   Request avatar information from a friend.
 
   Asks a friend to provide their avatar information (image format and hash). The friend may
   or may not answer this request and, if answered, the information will be provided through
   the callback 'avatar_info'.
  
-  returns 0 on success
+  returns @racket[#t] on success
 
-  returns -1 on failure.
+  returns @racket[#f] on failure.
 }
 
-@defproc[(send-avatar-info [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+@defproc[(send-avatar-info [tox _Tox-pointer] [friendnumber integer?]) boolean?]{
   Send an unrequested avatar information to a friend.
 
   Sends our avatar format and hash to a friend; he/she can use this information to validate
@@ -704,20 +642,20 @@ for the functions found in libtoxcore.
   Notice: it is NOT necessary to send this notification after changing the avatar or
   connecting. The library already does this.
  
-  returns 0 on success
+  returns @racket[#t] on success
 
-  returns -1 on failure.
+  returns @racket[#f] on failure.
 }
 
-@defproc[(request-avatar-data [tox _Tox-pointer] [friendnumber integer?]) integer?]{
+@defproc[(request-avatar-data [tox _Tox-pointer] [friendnumber integer?]) boolean?]{
   Request the avatar data from a friend.
 
   Ask a friend to send their avatar data. The friend may or may not answer this request and,
   if answered, the information will be provided in callback 'avatar_data'.
  
-  returns 0 on sucess
+  returns @racket[#t] on sucess
 
-  returns -1 on failure.
+  returns @racket[#f] on failure.
 }
 
 @section[#:tag "callbacks"]{Callbacks}
