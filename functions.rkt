@@ -133,7 +133,7 @@
  |#
 ; client_id is the bytes form of the Tox ID
 (define-tox add-friend-norequest (_fun [tox : _Tox-pointer]
-                                       [client-id : _bytes]
+                                       [client-id : _gcpointer]
                                        -> (success : _int32_t)
                                        -> (if (= -1 success)
                                               #f
@@ -1135,7 +1135,10 @@
 (define-tox set-avatar! (_fun [tox : _Tox-pointer]
                              [format : _int]
                              [data : _bytes]
-                             [len : _int = (bytes-length data)] -> _int)
+                             [len : _int = (bytes-length data)]
+                             -> (success : _int)
+                             -> (cond [(zero? success)]
+                                      [else #f]))
   #:c-id tox_set_avatar)
 
 #|
