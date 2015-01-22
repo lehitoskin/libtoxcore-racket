@@ -3,7 +3,8 @@
 ; libtoxcore-racket/av.rkt
 ; ffi implementation of libtoxav
 (require ffi/unsafe
-         ffi/unsafe/define)
+         ffi/unsafe/define
+         "enums.rkt")
 
 (provide (except-out (all-defined-out)
                      define-av
@@ -38,18 +39,31 @@
 (define RTP_PAYLOAD_SIZE 65535)
 
 (define-cstruct _ToxAvCSettings
-  ([call_type _int] ; _ToxAvCallType enum value
+  ([call-type _int] ; _ToxAvCallType enum value
    
-   [video_bitrate _uint32_t] ; In kbits/s
-   [video_width _uint16_t] ; In px
-   [video_height _uint16_t] ; In px
+   [video-bitrate _uint32_t] ; In kbits/s
+   [video-width _uint16_t] ; In px
+   [video-height _uint16_t] ; In px
    
-   [audio_bitrate _uint32_t] ; In bits/s
-   [audio_frame_duration _uint16_t] ; In ms
-   [audio_sample_rate _uint32_t] ; In Hz
-   [audio_channels _uint32_t]))
+   [audio-bitrate _uint32_t] ; In bits/s
+   [audio-frame_duration _uint16_t] ; In ms
+   [audio-sample_rate _uint32_t] ; In Hz
+   [audio-channels _uint32_t])
+  #:malloc-mode 'atomic)
 
-(define av_DefaultSettings _ToxAvCSettings)
+; defaults copied from astonex:
+; https://github.com/Tox/jToxcore/blob/master/src/im/tox/jtoxcore/ToxCodecSettings.java
+(define DefaultCSettings
+  (let ([type (_ToxAvCallType 'Audio)]
+        [video-bitrate 500] ; in kbits/s
+        [video-width 1280]
+        [video-height 720]
+        [audio-bitrate 32000] ; in bits/s - (64000 or 32000)
+        [audio-frame-duration 20] ; in ms
+        [audio-sample-rate 48000] ; in Hz
+        [channels 1]) ; (2 or 1 for poor connection)
+    (make-ToxAvCSettings type video-bitrate video-width video-height
+                         audio-bitrate audio-frame-duration audio-sample-rate channels)))
 
 #|
  # These are the callbacks' prototypes that will be used throughout the wrapper
@@ -61,17 +75,17 @@
  |#
 (define ToxAVCallback
   (_fun [agent : _pointer]
-        [call-idx : _int32_t]
+        [call-index : _int32_t]
         [arg : _pointer] -> _void))
 (define ToxAvAudioCallback
   (_fun [agent : _pointer]
-        [call-idx : _int32_t]
+        [call-index : _int32_t]
         [pcm : _pointer]
         [size : _uint16_t]
         [data : _bytes] -> _void))
 (define ToxAvVideoCallback
   (_fun [agent : _pointer]
-        [call-idx : _int32_t]
+        [call-index : _int32_t]
         [img : _bytes]
         [data : _bytes] -> _void))
 
@@ -185,7 +199,10 @@
  # int toxav_hangup(ToxAv *av, int32_t call_index);
  |#
 (define-av av-hangup (_fun [av : _ToxAv-pointer]
-                           [call-index : _int32_t] -> _int)
+                           [call-index : _int32_t]
+                           -> (err : _int)
+                           -> (cond [(zero? err)]
+                                    [else err]))
   #:c-id toxav_hangup)
 
 #|
@@ -201,7 +218,10 @@
  |#
 (define-av av-answer (_fun [av : _ToxAv-pointer]
                            [call-index : _int32_t]
-                           [csettings : _pointer] -> _int)
+                           [csettings : _pointer]
+                           -> (err : _int)
+                           -> (cond [(zero? err)]
+                                    [else err]))
   #:c-id toxav_answer)
 
 #|
@@ -217,7 +237,10 @@
  |#
 (define-av av-reject (_fun [av : _ToxAv-pointer]
                            [call-index : _int32_t]
-                           [reason : _string] -> _int)
+                           [reason : _string]
+                           -> (err : _int)
+                           -> (cond [(zero? err)]
+                                    [else err]))
   #:c-id toxav_reject)
 
 #|
@@ -369,7 +392,11 @@
 (define-av get-peer-csettings (_fun [av : _ToxAv-pointer]
                                     [call-index : _int32_t]
                                     [peer : _int]
-                                    [dest : _pointer] -> _int)
+                                    [dest : (_ptr o _ToxAv-pointer)]
+                                    -> (success : _int)
+                                    -> (if (< success 0)
+                                         (list success dest)
+                                         (list success)))
   #:c-id toxav_get_peer_csettings)
 
 #|

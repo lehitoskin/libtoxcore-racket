@@ -34,18 +34,18 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 
 @section[#:tag "procedures"]{Procedures}
 
-@defproc[(ToxAVCallback [agent cpointer?] [call-idx integer?]
+@defproc[(ToxAVCallback [agent cpointer?] [call-index integer?]
                         [arg cpointer?]) void?]{
   Commonly reused callback form.
 }
 
-@defproc[(ToxAvAudioCallback [agent cpointer?] [call-idx integer?]
-                             [pcm cpointer?] [size integer?]
+@defproc[(ToxAvAudioCallback [agent cpointer?] [call-index integer?]
+                             [pcm bytes?] [size integer?]
                              [data cpointer?]) void?]{
   Commonly reused audio callback form.
 }
 
-@defproc[(ToxAvVideoCallback [agent cpointer?] [call-idx integer?]
+@defproc[(ToxAvVideoCallback [agent cpointer?] [call-index integer?]
                              [img bytes?] [data cpointer?]) void?]{
   Commonly reused video callback form.
 }
@@ -112,32 +112,32 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 }
 
 @defproc[(av-hangup [av  _ToxAv-pointer]
-                    [call-index integer?]) integer?]{
+                    [call-index integer?]) (or/c boolean? integer?)]{
   Hangup active call.
  
-  return 0 on success.
+  return @racket[#t] on success.
   
   return @racket[_ToxAvError] on error.
 }
 
 @defproc[(av-answer [av _ToxAv-pointer]
                     [call-index integer?]
-                    [csettings cpointer?]) integer?]{
+                    [csettings cpointer?]) (or/c boolean? integer?)]{
   Answer incoming call.
  
-  return 0 on success.
+  return @racket[#t] on success.
   
   return @racket[_ToxAvError] On error.
 }
 
 @defproc[(av-reject [av _ToxAv-pointer]
                  [call-index integer?]
-                 [reason string?]) integer?]{
+                 [reason string?]) (or/c boolean? integer?)]{
   Reject incoming call.
  
   Optional reason. Set NULL if none.
   
-  return 0 on success.
+  return @racket[#t] on success.
   
   return @racket[_ToxAvError] on error.
 }
@@ -241,13 +241,12 @@ The functions in @racketmodname[libtoxcore-racket/av] pertain to Audio/Video int
 
 @defproc[(get-peer-csettings [av _ToxAv-pointer]
                              [call-index integer?]
-                             [peer integer?]
-                             [dest cpointer?]) integer?]{
+                             [peer integer?]) list?]{
   Get peer transmission type. It can either be audio or video.
  
-  return @racket[_ToxAvCallType] on success.
+  return a list containing @racket[_ToxAvCallType] and a csettings cpointer on success.
   
-  return @racket[_ToxAvError] on error.
+  return a list containing @racket[_ToxAvError] on error.
 }
 
 @defproc[(get-peer-id [av _ToxAv-pointer]
