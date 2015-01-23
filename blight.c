@@ -20,28 +20,38 @@ void blight_play_audio_buffer(ALuint alSource, const int16_t *data, int samples,
 	alGetSourcei(alSource, AL_BUFFERS_QUEUED, &queued);
 	alSourcei(alSource, AL_LOOPING, AL_FALSE);
 
-	//printf("play_audio_buffer: processed: %d, queued: %d ", processed, queued);
+#ifdef DEBUG
+	printf("play_audio_buffer: processed: %d, queued: %d ", processed, queued);
+#endif
 
 	if (processed)
 	{
 		ALuint bufids[processed];
 
-		/*printf("bufids (before): ");
+#ifdef DEBUG
+		printf("bufids (before): ");
 		for (int i = 0; i < processed; i++)
-			printf("%d ", bufids[i]);*/
+			printf("%d ", bufids[i]);
+		printf("\n");
+#endif
 
 		alSourceUnqueueBuffers(alSource, processed, bufids);
 
-		/*printf("bufids (after): ");
+#ifdef DEBUG
+		printf("bufids (after): ");
 		for (int j = 0; j < processed; j++)
-			printf("%d ", bufids[j]);*/
+			printf("%d ", bufids[j]);
+		printf("\n");
+#endif
 
 		alDeleteBuffers(processed - 1, bufids + 1);
 		bufid = bufids[0];
 
-		//printf("bufid: %d\n", bufid);
+#ifdef DEBUG
+		printf("bufid: %d\n", bufid);
+#endif
 	}
-		else if (queued < 16)
+	else if (queued < 16)
 	{
 		alGenBuffers(1, &bufid);
 	}

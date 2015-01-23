@@ -12,3 +12,8 @@ install: libblight.so
 
 clean:
 	rm blight.o
+
+all: libblight.so
+
+debug:
+	gcc -D DEBUG -shared -Wl,-soname=blight -ltoxdns -lopenal -o libblight.so blight.o

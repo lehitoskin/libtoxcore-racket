@@ -91,7 +91,7 @@
  |#
 (define-tox get-self-address
   (_fun [tox : _Tox-pointer]
-        [address : _bytes = (make-bytes TOX_FRIEND_ADDRESS_SIZE)]
+        [address : (_bytes o TOX_FRIEND_ADDRESS_SIZE)]
         -> _void
         -> address)
   #:c-id tox_get_address)
@@ -164,7 +164,7 @@
  |#
 (define-tox get-client-id (_fun [tox : _Tox-pointer]
                                 [friendnumber : _int32_t]
-                                [client-id : _bytes = (make-bytes TOX_CLIENT_ID_SIZE)]
+                                [client-id : (_bytes o TOX_CLIENT_ID_SIZE)]
                                 -> (copied : _int)
                                 -> (if (= -1 copied)
                                        #f
@@ -290,7 +290,7 @@
  # uint16_t tox_get_self_name(Tox *tox, uint8_t *name);
  |#
 (define-tox get-self-name (_fun [tox : _Tox-pointer]
-                                [name : _bytes = (make-bytes TOX_MAX_NAME_LENGTH)]
+                                [name : (_bytes o TOX_MAX_NAME_LENGTH)]
                                 -> (len : _uint16_t)
                                 -> (if (zero? len)
                                        len
@@ -308,7 +308,7 @@
  |#
 (define-tox get-name (_fun [tox : _Tox-pointer]
                            [friendnumber : _int32_t]
-                           [name : _bytes = (make-bytes TOX_MAX_NAME_LENGTH)]
+                           [name : (_bytes o TOX_MAX_NAME_LENGTH)]
                            -> (len : _int)
                            -> (if (= -1 len)
                                   #f
@@ -398,16 +398,16 @@
  |#
 (define-tox get-status-message (_fun [tox : _Tox-pointer]
                                      [friendnumber : _int32_t]
-                                     [buf : _bytes = (make-bytes TOX_MAX_STATUSMESSAGE_LENGTH)]
-                                     [maxlen : _uint32_t = (bytes-length buf)]
+                                     [buf : (_bytes o TOX_MAX_STATUSMESSAGE_LENGTH)]
+                                     [maxlen : _uint32_t = TOX_MAX_STATUSMESSAGE_LENGTH]
                                      -> (success : _int)
                                      -> (if (= -1 success)
                                             #f
                                             (subbytes buf 0 success)))
   #:c-id tox_get_status_message)
 (define-tox get-self-status-message (_fun [tox : _Tox-pointer]
-                                          [buf : _bytes = (make-bytes TOX_MAX_STATUSMESSAGE_LENGTH)]
-                                          [maxlen : _uint32_t = (bytes-length buf)]
+                                          [buf : (_bytes o TOX_MAX_STATUSMESSAGE_LENGTH)]
+                                          [maxlen : _uint32_t = TOX_MAX_STATUSMESSAGE_LENGTH]
                                           -> (success : _int)
                                           -> (if (= -1 success)
                                                  #f
@@ -499,7 +499,7 @@
 (define-tox get-friendlist
   (_fun (tox list-size) ::
         [tox : _Tox-pointer]
-        [out-list : _bytes = (make-bytes list-size)]
+        [out-list : (_bytes o list-size)]
         [list-size : _uint32_t]
         -> (success : _uint32_t)
         -> (if (zero? success)
@@ -840,7 +840,7 @@
 (define-tox get-group-peername (_fun [tox : _Tox-pointer]
                                      [groupnumber : _int]
                                      [peernumber : _int]
-                                     [name : _bytes = (make-bytes TOX_MAX_NAME_LENGTH)]
+                                     [name : (_bytes o TOX_MAX_NAME_LENGTH)]
                                      -> (success : _int)
                                      -> (if (= -1 success)
                                             #f
@@ -859,7 +859,7 @@
 (define-tox get-group-peer-pubkey (_fun [tox : _Tox-pointer]
                                          [groupnumber : _int]
                                          [peernumber : _int]
-                                         [pubkey : _bytes = (make-bytes TOX_CLIENT_ID_SIZE)]
+                                         [pubkey : (_bytes o TOX_CLIENT_ID_SIZE)]
                                          -> (success : _int)
                                          -> (when (zero? success)
                                               pubkey))
@@ -959,8 +959,8 @@
  |#
 (define-tox group-get-title (_fun [tox : _Tox-pointer]
                                   [groupnumber : _int]
-                                  [title : _bytes = (make-bytes TOX_MAX_NAME_LENGTH)]
-                                  [max-len : _uint32_t = (bytes-length title)]
+                                  [title : (_bytes o TOX_MAX_NAME_LENGTH)]
+                                  [max-len : _uint32_t = TOX_MAX_NAME_LENGTH]
                                   -> (success : _int)
                                   -> (if (= -1 success)
                                          #f
@@ -1178,10 +1178,10 @@
   (_fun (tox format imglen) ::
         [tox : _Tox-pointer]
         [format : _int]
-        [buf : _bytes = (make-bytes TOX_AVATAR_MAX_DATA_LENGTH)]
+        [buf : (_bytes o TOX_AVATAR_MAX_DATA_LENGTH)]
         [imglen : _int] ; _bytes
         [bufmaxlen : _int = TOX_AVATAR_MAX_DATA_LENGTH]
-        [hash : _bytes = (make-bytes TOX_HASH_LENGTH)]
+        [hash : (_bytes o TOX_HASH_LENGTH)]
         -> (success : _int)
         -> (if (= -1 success)
                #f
@@ -1207,7 +1207,7 @@
  |#
 (define-tox tox-hash
   (_fun (data) ::
-        [hash : _bytes = (make-bytes TOX_HASH_LENGTH)]
+        [hash : (_bytes o TOX_HASH_LENGTH)]
         [data : _bytes]
         [datalen : _int = (bytes-length data)]
         -> (success : _int)
@@ -1538,7 +1538,7 @@
 (define-tox tox-save
   (_fun (tox) ::
         [tox : _Tox-pointer]
-        [data : _bytes = (make-bytes (tox-size tox))]
+        [data : (_bytes o (tox-size tox))]
         -> _void
         -> data)
   #:c-id tox_save)
