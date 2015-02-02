@@ -19,9 +19,9 @@ with the enums, especially.
 
 @defthing[TOX_MAX_FRIENDREQUEST_LENGTH 1016]
 
-@defthing[TOX_CLIENT_ID_SIZE 32]
+@defthing[TOX_PUBLIC_KEY_SIZE 32]
 
-@defthing[TOX_FRIEND_ADDRESS_SIZE (+ TOX_CLIENT_ID_SIZE
+@defthing[TOX_FRIEND_ADDRESS_SIZE (+ TOX_PUBLIC_KEY_SIZE
                                      (ctype-sizeof _uint32_t) (ctype-sizeof _uint16_t))]
 
 @defthing[TOX_ENABLE_IPV6_DEFAULT #t]

@@ -15,5 +15,5 @@ clean:
 
 all: libblight.so
 
-debug:
+debug: blight.o
 	gcc -D DEBUG -shared -Wl,-soname=blight -ltoxdns -lopenal -o libblight.so blight.o

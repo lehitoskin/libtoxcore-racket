@@ -26,16 +26,16 @@ for the functions found in libtoxcore.
 }
 
 @defproc[(get-self-address [tox _Tox-pointer] [address bytes?]) void?]{
-  format: [client_id (32 bytes)][nospam number (4 bytes)][checksum (2 bytes)]
+  format: [public-key (32 bytes)][nospam number (4 bytes)][checksum (2 bytes)]
   
   Return an address to give to others. (Must be transformed into hex format for ordinary usage).
 }
 
 @defproc[(get-client-id [tox _Tox-pointer] [friendnumber integer?])
          integer?]{
-  Returns the client id associated to that friend id.
+  Returns the public key associated to that friend id.
 
-  return client id if success.
+  return public key if success.
 
   return @racket[#f] if failure.
 }
@@ -59,8 +59,8 @@ for the functions found in libtoxcore.
   of the return value will be truncated to @racket[list-size].
 }
 
-@defproc[(get-friend-number [tox _Tox-pointer] [client-id bytes?]) (or/c integer? boolean?)]{
-  return the friend number associated to that client id.
+@defproc[(get-friend-number [tox _Tox-pointer] [public-key bytes?]) (or/c integer? boolean?)]{
+  return the friend number associated to that public key.
   
   return @racket[#f] if no such friend
 }
@@ -459,14 +459,14 @@ for the functions found in libtoxcore.
   return @racket[TOX_FAERR_NOMEM] if increasing the friend list size fails.
 }
 
-@defproc[(add-friend-norequest [tox _Tox-pointer] [client-id bytes?]) (or/c integer? boolean?)]{
+@defproc[(add-friend-norequest [tox _Tox-pointer] [public-key bytes?]) (or/c integer? boolean?)]{
   Add a friend without sending a friendrequest.
   
   return the friend number on success.
   
   return @racket[#f] on failure.
   
-  @racket[client-id] is the bytes form of the Tox ID; e.g. @racket[(hex-string->bytes str)].
+  @racket[public-key] is the bytes form of the Tox ID; e.g. @racket[(hex-string->bytes str)].
 }
 
 @defproc[(del-friend! [tox _Tox-pointer] [friendnumber integer?]) integer?]{
