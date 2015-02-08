@@ -6,6 +6,7 @@
 
 (provide (except-out (all-defined-out)
                      define-dns
+                     TOX_PUBLIC_KEY_SIZE
                      _uint8_t
                      _uint16_t
                      _uint32_t))
@@ -25,6 +26,8 @@
 ; Clients are encouraged to set this as the maximum length names can have.
 (define TOXDNS_MAX_RECOMMENDED_NAME_LENGTH 32)
 
+(define TOX_PUBLIC_KEY_SIZE 32)
+
 #|
  # How to use this api to make secure tox dns3 requests:
  #
@@ -41,7 +44,8 @@
  # request we stored earlier to get the Tox id returned by the DNS server.
  |#
 
-#| Create a new tox_dns3 object for server with server_public_key of size TOX_CLIENT_ID_SIZE.
+#|
+ # Create a new tox_dns3 object for server with server_public_key of size TOX_CLIENT_ID_SIZE.
  #
  # return Null on failure.
  # return pointer object on success.
@@ -54,7 +58,8 @@
 (define-dns dns3-kill! (_fun _pointer -> _void)
   #:c-id tox_dns3_kill)
 
-#| Generate a dns3 string of string_max_len used to query the dns server referred to by to
+#|
+ # Generate a dns3 string of string_max_len used to query the dns server referred to by to
  # dns3_object for a tox id registered to user with name of name_len.
  #
  # the uint32_t pointed by request_id will be set to the request id which must be passed to
@@ -73,9 +78,9 @@
 (define-dns dns3-encrypt
   (_fun (dns3-obj nick) ::
         [dns3-obj : _pointer]
-        [bstr : _bytes = (make-bytes 256)]
-        [bstr-max-len : _uint16_t = (bytes-length bstr)]
-        [request-id : _bytes = (make-bytes 4)]
+        [bstr : (_bytes o 256)]
+        [bstr-max-len : _uint16_t = 256]
+        [request-id : (_bytes o 4)]
         [nick : _string]
         [nick-len : _uint8_t = (string-length nick)]
         -> (copied : _int)
@@ -95,7 +100,8 @@
         -> _int)
   #:c-id tox_generate_dns3_string)
 
-#| Decode and decrypt the id_record returned of length id_record_len into
+#|
+ # Decode and decrypt the id_record returned of length id_record_len into
  # tox_id (needs to be at least TOX_FRIEND_ADDRESS_SIZE).
  #
  # request_id is the request id given by tox_generate_dns3_string() when creating the request.
@@ -112,11 +118,16 @@
  |#
 ; the original
 ; doesn't work because of the way the toxdns code is written
-#;(define-dns dns3-decrypt-TXT
-  (_fun [dns3-obj : _pointer]
-        [tox-id : _bytes]
+(define-dns dns3-decrypt-TXT
+  (_fun (dns3-obj id-record request-id) ::
+        [dns3-obj : _pointer]
+        [tox-id : (_bytes o TOX_PUBLIC_KEY_SIZE)]
         [id-record : _bytes]
-        [id-record-len : _uint32_t]
-        [request-id : _bytes] -> _int)
+        [id-record-len : _uint32_t = (bytes-length id-record)]
+        [request-id : _uint32_t]
+        -> (success : _int)
+        -> (if (zero? success)
+               tox-id
+               #f))
   #:c-id tox_decrypt_dns3_TXT)
 )
