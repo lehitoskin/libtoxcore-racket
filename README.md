@@ -17,7 +17,7 @@ the package by entering "libtoxcore-racket" into DrRacket's "Install Package"
 tool.
 
 * If using with Blight, compile the libblight library with
-```make; sudo make install; sudo make link```
+```make; sudo DESTDIR=/usr make link```
 
 ## Implemented API Functions
 * See the docs for information about the implemented API
