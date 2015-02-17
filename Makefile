@@ -3,7 +3,7 @@ DESTDIR=/usr/local
 all: libblight.so lib
 
 libblight.so: blight.o
-	gcc -shared -Wl,-soname=blight -ltoxdns -lopenal -o libblight.so blight.o
+	gcc -shared -ltoxdns -lopenal -o libblight.so blight.o
 
 blight.o: blight.c
 	gcc -Wall -fPIC -std=c99 -c blight.c
@@ -26,4 +26,4 @@ clean: blight.o compiled
 	rm -Rv compiled/
 
 debug: blight.o
-	gcc -D DEBUG -shared -Wl,-soname=blight -ltoxdns -lopenal -o libblight.so blight.o
+	gcc -D DEBUG -shared -ltoxdns -lopenal -o libblight.so blight.o
