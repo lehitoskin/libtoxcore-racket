@@ -17,6 +17,8 @@ install: libblight.so lib
 	install -m 0755 libblight.so $(DESTDIR)/lib
 	install -m 0644 *.rkt $(DESTDIR)/share/racket/pkgs/libtoxcore-racket
 	cp -Rv compiled $(DESTDIR)/share/racket/pkgs/libtoxcore-racket
+
+link: install
 	raco link -i $(DESTDIR)/share/racket/pkgs/libtoxcore-racket
 
 clean: blight.o compiled
