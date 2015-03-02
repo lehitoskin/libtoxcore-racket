@@ -24,32 +24,6 @@ diff -Naur a/av.rkt b/av.rkt
  
  ; The _string type supports conversion between Racket strings
  ; and char* strings using a parameter-determined conversion.
-diff -Naur a/blight.rkt b/blight.rkt
---- a/blight.rkt	2015-01-11 19:37:25.451477067 -0800
-+++ b/blight.rkt	2015-01-11 19:41:02.868495020 -0800
-@@ -11,9 +11,20 @@
- (provide (except-out (all-defined-out)
-                      define-blight
-                      _uint8_t
--                     _uint32_t))
-+                     _uint32_t
-+		     exe-path
-+		     lib-path))
- 
--(define-ffi-definer define-blight (ffi-lib "libblight"))
-+; jenkins junk
-+(define exe-path (path->string (find-system-path 'run-file)))
-+
-+; shenanigans to get the binary to be called from anywhere and still work
-+(define lib-path (string->path (string-append
-+                                (substring exe-path 0
-+                                           (- (string-length exe-path) 6))
-+                                "../lib/libblight")))
-+
-+(define-ffi-definer define-blight (ffi-lib lib-path))
- 
- (define _uint8_t _uint8)
- (define _uint32_t _uint32)
 diff -Naur a/dns.rkt b/dns.rkt
 --- a/dns.rkt	2015-01-11 19:37:28.708477336 -0800
 +++ b/dns.rkt	2015-01-11 19:42:25.045501805 -0800

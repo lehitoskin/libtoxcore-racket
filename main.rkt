@@ -5,11 +5,9 @@
             "av.rkt"
             "enums.rkt"
             "encrypt.rkt"
-            "dns.rkt"
-            "blight.rkt")
+            "dns.rkt")
   (provide (all-from-out "functions.rkt"
                          "av.rkt"
                          "enums.rkt"
                          "encrypt.rkt"
-                         "dns.rkt"
-                         "blight.rkt")))
+                         "dns.rkt")))
