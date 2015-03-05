@@ -50,33 +50,29 @@
         (dec->bin (hex->dec x))
         (raise-argument-error 'hex->bin "string?" x))))
 
-; initialize a new Tox and grab the _Tox-pointer
-(define my-tox (tox-new TOX_ENABLE_IPV6_DEFAULT))
-(define my-name "Leah Twoskin Redux")
+; initialize a new Tox with the default settings
+(define my-tox (tox-new #f))
+(define my-name "Wrapper Tester")
 (define my-status-message "Testing the Racket wrapper")
 ;(tox_isconnected my-tox)
 ; set nick name
 (display "Setting my name\n")
-(set-name my-tox my-name)
+(set-name! my-tox my-name)
 
 ; set status message
 (display "Setting my status\n")
-(set-status-message my-tox my-status-message)
+(set-status-message! my-tox my-status-message)
 
 (display "How long is my name?\n")
 ; returns length of my-name
 (define name-length (get-self-name-size my-tox))
 name-length
 
-(displayln "Obtaining name in buffer")
-(define name-buf (make-bytes name-length))
-(get-self-name my-tox name-buf)
-name-buf
+(displayln "Obtaining name")
+(get-self-name my-tox)
 
 (display "How long is my status message?\n")
-(define status-message-buf (make-bytes (string-length my-status-message)))
-(get-self-status-message my-tox status-message-buf)
-status-message-buf
+(get-self-status-message-size my-tox)
 
 (displayln "How many friends do I have?")
 (friendlist-length my-tox)
@@ -86,30 +82,15 @@ status-message-buf
 (define dht-address "192.254.75.98")
 (define dht-port 33445)
 ; does dht-public-key need to be bytes? a string?
-(define dht-public-key #"A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074")
-(bootstrap-from-address my-tox dht-address TOX_ENABLE_IPV6_DEFAULT dht-port dht-public-key)
+(define dht-public-key "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074")
+(bootstrap-from-address my-tox dht-address dht-port dht-public-key)
 
 (define on-connection-change
   (λ (mtox pub-key data length userdata)
     (displayln "There's been a change in connection")))
 
-(displayln "my-id stuff")
-(define size (tox-size my-tox))
-(define data (make-bytes size))
-; obtain tox id
-(define my-id-bytes (make-bytes (* TOX_FRIEND_ADDRESS_SIZE)))
-(get-address my-tox my-id-bytes)
-(printf "Before hex: ~a\n" my-id-bytes)
-(define my-id-hex "")
-(define b2hs (string-upcase (bytes->hex-string my-id-bytes)))
-(do ((i 0 (+ i 1)))
-  ((= i TOX_FRIEND_ADDRESS_SIZE))
-  (set! my-id-hex (string-append
-                   my-id-hex
-                   (string-upcase
-                    (dec->hex (bytes-ref my-id-bytes i))))))
-(printf "After hex: ~a\nbytes->hex-string: ~a\n" my-id-hex b2hs)
-(printf "string=? ~a\n" (string=? my-id-hex b2hs))
+(displayln "my tox id")
+(string-upcase (bytes->hex-string (get-self-address my-tox)))
 
 (displayln "This kills the Tox...")
 (tox-kill! my-tox)
