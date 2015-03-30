@@ -274,8 +274,7 @@
                             [len : _uint16_t = (bytes-length
                                                 (string->bytes/utf-8 name))]
                             -> (success : _int)
-                            -> (cond [(zero? success)]
-                                     [else #f]))
+                            -> (zero? success))
   #:c-id tox_set_name)
 
 #|
@@ -354,14 +353,12 @@
                                                          (string->bytes/utf-8
                                                           status))]
                                      -> (success : _int)
-                                     -> (cond [(zero? success)]
-                                              [else #f]))
+                                     -> (zero? success))
   #:c-id tox_set_status_message)
 (define-tox set-user-status! (_fun [tox : _Tox-pointer]
                                   [userstatus : _uint8_t]
                                   -> (success : _int) ; enum value
-                                  -> (cond [(zero? success)]
-                                           [else #f]))
+                                  -> (zero? success))
   #:c-id tox_set_user_status)
 
 #|
@@ -456,8 +453,7 @@
                                      [friendnumber : _int32_t]
                                      [is-typing? : _bool]
                                      -> (success : _int)
-                                     -> (cond [(zero? success)]
-                                              [else #f]))
+                                     -> (zero? success))
   #:c-id tox_set_user_is_typing)
 
 #|
@@ -824,8 +820,7 @@
 (define-tox del-groupchat! (_fun [tox : _Tox-pointer]
                                  [groupnumber : _int]
                                  -> (success : _int)
-                                 -> (cond [(zero? success)]
-                                          [else #f]))
+                                 -> (zero? success))
   #:c-id tox_del_groupchat)
 
 #|
@@ -876,8 +871,7 @@
                                 [friendnumber : _int32_t]
                                 [groupnumber : _int]
                                 -> (success : _int)
-                                -> (cond [(zero? success)]
-                                         [else #f]))
+                                -> (zero? success))
   #:c-id tox_invite_friend)
 
 #|
@@ -911,8 +905,7 @@
                                      [message : _bytes]
                                      [len : _uint16_t = (bytes-length message)]
                                      -> (success : _int)
-                                     -> (cond [(zero? success)]
-                                              [else #f]))
+                                     -> (zero? success))
   #:c-id tox_group_message_send)
 
 #|
@@ -927,8 +920,7 @@
                                     [action : _bytes]
                                     [len : _uint16_t = (bytes-length action)]
                                     -> (success : _int)
-                                    -> (cond [(zero? success)]
-                                             [else #f]))
+                                    -> (zero? success))
   #:c-id tox_group_action_send)
 
 #|
@@ -943,8 +935,7 @@
                                   [title : _bytes]
                                   [len : _uint8_t = (bytes-length title)]
                                   -> (success : _int)
-                                  -> (cond [(zero? success)]
-                                           [else #f]))
+                                  -> (zero? success))
   #:c-id tox_group_set_title)
 
 #|
@@ -1137,8 +1128,7 @@
                              [data : _bytes]
                              [len : _int = (bytes-length data)]
                              -> (success : _int)
-                             -> (cond [(zero? success)]
-                                      [else #f]))
+                             -> (zero? success))
   #:c-id tox_set_avatar)
 
 #|
@@ -1228,8 +1218,7 @@
  |#
 (define-tox request-avatar-info (_fun [tox : _Tox-pointer] [friendnumber : _int]
                                       -> (success : _int)
-                                      -> (cond [(zero? success)]
-                                               [else #f]))
+                                      -> (zero? success))
   #:c-id tox_request_avatar_info)
 
 #|
@@ -1247,8 +1236,7 @@
  |#
 (define-tox send-avatar-info (_fun [tox : _Tox-pointer] [friendnumber : _int]
                                    -> (success : _int)
-                                   -> (cond [(zero? success)]
-                                            [else #f]))
+                                   -> (zero? success))
   #:c-id tox_send_avatar_info)
 
 #|
@@ -1263,8 +1251,7 @@
  |#
 (define-tox request-avatar-data (_fun [tox : _Tox-pointer] [friendnumber : _int]
                                       -> (success : _int)
-                                      -> (cond [(zero? success)]
-                                               [else #f]))
+                                      -> (zero? success))
   #:c-id tox_request_avatar_data)
 
 #|
@@ -1386,8 +1373,7 @@
                                     [data : _bytes]
                                     [len : _uint16_t]
                                     -> (success : _int)
-                                    -> (cond [(zero? success)]
-                                             [else #f]))
+                                    -> (zero? success))
   #:c-id tox_file_send_control)
 
 #|
@@ -1405,8 +1391,7 @@
                                  [data : _bytes]
                                  [len : _uint16_t = (bytes-length data)]
                                  -> (success : _int)
-                                 -> (cond [(zero? success)]
-                                          [else #f]))
+                                 -> (zero? success))
   #:c-id tox_file_send_data)
 
 #|
@@ -1482,18 +1467,76 @@
   #:c-id tox_isconnected)
 
 #|
- # Run this function at startup.
+ # Initialises a Tox_Options object with the default options.
  #
- # Options are some options that can be passed to the Tox instance (see above struct).
+ # The result of this function is independent of the original options. All
+ # values will be overwritten, no values will be read (so it is permissible
+ # to pass an uninitialised object).
  #
- # If options is NULL, tox_new() will use default settings.
+ # If options is NULL, this function has no effect.
  #
- # Initializes a tox structure
- # return allocated instance of tox on success.
- # return NULL on failure.
- # Tox *tox_new(Tox_Options *options);
+ # @param options An options object to be filled with default options.
+ #
+ # void tox_options_default(struct Tox_Options *options);
  |#
-(define-tox tox-new (_fun [options : _pointer] -> _Tox-pointer)
+(define-tox tox-options-default (_fun [options : _Tox-Options-pointer] -> _void)
+  #:c-id tox_options_default)
+
+#|
+ # Allocates a new Tox_Options object and initialises it with the default
+ # options. This function can be used to preserve long term ABI compatibility by
+ # giving the responsibility of allocation and deallocation to the Tox library.
+ #
+ # Objects returned from this function must be freed using the tox_options_free
+ # function.
+ #
+ # @return A new Tox_Options object with default options or NULL on failure.
+ #
+ # struct Tox_Options *tox_options_new(TOX_ERR_OPTIONS_NEW *error);
+ |#
+(define-tox tox-options-new (_fun [err : (_list io _int 1)] -> _Tox-Options-pointer)
+  #:c-id tox_options_new)
+
+#|
+ # Releases all resources associated with an options objects.
+ #
+ # Passing a pointer that was not returned by tox_options_new results in
+ # undefined behaviour.
+ #
+ # void tox_options_free(struct Tox_Options *options);
+ |#
+(define-tox tox-options-free (_fun [options : _Tox-Options-pointer] -> _void)
+  #:c-id tox_options_free)
+
+#|
+ # @brief Creates and initialises a new Tox instance with the options passed.
+ #
+ # This function will bring the instance into a valid state. Running the event
+ # loop with a new instance will operate correctly.
+ #
+ # If the data parameter is not NULL, this function will load the Tox instance
+ # from a byte array previously filled by tox_get_savedata.
+ #
+ # If loading failed or succeeded only partially, the new or partially loaded
+ # instance is returned and an error code is set.
+ #
+ # @param options An options object as described above. If this parameter is
+ # NULL, the default options are used.
+ # @param data A byte array containing data previously stored by tox_get_savedata.
+ # @param length The length of the byte array data. If this parameter is 0, the
+ # data parameter is ignored.
+ #
+ # @see tox_iteration for the event loop.
+ #
+ # Tox *tox_new(const struct Tox_Options *options, const uint8_t *data, size_t length,
+ #              TOX_ERR_NEW *error);
+ |#
+(define-tox tox-new
+  (_fun [options : _pointer]
+        [data : _bytes]
+        [len : _size = (bytes-length data)]
+        [error : (_list io _int 1)]
+        -> _Tox-pointer)
   #:c-id tox_new)
 
 #|
@@ -1555,7 +1598,6 @@
                            [data : _bytes]
                            [len : _uint32_t = (bytes-length data)]
                            -> (success : _int)
-                           -> (cond [(zero? success)]
-                                    [else #f]))
+                           -> (zero? success))
   #:c-id tox_load)
 )

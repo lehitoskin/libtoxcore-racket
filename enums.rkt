@@ -97,6 +97,62 @@
                    (i sym))
                  #f)))
          
+         (define (_TOX_ERR_OPTIONS_NEW sym)
+           (let ([enum (make-enumeration '(OK MALLOC))])
+             (if (enum-set-member? sym enum)
+                 (let ([i (enum-set-indexer enum)])
+                   (i sym))
+                 #f)))
+         
+         (define (_TOX_ERR_ENCRYPTED_NEW sym)
+           (let ([enum (make-enumeration
+                        '(OK
+                          NULL
+                          #|
+                           # The function was unable to allocate enough memory to store the internal
+                           # structures for the Tox object.
+                           |#
+                          MALLOC
+                          #|
+                           # The function was unable to bind to a port. This may mean that all ports
+                           # have already been bound, e.g. by other Tox instances, or it may mean
+                           # a permission error. You may be able to gather more information from errno.
+                           |#
+                          PORT_ALLOC
+                          ; proxy_type was invalid.
+                          PROXY_BAD_TYPE
+                          #|
+                           # proxy_type was valid but the proxy_host passed had an invalid format
+                           # or was NULL.
+                           |#
+                          PROXY_BAD_HOST
+                          ; proxy_type was valid, but the proxy_port was invalid.
+                          PROXY_BAD_PORT
+                          ; The proxy host passed could not be resolved.
+                          PROXY_NOT_FOUND
+                          ; The byte array to be loaded contained an encrypted save.
+                          LOAD_ENCRYPTED
+                          #|
+                           # The data format was invalid. This can happen when loading data that was
+                           # saved by an older version of Tox, or when the data has been corrupted.
+                           # When loading from badly formatted data, some data may have been loaded,
+                           # and the rest is discarded. Passing an invalid length parameter also
+                           # causes this error.
+                           |#
+                          LOAD_BAD_FORMAT
+                          #|
+                           # The encrypted byte array could not be decrypted. Either the data was
+                           # corrupt or the password/key was incorrect.
+                           #
+                           # NOTE: This error code is only set by tox_encrypted_new() and
+                           # tox_encrypted_key_new(), in the toxencryptsave module.
+                           |#
+                          LOAD_DECRYPTION_FAILED))])
+             (if (enum-set-member? sym enum)
+                 (let ([i (enum-set-indexer enum)])
+                   (i sym))
+                 #f)))
+         
          #| ############### BEGIN AV ENUMERATIONS ############# |#
          (define (_ToxAvCallbackID sym)
            (let ([enum (make-enumeration

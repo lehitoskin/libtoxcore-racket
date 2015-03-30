@@ -85,12 +85,17 @@
  # int tox_pass_encrypt(const uint8_t *data, uint32_t data_len, uint8_t *passphrase,
  #                      uint32_t pplength, uint8_t *out);
  |#
-(define-encrypt pass-encrypt!
-  (_fun [data : _bytes]
-        [data-len : _uint32_t]
+(define-encrypt pass-encrypt
+  (_fun (data passphrase) ::
+        [data : _bytes]
+        [data-len : _uint32_t = (bytes-length data)]
         [passphrase : _string]
-        [pplength : _uint32_t]
-        [out : _bytes] -> _int)
+        [pplength : _uint32_t = (string-length passphrase)]
+        [out : (_bytes o (+ data-len (pass-encryption-extra-length)))]
+        -> (success : _int)
+        -> (if (= -1 success)
+               #f
+               out))
   #:c-id tox_pass_encrypt)
 
 #|
@@ -104,10 +109,13 @@
  #                        uint32_t pplength);
  |#
 (define-encrypt encrypted-save!
-  (_fun [tox : _Tox-pointer]
+  (_fun (tox data passphrase) ::
+        [tox : _Tox-pointer]
         [data : _bytes]
         [passphrase : _string]
-        [pplength : _uint32_t = (string-length passphrase)] -> _int)
+        [pplength : _uint32_t = (string-length passphrase)]
+        -> (success : _int)
+        -> (zero? success))
   #:c-id tox_encrypted_save)
 
 #|
@@ -118,26 +126,42 @@
  # tox_encrypted_load() is a good example of how to use this function.
  #
  # returns the length of the output data (== data_len - tox_pass_encryption_extra_length())
- # on success
+ #   on success
  # returns -1 on failure
- #
  # int tox_pass_decrypt(const uint8_t *data, uint32_t length, uint8_t *passphrase,
  #                      uint32_t pplength, uint8_t *out);
- # Load the messenger from encrypted data of size length.
- #
- # returns 0 on success
- # returns -1 on failure
- #
- # int tox_encrypted_load(Tox *tox, const uint8_t *data, uint32_t length, uint8_t *passphrase,
- #                        uint32_t pplength);
  |#
-(define-encrypt encrypted-load
-  (_fun [tox : _Tox-pointer]
-        [data : _bytes]
-        [len : _uint32_t]
+(define-encrypt pass-decrypt
+  (_fun [data : _bytes]
+        [len : _uint32_t = (bytes-length data)]
         [passphrase : _string]
-        [pplength : _uint32_t = (string-length passphrase)] -> _int)
-  #:c-id tox_encrypted_load)
+        [pplength : _uint32_t = (string-length passphrase)]
+        [out : (_bytes o (- len (pass-encryption-extra-length)))]
+        -> (success : _int)
+        -> (if (= -1 success)
+               #f
+               (subbytes out - success)))
+  #:c-id tox_pass_decrypt)
+
+#|
+ # Load the new messenger from encrypted data of size length.
+ # All other arguments are like toxcore/tox_new().
+ #
+ # returns NULL on failure; see the documentation in toxcore/tox.h.
+ #
+ # Tox *tox_encrypted_new(const struct Tox_Options *options, const uint8_t *data,
+ #                        size_t length, uint8_t *passphrase, size_t pplength,
+ #                        TOX_ERR_ENCRYPTED_NEW *error);
+ |#
+(define-encrypt encrypted-new
+  (_fun (options data passphrase err) ::
+        [options : _pointer]
+        [data : _bytes]
+        [len : _size = (bytes-length data)]
+        [passphrase : _string]
+        [pplength : _size = (string-length passphrase)]
+        [err : (_list io _int 1)] -> _Tox-pointer)
+  #:c-id tox_encrypted_new)
 
 #|
  ############################### BEGIN PART 1 ###############################
@@ -162,8 +186,12 @@
  |#
 (define-encrypt derive-key-from-pass
   (_fun [passphrase : _string]
-        [pplength : _uint32_t]
-        [out-key : _bytes] -> _int)
+        [pplength : _uint32_t = (string-length passphrase)]
+        [out-key : (_bytes o (pass-key-length))]
+        -> (success : _int)
+        -> (if (= success -1)
+               #f
+               out-key))
   #:c-id tox_derive_key_from_pass)
 
 #|
@@ -175,9 +203,13 @@
  |#
 (define-encrypt derive-key-with-salt
   (_fun [passphrase : _string]
-        [pplength : _uint32_t]
+        [pplength : _uint32_t = (string-length passphrase)]
         [salt : _bytes]
-        [out-key : _bytes] -> _int)
+        [out-key : (_bytes o (pass-key-length))]
+        -> (success : _int)
+        -> (if (= success -1)
+               #f
+               out-key))
   #:c-id tox_derive_key_with_salt)
 
 #|
@@ -190,12 +222,17 @@
  #
  # int tox_get_salt(uint8_t *data, uint8_t *salt);
  |#
-(define-encrypt get-salt (_fun [data : _bytes]
-                               [salt : _bytes] -> _int)
+(define-encrypt get-salt
+  (_fun [data : _bytes]
+        [salt : (_bytes o 256)]
+        -> (success : _int)
+        -> (if (= success -1)
+               #f
+               salt))
   #:c-id tox_get_salt)
 
 #|
- # Now come the functions that are analogous to the part 2 functions. */
+ # Now come the functions that are analogous to the part 2 functions.
  # Encrypt arbitrary with a key produced by tox_derive_key_. The output
  # array must be at least data_len + tox_pass_encryption_extra_length() bytes long.
  # key must be tox_pass_key_length() bytes.
@@ -243,25 +280,36 @@
  |#
 (define-encrypt pass-key-decrypt
   (_fun [data : _bytes]
-        [len : _uint32_t]
+        [len : _uint32_t = (bytes-length data)]
         [key : _bytes]
-        [out : _bytes] -> _int)
+        [out : (_bytes o 256)]
+        -> (success : _int)
+        -> (if (= success -1)
+               #f
+               (subbytes out 0 success)))
   #:c-id tox_pass_key_decrypt)
 
 #|
  # Load the messenger from encrypted data of size length, with key from tox_derive_key.
+ # All other arguments are like toxcore/tox_new().
  #
  # returns 0 on success
  # returns -1 on failure
  #
- # int tox_encrypted_key_load(Tox *tox, const uint8_t *data, uint32_t length, uint8_t *key);
+ # Tox *tox_encrypted_key_new(const struct Tox_Options *options, const uint8_t *data,
+ #                            size_t length, uint8_t *key, TOX_ERR_ENCRYPTED_NEW *error);
  |#
-(define-encrypt encrypted-key-load
-  (_fun [tox : _Tox-pointer]
+(define-encrypt encrypted-key-new
+  (_fun [options : _pointer]
         [data : _bytes]
         [len : _uint32_t]
-        [key : _bytes] -> _int)
-  #:c-id tox_encrypted_key_load)
+        [key : _bytes]
+        [err : (_list io _int 1)]
+        -> (success : _int)
+        -> (if (= success -1)
+               err
+               #t))
+  #:c-id tox_encrypted_key_new)
 
 #|
  # Determines whether or not the given data is encrypted (by checking the magic number)
@@ -270,11 +318,7 @@
  # returns 0 otherwise
  #
  # int tox_is_data_encrypted(const uint8_t *data);
- # int tox_is_save_encrypted(const uint8_t *data);
  |#
 (define-encrypt data-encrypted? (_fun [data : _bytes] -> _bool)
   #:c-id tox_is_data_encrypted)
-; poorly-named alias for backwards compat (oh irony...)
-(define-encrypt save-encrypted? (_fun [data : _bytes] -> _bool)
-  #:c-id tox_is_save_encrypted)
 )
