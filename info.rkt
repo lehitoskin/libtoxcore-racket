@@ -10,7 +10,7 @@
 (define version "0.1")
 (define release-notes '("Initial release."))
 
-(define required-core-version "6.0")
+(define required-core-version "6.0.1")
 
 (define deps '("base"
                "scribble-lib"

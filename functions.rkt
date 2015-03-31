@@ -5,25 +5,15 @@
 (require ffi/unsafe
          ffi/unsafe/define)
 (provide (except-out (all-defined-out)
-                     define-tox
-                     _int32_t
-                     _uint8_t
-                     _uint16_t
-                     _uint32_t
-                     _uint64_t))
+                     define-tox))
 
 (define-ffi-definer define-tox (ffi-lib "libtoxcore"))
+
+; This version of the wrapper is synced with version 0.0.0 of toxcore
 
 #|###################
  # type definitions #
  ################## |#
-
-; *_t definitions
-(define _int32_t _int32)
-(define _uint8_t _uint8)
-(define _uint16_t _uint16)
-(define _uint32_t _uint32)
-(define _uint64_t _uint64)
 
 ; The _string type supports conversion between Racket strings
 ; and char* strings using a parameter-determined conversion.
@@ -42,7 +32,7 @@
 (define TOX_PUBLIC_KEY_SIZE 32)
 
 (define TOX_FRIEND_ADDRESS_SIZE (+ TOX_PUBLIC_KEY_SIZE
-                                   (ctype-sizeof _uint32_t) (ctype-sizeof _uint16_t)))
+                                   (ctype-sizeof _uint32) (ctype-sizeof _uint16)))
 (define TOX_ENABLE_IPV6_DEFAULT #t)
 (define TOX_AVATAR_MAX_DATA_LENGTH 16384)
 (define TOX_AVATAR_HASH_LENGTH 32)
@@ -64,12 +54,61 @@
   # Disabling udp support is necessary when using proxies or Tor.
   |#
  [udp-disabled? _bool]
- [proxy-type _uint8_t] ; a value from TOX_PROXY_TYPE
+ [proxy-type _uint8] ; a value from TOX_PROXY_TYPE
  [proxy-address _string] ; proxy IP or domain
- [proxy-port _uint16_t])) ; proxy port in host byte order
+ [proxy-port _uint16])) ; proxy port in host byte order
 
-#| ############# enum definitions have moved to enums.rkt which uses r6rs ################# |#
+#|
+ # Return the major version number of the library. Can be used to display the
+ # Tox library version or to check whether the client is compatible with the
+ # dynamically linked version of Tox.
+ #
+ # uint32_t tox_version_major(void);
+ |#
+(define-tox tox-version-major (_fun -> _uint32)
+  #:c-id tox_version_major)
 
+#|
+ # Return the minor version number of the library.
+ #
+ # uint32_t tox_version_minor(void);
+ |#
+(define-tox tox-version-minor (_fun -> _uint32)
+  #:c-id tox_version-minor)
+
+#|
+ # Return the patch number of the library.
+ #
+ # uint32_t tox_version_patch(void);
+ |#
+(define-tox tox-version-patch (_fun -> _uint32)
+  #:c-id tox_version_patch)
+
+#|
+ # Return whether the compiled library version is compatible with the passed
+ # version numbers.
+ #
+ # bool tox_version_is_compatible(uint32_t major, uint32_t minor, uint32_t patch);
+ |#
+(define-tox tox-version-compatible?
+  (_fun [major : _uint32]
+        [minor : _uint32]
+        [patch : _uint32] -> _bool)
+  #:c-id tox_version_is_compatible)
+
+#|
+ # A convenience macro to call tox_version_is_compatible with the currently
+ # compiling API version.
+ #
+ #define TOX_VERSION_IS_ABI_COMPATIBLE() \
+ # tox_version_is_compatible(TOX_VERSION_MAJOR, TOX_VERSION_MINOR, TOX_VERSION_PATCH)
+ |#
+(define-syntax tox-version-abi-compatible?
+  (syntax-rules ()
+    ((_)
+     (tox-version-compatible? (tox-version-major)
+                              (tox-version-minor)
+                              (tox-version-patch)))))
 
 #|#######################
  # function definitions #
@@ -119,9 +158,9 @@
 (define-tox add-friend (_fun [tox : _Tox-pointer]
                              [address : _bytes]
                              [message : _string]
-                             [message-length : _uint16_t = (bytes-length
+                             [message-length : _uint16 = (bytes-length
                                                             (string->bytes/utf-8 message))]
-                             -> _int32_t)
+                             -> _int32)
   #:c-id tox_add_friend)
 
 #|
@@ -134,7 +173,7 @@
 ; public_key is the bytes form of the Tox ID
 (define-tox add-friend-norequest (_fun [tox : _Tox-pointer]
                                        [client-id : _gcpointer]
-                                       -> (success : _int32_t)
+                                       -> (success : _int32)
                                        -> (if (= -1 success)
                                               #f
                                               success))
@@ -148,7 +187,7 @@
 ; public_key is the bytes form of the Tox ID
 (define-tox get-friend-number (_fun [tox : _Tox-pointer]
                                     [client-id : _bytes]
-                                    -> (success : _int32_t)
+                                    -> (success : _int32)
                                     -> (if (= -1 success)
                                            #f
                                            success))
@@ -163,7 +202,7 @@
  # int tox_get_client_id(Tox *tox, int32_t friend_id, uint8_t *public_key);
  |#
 (define-tox get-client-id (_fun [tox : _Tox-pointer]
-                                [friendnumber : _int32_t]
+                                [friendnumber : _int32]
                                 [client-id : (_bytes o TOX_PUBLIC_KEY_SIZE)]
                                 -> (copied : _int)
                                 -> (if (= -1 copied)
@@ -180,7 +219,7 @@
  # int tox_del_friend(Tox *tox, int32_t friendnumber);
  |#
 (define-tox del-friend! (_fun [tox : _Tox-pointer]
-                             [friendnumber : _int32_t]
+                             [friendnumber : _int32]
                              -> (success : _int)
                              -> (if (= -1 success)
                                     #f
@@ -197,7 +236,7 @@
  # int tox_get_friend_connection_status(Tox *tox, int32_t friendnumber);
  |#
 (define-tox get-friend-connection-status (_fun [tox : _Tox-pointer]
-                                               [friendnumber : _int32_t] -> _int)
+                                               [friendnumber : _int32] -> _int)
   #:c-id tox_get_friend_connection_status)
 
 #|
@@ -209,7 +248,7 @@
  # int tox_friend_exists(Tox *tox, int32_t friendnumber);
  |#
 (define-tox friend-exists? (_fun [tox : _Tox-pointer]
-                                 [friendnumber : _int32_t] -> _bool)
+                                 [friendnumber : _int32] -> _bool)
   #:c-id tox_friend_exists)
 
 #|
@@ -230,9 +269,9 @@
  #                                  uint8_t *message, uint32_t length);
  |#
 (define-tox send-message (_fun [tox : _Tox-pointer]
-                               [friendnumber : _int32_t]
+                               [friendnumber : _int32]
                                [message : _bytes]
-                               [len : _uint32_t = (bytes-length message)] -> _uint32_t)
+                               [len : _uint32 = (bytes-length message)] -> _uint32)
   #:c-id tox_send_message)
 
 #|
@@ -253,9 +292,9 @@
  #                                 uint8_t *action, uint32_t length);
  |#
 (define-tox send-action (_fun [tox : _Tox-pointer]
-                              [friendnumber : _int32_t]
+                              [friendnumber : _int32]
                               [action : _bytes]
-                              [len : _uint32_t = (bytes-length action)] -> _uint32_t)
+                              [len : _uint32 = (bytes-length action)] -> _uint32)
   #:c-id tox_send_action)
 
 #|
@@ -271,7 +310,7 @@
  |#
 (define-tox set-name! (_fun [tox : _Tox-pointer]
                             [name : _string]
-                            [len : _uint16_t = (bytes-length
+                            [len : _uint16 = (bytes-length
                                                 (string->bytes/utf-8 name))]
                             -> (success : _int)
                             -> (zero? success))
@@ -290,7 +329,7 @@
  |#
 (define-tox get-self-name (_fun [tox : _Tox-pointer]
                                 [name : (_bytes o TOX_MAX_NAME_LENGTH)]
-                                -> (len : _uint16_t)
+                                -> (len : _uint16)
                                 -> (if (zero? len)
                                        len
                                        (subbytes name 0 len)))
@@ -306,7 +345,7 @@
  # int tox_get_name(Tox *tox, int32_t friendnumber, uint8_t *name);
  |#
 (define-tox get-name (_fun [tox : _Tox-pointer]
-                           [friendnumber : _int32_t]
+                           [friendnumber : _int32]
                            [name : (_bytes o TOX_MAX_NAME_LENGTH)]
                            -> (len : _int)
                            -> (if (= -1 len)
@@ -322,7 +361,7 @@
  # int tox_get_self_name_size(Tox *tox);
  |#
 (define-tox get-name-size (_fun [tox : _Tox-pointer]
-                                [friendnumber : _int32_t]
+                                [friendnumber : _int32]
                                 -> (success : _int)
                                 -> (if (= -1 success)
                                        #f
@@ -349,14 +388,14 @@
  |#
 (define-tox set-status-message! (_fun [tox : _Tox-pointer]
                                      [status : _string]
-                                     [len : _uint16_t = (bytes-length
+                                     [len : _uint16 = (bytes-length
                                                          (string->bytes/utf-8
                                                           status))]
                                      -> (success : _int)
                                      -> (zero? success))
   #:c-id tox_set_status_message)
 (define-tox set-user-status! (_fun [tox : _Tox-pointer]
-                                  [userstatus : _uint8_t]
+                                  [userstatus : _uint8]
                                   -> (success : _int) ; enum value
                                   -> (zero? success))
   #:c-id tox_set_user_status)
@@ -369,7 +408,7 @@
  # int tox_get_self_status_message_size(Tox *tox);
  |#
 (define-tox get-status-message-size (_fun [tox : _Tox-pointer]
-                                          [friendnumber : _int32_t]
+                                          [friendnumber : _int32]
                                           -> (success : _int)
                                           -> (if (= -1 success)
                                                  #f
@@ -394,9 +433,9 @@
  # int tox_get_self_status_message(Tox *tox, uint8_t *buf, uint32_t maxlen);
  |#
 (define-tox get-status-message (_fun [tox : _Tox-pointer]
-                                     [friendnumber : _int32_t]
+                                     [friendnumber : _int32]
                                      [buf : (_bytes o TOX_MAX_STATUSMESSAGE_LENGTH)]
-                                     [maxlen : _uint32_t = TOX_MAX_STATUSMESSAGE_LENGTH]
+                                     [maxlen : _uint32 = TOX_MAX_STATUSMESSAGE_LENGTH]
                                      -> (success : _int)
                                      -> (if (= -1 success)
                                             #f
@@ -404,7 +443,7 @@
   #:c-id tox_get_status_message)
 (define-tox get-self-status-message (_fun [tox : _Tox-pointer]
                                           [buf : (_bytes o TOX_MAX_STATUSMESSAGE_LENGTH)]
-                                          [maxlen : _uint32_t = TOX_MAX_STATUSMESSAGE_LENGTH]
+                                          [maxlen : _uint32 = TOX_MAX_STATUSMESSAGE_LENGTH]
                                           -> (success : _int)
                                           -> (if (= -1 success)
                                                  #f
@@ -421,9 +460,9 @@
  # uint8_t tox_get_self_user_status(Tox *tox);
  |#
 (define-tox get-user-status (_fun [tox : _Tox-pointer]
-                                  [friendnumber : _int32_t] -> _uint8_t)
+                                  [friendnumber : _int32] -> _uint8)
   #:c-id tox_get_user_status)
-(define-tox get-self-user-status (_fun [tox : _Tox-pointer] -> _uint8_t)
+(define-tox get-self-user-status (_fun [tox : _Tox-pointer] -> _uint8)
   #:c-id tox_get_self_user_status)
 
 #|
@@ -433,8 +472,8 @@
  # uint64_t tox_get_last_online(Tox *tox, int32_t friendnumber);
  |#
 (define-tox get-last-online (_fun [tox : _Tox-pointer]
-                                  [friendnumber : _int32_t]
-                                  -> (success : _uint64_t)
+                                  [friendnumber : _int32]
+                                  -> (success : _uint64)
                                   -> (if (= -1 success)
                                          #f
                                          success))
@@ -450,7 +489,7 @@
  # int tox_set_user_is_typing(Tox *tox, int32_t friendnumber, uint8_t is_typing);
  |#
 (define-tox set-user-is-typing! (_fun [tox : _Tox-pointer]
-                                     [friendnumber : _int32_t]
+                                     [friendnumber : _int32]
                                      [is-typing? : _bool]
                                      -> (success : _int)
                                      -> (zero? success))
@@ -465,7 +504,7 @@
  # uint8_t tox_get_is_typing(Tox *tox, int32_t friendnumber);
  |#
 (define-tox is-typing? (_fun [tox : _Tox-pointer]
-                             [friendnumber : _int32_t] -> _bool)
+                             [friendnumber : _int32] -> _bool)
   #:c-id tox_get_is_typing)
 
 #|
@@ -474,14 +513,14 @@
  # for copy_friendlist.
  # uint32_t tox_count_friendlist(Tox *tox);
  |#
-(define-tox friendlist-length (_fun [tox : _Tox-pointer] -> _uint32_t)
+(define-tox friendlist-length (_fun [tox : _Tox-pointer] -> _uint32)
   #:c-id tox_count_friendlist)
 
 #|
  # Return the number of online friends in the instance m.
  # uint32_t tox_get_num_online_friends(Tox *tox);
  |#
-(define-tox get-num-online-friends (_fun [tox : _Tox-pointer] -> _uint32_t)
+(define-tox get-num-online-friends (_fun [tox : _Tox-pointer] -> _uint32)
   #:c-id tox_get_num_online_friends)
 
 #|
@@ -496,8 +535,8 @@
   (_fun (tox list-size) ::
         [tox : _Tox-pointer]
         [out-list : (_bytes o list-size)]
-        [list-size : _uint32_t]
-        -> (success : _uint32_t)
+        [list-size : _uint32]
+        -> (success : _uint32)
         -> (if (zero? success)
                success
                (subbytes out-list 0 success)))
@@ -516,7 +555,7 @@
                                           [anonproc : (_fun [tox : _Tox-pointer]
                                                             [public-key : _gcpointer]
                                                             [message : _string]
-                                                            [len : _uint16_t]
+                                                            [len : _uint16]
                                                             [userdata : _pointer] -> _void)]
                                           [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_friend_request)
@@ -531,9 +570,9 @@
  |#
 (define-tox callback-friend-message (_fun [tox : _Tox-pointer]
                                           [anonproc : (_fun [tox : _Tox-pointer]
-                                                            [friendnumber : _int32_t]
+                                                            [friendnumber : _int32]
                                                             [message : _string]
-                                                            [len : _uint32_t]
+                                                            [len : _uint32]
                                                             [userdata : _pointer] -> _void)]
                                           [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_friend_message)
@@ -550,9 +589,9 @@
  |#
 (define-tox callback-friend-action (_fun [tox : _Tox-pointer]
                                          [anonproc : (_fun [tox : _Tox-pointer]
-                                                           [friendnumber : _int32_t]
+                                                           [friendnumber : _int32]
                                                            [action : _string]
-                                                           [len : _uint32_t]
+                                                           [len : _uint32]
                                                            [userdata : _pointer] -> _void)]
                                          [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_friend_action)
@@ -569,9 +608,9 @@
  |#
 (define-tox callback-name-change (_fun [tox : _Tox-pointer]
                                        [anonproc : (_fun [tox : _Tox-pointer]
-                                                         [friendnumber : _int32_t]
+                                                         [friendnumber : _int32]
                                                          [newname : _string]
-                                                         [len : _uint16_t]
+                                                         [len : _uint16]
                                                          [userdata : _pointer] -> _void)]
                                        [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_name_change)
@@ -586,9 +625,9 @@
  |#
 (define-tox callback-status-message (_fun [tox : _Tox-pointer]
                                           [anonproc : (_fun [tox : _Tox-pointer]
-                                                            [friendnumber : _int32_t]
+                                                            [friendnumber : _int32]
                                                             [newstatus : _string]
-                                                            [len : _uint16_t]
+                                                            [len : _uint16]
                                                             [userdata : _pointer] -> _void)]
                                           [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_status_message)
@@ -602,8 +641,8 @@
  |#
 (define-tox callback-user-status (_fun [tox : _Tox-pointer]
                                        [anonproc : (_fun [tox : _Tox-pointer]
-                                                         [friendnumber : _int32_t]
-                                                         [userstatus : _uint8_t]
+                                                         [friendnumber : _int32]
+                                                         [userstatus : _uint8]
                                                          [userdata : _pointer] -> _void)]
                                        [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_user_status)
@@ -617,7 +656,7 @@
  |#
 (define-tox callback-typing-change (_fun [tox : _Tox-pointer]
                                          [anonproc : (_fun [tox : _Tox-pointer]
-                                                           [friendnumber : _int32_t]
+                                                           [friendnumber : _int32]
                                                            [typing? : _bool]
                                                            [userdata : _pointer] -> _void)]
                                          [userdata : _pointer = #f] -> _void)
@@ -638,8 +677,8 @@
  |#
 (define-tox callback-read-receipt (_fun [tox : _Tox-pointer]
                                         [anonproc : (_fun [tox : _Tox-pointer]
-                                                          [friendnumber : _int32_t]
-                                                          [status : _uint32_t]
+                                                          [friendnumber : _int32]
+                                                          [status : _uint32]
                                                           [userdata : _pointer] -> _void)]
                                         [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_read_receipt)
@@ -661,8 +700,8 @@
  |#
 (define-tox callback-connection-status (_fun [tox : _Tox-pointer]
                                              [anonproc : (_fun [tox : _Tox-pointer]
-                                                               [friendnumber : _int32_t]
-                                                               [status : _uint8_t]
+                                                               [friendnumber : _int32]
+                                                               [status : _uint8]
                                                                [userdata : _pointer] -> _void)]
                                              [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_connection_status)
@@ -677,10 +716,10 @@
  # uint32_t tox_get_nospam(Tox *tox);
  # void tox_set_nospam(Tox *tox, uint32_t nospam);
 |#
-(define-tox get-nospam (_fun [tox : _Tox-pointer] -> _uint32_t)
+(define-tox get-nospam (_fun [tox : _Tox-pointer] -> _uint32)
   #:c-id tox_get_nospam)
 (define-tox set-nospam! (_fun [tox : _Tox-pointer]
-                              [nospam : _uint32_t] -> _void)
+                              [nospam : _uint32] -> _void)
   #:c-id tox_set_nospam)
 
 #|
@@ -709,10 +748,10 @@
  |#
 (define-tox callback-group-invite (_fun [tox : _Tox-pointer]
                                         [anonproc : (_fun [tox : _Tox-pointer]
-                                                          [friendnumber : _int32_t]
-                                                          [type : _uint8_t]
+                                                          [friendnumber : _int32]
+                                                          [type : _uint8]
                                                           [data : _bytes]
-                                                          [len : _uint16_t]
+                                                          [len : _uint16]
                                                           [userdata : _pointer] -> _void)]
                                         [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_group_invite)
@@ -731,7 +770,7 @@
                                                            [groupnumber : _int]
                                                            [peernumber : _int]
                                                            [message : _string]
-                                                           [len : _uint16_t]
+                                                           [len : _uint16]
                                                            [userdata : _pointer] -> _void)]
                                          [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_group_message)
@@ -750,7 +789,7 @@
                                                           [groupnumber : _int]
                                                           [peernumber : _int]
                                                           [action : _string]
-                                                          [len : _uint16_t]
+                                                          [len : _uint16]
                                                           [userdata : _pointer] -> _void)]
                                         [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_group_action)
@@ -770,7 +809,7 @@
                           [groupnumber : _int]
                           [peernumber : _int]
                           [title : _bytes]
-                          [len : _uint8_t]
+                          [len : _uint8]
                           [userdata : _pointer] -> _void)]
         [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_group_title)
@@ -789,7 +828,7 @@
         [anonproc : (_fun [tox : _Tox-pointer]
                           [groupnumber : _int]
                           [peernumber : _int]
-                          [change : _uint8_t]
+                          [change : _uint8]
                           [userdata : _pointer] -> _void)]
         [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_group_namelist_change)
@@ -868,7 +907,7 @@
  # int tox_invite_friend(Tox *tox, int32_t friendnumber, int groupnumber);
  |#
 (define-tox invite-friend (_fun [tox : _Tox-pointer]
-                                [friendnumber : _int32_t]
+                                [friendnumber : _int32]
                                 [groupnumber : _int]
                                 -> (success : _int)
                                 -> (zero? success))
@@ -884,7 +923,7 @@
  # int tox_join_groupchat(Tox *tox, int32_t friendnumber, const uint8_t *data, uint16_t length);
  |#
 (define-tox join-groupchat (_fun [tox : _Tox-pointer]
-                                 [friendnumber : _int32_t]
+                                 [friendnumber : _int32]
                                  [data : _bytes]
                                  [len : _int]
                                  -> (success : _int)
@@ -903,7 +942,7 @@
 (define-tox group-message-send (_fun [tox : _Tox-pointer]
                                      [groupnumber : _int]
                                      [message : _bytes]
-                                     [len : _uint16_t = (bytes-length message)]
+                                     [len : _uint16 = (bytes-length message)]
                                      -> (success : _int)
                                      -> (zero? success))
   #:c-id tox_group_message_send)
@@ -918,7 +957,7 @@
 (define-tox group-action-send (_fun [tox : _Tox-pointer]
                                     [groupnumber : _int]
                                     [action : _bytes]
-                                    [len : _uint16_t = (bytes-length action)]
+                                    [len : _uint16 = (bytes-length action)]
                                     -> (success : _int)
                                     -> (zero? success))
   #:c-id tox_group_action_send)
@@ -933,7 +972,7 @@
 (define-tox group-set-title! (_fun [tox : _Tox-pointer]
                                   [groupnumber : _int]
                                   [title : _bytes]
-                                  [len : _uint8_t = (bytes-length title)]
+                                  [len : _uint8 = (bytes-length title)]
                                   -> (success : _int)
                                   -> (zero? success))
   #:c-id tox_group_set_title)
@@ -951,7 +990,7 @@
 (define-tox group-get-title (_fun [tox : _Tox-pointer]
                                   [groupnumber : _int]
                                   [title : (_bytes o TOX_MAX_NAME_LENGTH)]
-                                  [max-len : _uint32_t = TOX_MAX_NAME_LENGTH]
+                                  [max-len : _uint32 = TOX_MAX_NAME_LENGTH]
                                   -> (success : _int)
                                   -> (if (= -1 success)
                                          #f
@@ -1004,8 +1043,8 @@
         [tox : _Tox-pointer]
         [groupnumber : _int]
         [names : (_list o _bytes len)]
-        [lengths : (_list o _uint16_t len)]
-        [len : _uint16_t]
+        [lengths : (_list o _uint16 len)]
+        [len : _uint16]
         -> (success : _int)
         -> (if (= -1 success)
                #f
@@ -1020,7 +1059,7 @@
  #
  # uint32_t tox_count_chatlist(Tox *tox);
  |#
-(define-tox count-chatlist (_fun [tox : _Tox-pointer] -> _uint32_t)
+(define-tox count-chatlist (_fun [tox : _Tox-pointer] -> _uint32)
   #:c-id tox_count_chatlist)
 
 #|
@@ -1035,8 +1074,8 @@
   (_fun (tox list-size) ::
         [tox : _Tox-pointer]
         [out-list : (_list o _bytes list-size)]
-        [list-size : _uint32_t]
-        -> (success : _uint32_t)
+        [list-size : _uint32]
+        -> (success : _uint32)
         -> (if (zero? success)
                success
                out-list))
@@ -1275,11 +1314,11 @@
 (define-tox callback-file-send-request
   (_fun [tox : _Tox-pointer]
         [anonproc : (_fun [tox : _Tox-pointer]
-                          [friendnumber : _int32_t]
-                          [filenumber : _uint8_t]
-                          [filesize : _uint64_t]
+                          [friendnumber : _int32]
+                          [filenumber : _uint8]
+                          [filesize : _uint64]
                           [filename : _string]
-                          [filename-length : _uint16_t]
+                          [filename-length : _uint16]
                           [userdata : _pointer] -> _void)]
         [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_file_send_request)
@@ -1300,12 +1339,12 @@
  |#
 (define-tox callback-file-control (_fun [tox : _Tox-pointer]
                                         [anonproc : (_fun [tox : _Tox-pointer]
-                                                          [friendnumber : _int32_t]
+                                                          [friendnumber : _int32]
                                                           [sending? : _bool]
-                                                          [filenumber : _uint8_t]
-                                                          [control-type : _uint8_t]
+                                                          [filenumber : _uint8]
+                                                          [control-type : _uint8]
                                                           [data : _pointer]
-                                                          [len : _uint16_t]
+                                                          [len : _uint16]
                                                           [userdata : _pointer] -> _void)]
                                         [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_file_control)
@@ -1322,10 +1361,10 @@
  |#
 (define-tox callback-file-data (_fun [tox : _Tox-pointer]
                                      [anonproc : (_fun [tox : _Tox-pointer]
-                                                       [friendnumber : _int32_t]
-                                                       [filenumber : _uint8_t]
+                                                       [friendnumber : _int32]
+                                                       [filenumber : _uint8]
                                                        [data : _pointer]
-                                                       [len : _uint16_t]
+                                                       [len : _uint16]
                                                        [userdata : _pointer] -> _void)]
                                      [userdata : _pointer = #f] -> _void)
   #:c-id tox_callback_file_data)
@@ -1340,10 +1379,10 @@
  #                         uint8_t *filename, uint16_t filename_length);
  |#
 (define-tox new-file-sender (_fun [tox : _Tox-pointer]
-                                  [friendnumber : _int32_t]
-                                  [filesize : _uint64_t]
+                                  [friendnumber : _int32]
+                                  [filesize : _uint64]
                                   [filename : _string]
-                                  [filename-length : _uint16_t = (bytes-length
+                                  [filename-length : _uint16 = (bytes-length
                                                                   (string->bytes/utf-8
                                                                    filename))]
                                   -> (success : _int)
@@ -1366,12 +1405,12 @@
  #                           uint8_t *data, uint16_t length);
  |#
 (define-tox send-file-control (_fun [tox : _Tox-pointer]
-                                    [friendnumber : _int32_t]
+                                    [friendnumber : _int32]
                                     [receiving? : _bool]
-                                    [filenumber : _uint8_t]
-                                    [message-id : _uint8_t]
+                                    [filenumber : _uint8]
+                                    [message-id : _uint8]
                                     [data : _bytes]
-                                    [len : _uint16_t]
+                                    [len : _uint16]
                                     -> (success : _int)
                                     -> (zero? success))
   #:c-id tox_file_send_control)
@@ -1386,10 +1425,10 @@
  #                        uint8_t *data, uint16_t length);
  |#
 (define-tox send-file-data (_fun [tox : _Tox-pointer]
-                                 [friendnumber : _int32_t]
-                                 [filenumber : _uint8_t]
+                                 [friendnumber : _int32]
+                                 [filenumber : _uint8]
                                  [data : _bytes]
-                                 [len : _uint16_t = (bytes-length data)]
+                                 [len : _uint16 = (bytes-length data)]
                                  -> (success : _int)
                                  -> (zero? success))
   #:c-id tox_file_send_data)
@@ -1403,7 +1442,7 @@
  # int tox_file_data_size(Tox *tox, int32_t friendnumber);
  |#
 (define-tox file-data-size (_fun [tox : _Tox-pointer]
-                                 [friendnumber : _int32_t]
+                                 [friendnumber : _int32]
                                  -> (success : _int)
                                  -> (if (= -1 success)
                                         #f
@@ -1422,10 +1461,10 @@
  #                                  uint8_t send_receive);
  |#
 (define-tox file-data-remaining (_fun [tox : _Tox-pointer]
-                                      [friendnumber : _int32_t]
-                                      [filenumber : _uint8_t]
+                                      [friendnumber : _int32]
+                                      [filenumber : _uint8]
                                       [receiving? : _bool]
-                                      -> (remaining : _uint64_t)
+                                      -> (remaining : _uint64)
                                       -> (if (= -1 remaining)
                                              #f
                                              remaining))
@@ -1453,7 +1492,7 @@
  |#
 (define-tox bootstrap-from-address (_fun [tox : _Tox-pointer]
                                          [address : _string]
-                                         [port : _uint16_t]
+                                         [port : _uint16]
                                          [public-key : _string] -> _bool)
   #:c-id tox_bootstrap_from_address)
 
@@ -1555,7 +1594,7 @@
  #
  # uint32_t tox_do_interval(Tox *tox);
 |#
-(define-tox tox-do-interval (_fun [tox : _Tox-pointer] -> _uint32_t)
+(define-tox tox-do-interval (_fun [tox : _Tox-pointer] -> _uint32)
   #:c-id tox_do_interval)
 
 #|
@@ -1571,7 +1610,7 @@
  #  return size of messenger data (for saving).
  # uint32_t tox_size(Tox *tox);
  |#
-(define-tox tox-size (_fun [tox : _Tox-pointer] -> _uint32_t)
+(define-tox tox-size (_fun [tox : _Tox-pointer] -> _uint32)
   #:c-id tox_size)
 
 #|
@@ -1596,7 +1635,7 @@
  |#
 (define-tox tox-load (_fun [tox : _Tox-pointer]
                            [data : _bytes]
-                           [len : _uint32_t = (bytes-length data)]
+                           [len : _uint32 = (bytes-length data)]
                            -> (success : _int)
                            -> (zero? success))
   #:c-id tox_load)

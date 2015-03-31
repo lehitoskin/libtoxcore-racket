@@ -6,17 +6,13 @@
 
 (provide (except-out (all-defined-out)
                      define-encrypt
-                     _Tox-pointer
-                     _uint32_t))
+                     _Tox-pointer))
 
 (define-ffi-definer define-encrypt (ffi-lib "libtoxencryptsave"))
 
 #|###################
  # type definitions #
  ################## |#
-
-; *_t definitions
-(define _uint32_t _uint32)
 
 ; The _string type supports conversion between Racket strings
 ; and char* strings using a parameter-determined conversion.
@@ -39,7 +35,7 @@
 
 ; return size of the messenger data (for encrypted Messenger saving).
 ; uint32_t tox_encrypted_size(const Tox *tox);
-(define-encrypt encrypted-size (_fun [tox : _Tox-pointer] -> _uint32_t)
+(define-encrypt encrypted-size (_fun [tox : _Tox-pointer] -> _uint32)
   #:c-id tox_encrypted_size)
 
 #|
@@ -88,9 +84,9 @@
 (define-encrypt pass-encrypt
   (_fun (data passphrase) ::
         [data : _bytes]
-        [data-len : _uint32_t = (bytes-length data)]
+        [data-len : _uint32 = (bytes-length data)]
         [passphrase : _string]
-        [pplength : _uint32_t = (string-length passphrase)]
+        [pplength : _uint32 = (string-length passphrase)]
         [out : (_bytes o (+ data-len (pass-encryption-extra-length)))]
         -> (success : _int)
         -> (if (= -1 success)
@@ -113,7 +109,7 @@
         [tox : _Tox-pointer]
         [data : _bytes]
         [passphrase : _string]
-        [pplength : _uint32_t = (string-length passphrase)]
+        [pplength : _uint32 = (string-length passphrase)]
         -> (success : _int)
         -> (zero? success))
   #:c-id tox_encrypted_save)
@@ -133,9 +129,9 @@
  |#
 (define-encrypt pass-decrypt
   (_fun [data : _bytes]
-        [len : _uint32_t = (bytes-length data)]
+        [len : _uint32 = (bytes-length data)]
         [passphrase : _string]
-        [pplength : _uint32_t = (string-length passphrase)]
+        [pplength : _uint32 = (string-length passphrase)]
         [out : (_bytes o (- len (pass-encryption-extra-length)))]
         -> (success : _int)
         -> (if (= -1 success)
@@ -186,7 +182,7 @@
  |#
 (define-encrypt derive-key-from-pass
   (_fun [passphrase : _string]
-        [pplength : _uint32_t = (string-length passphrase)]
+        [pplength : _uint32 = (string-length passphrase)]
         [out-key : (_bytes o (pass-key-length))]
         -> (success : _int)
         -> (if (= success -1)
@@ -203,7 +199,7 @@
  |#
 (define-encrypt derive-key-with-salt
   (_fun [passphrase : _string]
-        [pplength : _uint32_t = (string-length passphrase)]
+        [pplength : _uint32 = (string-length passphrase)]
         [salt : _bytes]
         [out-key : (_bytes o (pass-key-length))]
         -> (success : _int)
@@ -247,7 +243,7 @@
  |#
 (define-encrypt pass-key-encrypt
   (_fun [data : _bytes]
-        [data-len : _uint32_t]
+        [data-len : _uint32]
         [key : _bytes]
         [out : _bytes] -> _int)
   #:c-id tox_pass_key_encrypt)
@@ -280,7 +276,7 @@
  |#
 (define-encrypt pass-key-decrypt
   (_fun [data : _bytes]
-        [len : _uint32_t = (bytes-length data)]
+        [len : _uint32 = (bytes-length data)]
         [key : _bytes]
         [out : (_bytes o 256)]
         -> (success : _int)
@@ -302,7 +298,7 @@
 (define-encrypt encrypted-key-new
   (_fun [options : _pointer]
         [data : _bytes]
-        [len : _uint32_t]
+        [len : _uint32]
         [key : _bytes]
         [err : (_list io _int 1)]
         -> (success : _int)

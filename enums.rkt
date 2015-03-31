@@ -6,8 +6,8 @@
 ; wasn't working out
 
 (library (libtoxcore-racket enums)
-         (export _TOX_FAERR
-                 _TOX_USERSTATUS
+         (export _TOX_ERR_FRIEND_ADD
+                 _TOX_USER_STATUS
                  _TOX_CHAT_CHANGE_PEER
                  _TOX_FILECONTROL
                  _ToxAvCallbackID
@@ -23,33 +23,44 @@
          ; Errors for m_addfriend
          ; FAERR - Friend Add Error
          ; enum starts at -1 and decrements from that point
-         (define (_TOX_FAERR sym)
-           (let ([enum (make-enumeration
-                        '(TOOLONG
-                          NOMESSAGE
-                          OWNKEY
-                          ALREADYSENT
-                          UNKNOWN
-                          BADCHECKSUM
-                          SETNEWNOSPAM
-                          NOMEM))])
+         (define (_TOX_ERR_FRIEND_ADD sym)
+           (define enum (make-enumeration
+                         '(OK
+                           NULL
+                           TOO_LONG
+                           NO_MESSAGE
+                           OWN_KEY
+                           ALREADY_SENT
+                           BAD_CHECKSUM
+                           SET_NEW_NOSPAM
+                           MALLOC)))
              (if (enum-set-member? sym enum)
-                 (let ([i (enum-set-indexer enum)])
-                   (- (+ (i sym) 1)))
-                 #f)))
+                 ((enum-set-indexer enum) sym)
+                 #f))
          
-         ; USERSTATUS -
-         ; Represents userstatuses someone can have.
-         (define (_TOX_USERSTATUS sym)
-           (let ([enum (make-enumeration
-                        '(NONE
-                          AWAY
-                          BUSY
-                          INVALID))])
-             (if (enum-set-member? sym enum)
-                 (let ([i (enum-set-indexer enum)])
-                   (i sym))
-                 #f)))
+         ; USER_STATUS
+         ; Represents user statuses someone can have.
+         (define (_TOX_USER_STATUS sym)
+           (define enum (make-enumeration
+                         '(NONE
+                           AWAY
+                           BUSY)))
+           (if (enum-set-member? sym enum)
+                 ((enum-set-indexer enum) sym)
+                 #f))
+         
+         (define (_TOX_MESSAGE_TYPE sym)
+           (define enum (make-enumeration '(NORMAL ACTION)))
+           (if (enum-set-member? sym enum)
+               ((enum-set-indexer enum) sym)
+               #f))
+         
+         
+         
+         ; TODO: everything below here
+         
+         
+         
          
          (define (_TOX_CHAT_CHANGE_PEER sym)
            (let ([enum (make-enumeration

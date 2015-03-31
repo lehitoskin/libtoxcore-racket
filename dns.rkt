@@ -6,16 +6,9 @@
 
 (provide (except-out (all-defined-out)
                      define-dns
-                     TOX_PUBLIC_KEY_SIZE
-                     _uint8_t
-                     _uint16_t
-                     _uint32_t))
+                     TOX_PUBLIC_KEY_SIZE))
 
 (define-ffi-definer define-dns (ffi-lib "libtoxdns"))
-
-(define _uint8_t _uint8)
-(define _uint16_t _uint16)
-(define _uint32_t _uint32)
 
 ; The _string type supports conversion between Racket strings
 ; and char* strings using a parameter-determined conversion.
@@ -79,10 +72,10 @@
   (_fun (dns3-obj nick) ::
         [dns3-obj : _pointer]
         [bstr : (_bytes o 256)]
-        [bstr-max-len : _uint16_t = 256]
+        [bstr-max-len : _uint16 = 256]
         [request-id : (_bytes o 4)]
         [nick : _string]
-        [nick-len : _uint8_t = (string-length nick)]
+        [nick-len : _uint8 = (string-length nick)]
         -> (copied : _int)
         -> (if (= -1 copied)
                (values request-id #f)
@@ -93,10 +86,10 @@
 #;(define-dns dns3-generate-string
   (_fun [dns3-obj : _pointer]
         [bstr : _bytes]
-        [bstr-max-len : _uint16_t = (bytes-length bstr)]
+        [bstr-max-len : _uint16 = (bytes-length bstr)]
         [request-id : _bytes]
         [nick : _string]
-        [nick-len : _uint8_t = (string-length nick)]
+        [nick-len : _uint8 = (string-length nick)]
         -> _int)
   #:c-id tox_generate_dns3_string)
 
@@ -123,8 +116,8 @@
         [dns3-obj : _pointer]
         [tox-id : (_bytes o TOX_PUBLIC_KEY_SIZE)]
         [id-record : _bytes]
-        [id-record-len : _uint32_t = (bytes-length id-record)]
-        [request-id : _uint32_t]
+        [id-record-len : _uint32 = (bytes-length id-record)]
+        [request-id : _uint32]
         -> (success : _int)
         -> (if (zero? success)
                tox-id

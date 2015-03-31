@@ -8,12 +8,7 @@
 
 (provide (except-out (all-defined-out)
                      define-av
-                     _Tox-pointer
-                     _int16_t
-                     _int32_t
-                     _uint16_t
-                     _uint32_t
-                     _uint64_t))
+                     _Tox-pointer))
 
 (define-ffi-definer define-av (ffi-lib "libtoxav"))
 
@@ -22,13 +17,6 @@
 ; instead of using _bytes, which is unnatural, use _string
 ; of specified type _string*/utf-8.
 (default-_string-type _string*/utf-8)
-
-(define _uint8_t _uint8)
-(define _int16_t _int16)
-(define _int32_t _int32)
-(define _uint16_t _uint16)
-(define _uint32_t _uint32)
-(define _uint64_t _uint64)
 
 ; Tox stuff
 ; define ToxAv struct
@@ -41,14 +29,14 @@
 (define-cstruct _ToxAvCSettings
   ([call-type _int] ; _ToxAvCallType enum value
    
-   [video-bitrate _uint32_t] ; In kbits/s
-   [video-width _uint16_t] ; In px
-   [video-height _uint16_t] ; In px
+   [video-bitrate _uint32] ; In kbits/s
+   [video-width _uint16] ; In px
+   [video-height _uint16] ; In px
    
-   [audio-bitrate _uint32_t] ; In bits/s
-   [audio-frame_duration _uint16_t] ; In ms
-   [audio-sample_rate _uint32_t] ; In Hz
-   [audio-channels _uint32_t])
+   [audio-bitrate _uint32] ; In bits/s
+   [audio-frame_duration _uint16] ; In ms
+   [audio-sample_rate _uint32] ; In Hz
+   [audio-channels _uint32])
   #:malloc-mode 'atomic)
 
 ; defaults copied from astonex:
@@ -75,17 +63,17 @@
  |#
 (define ToxAVCallback
   (_fun [agent : _pointer]
-        [call-index : _int32_t]
+        [call-index : _int32]
         [arg : _pointer] -> _void))
 (define ToxAvAudioCallback
   (_fun [agent : _pointer]
-        [call-index : _int32_t]
+        [call-index : _int32]
         [pcm : _pointer]
-        [size : _uint16_t]
+        [size : _uint16]
         [data : _bytes] -> _void))
 (define ToxAvVideoCallback
   (_fun [agent : _pointer]
-        [call-index : _int32_t]
+        [call-index : _int32]
         [img : _bytes]
         [data : _bytes] -> _void))
 
@@ -103,7 +91,7 @@
  # ToxAv *toxav_new(Tox *messenger, int32_t max_calls);
  |#
 (define-av av-new (_fun [messenger : _Tox-pointer]
-                        [max_calls : _int32_t] -> _ToxAv-pointer)
+                        [max_calls : _int32] -> _ToxAv-pointer)
   #:c-id toxav_new)
 
 #|
@@ -124,7 +112,7 @@
  #
  # uint32_t toxav_do_interval(ToxAv *av);
  |#
-(define-av toxav-do-interval (_fun [av : _ToxAv-pointer] -> _uint32_t)
+(define-av toxav-do-interval (_fun [av : _ToxAv-pointer] -> _uint32)
   #:c-id toxav_do_interval)
   
 #|
@@ -199,7 +187,7 @@
  # int toxav_hangup(ToxAv *av, int32_t call_index);
  |#
 (define-av av-hangup (_fun [av : _ToxAv-pointer]
-                           [call-index : _int32_t]
+                           [call-index : _int32]
                            -> (err : _int)
                            -> (cond [(zero? err)]
                                     [else err]))
@@ -217,7 +205,7 @@
  # int toxav_answer(ToxAv *av, int32_t call_index, const ToxAvCSettings *csettings );
  |#
 (define-av av-answer (_fun [av : _ToxAv-pointer]
-                           [call-index : _int32_t]
+                           [call-index : _int32]
                            [csettings : _pointer]
                            -> (err : _int)
                            -> (cond [(zero? err)]
@@ -236,7 +224,7 @@
  # int toxav_reject(ToxAv *av, int32_t call_index, const char *reason);
  |#
 (define-av av-reject (_fun [av : _ToxAv-pointer]
-                           [call-index : _int32_t]
+                           [call-index : _int32]
                            [reason : _string]
                            -> (err : _int)
                            -> (cond [(zero? err)]
@@ -256,7 +244,7 @@
  # int toxav_cancel(ToxAv *av, int32_t call_index, int peer_id, const char *reason);
  |#
 (define-av av-cancel (_fun [av : _ToxAv-pointer]
-                           [call-index : _int32_t]
+                           [call-index : _int32]
                            [peer-id : _int]
                            [reason : _string] -> _int)
   #:c-id toxav_cancel)
@@ -272,7 +260,7 @@
  # int toxav_change_settings(ToxAv *av, int32_t call_index, const ToxAvCSettings *csettings);
  |#
 (define-av av-change-settings (_fun [av : _ToxAv-pointer]
-                                    [call-index : _int32_t]
+                                    [call-index : _int32]
                                     [csettings : _pointer] -> _int)
   #:c-id toxav_change_settings)
 
@@ -288,7 +276,7 @@
  # int toxav_stop_call(ToxAv *av, int32_t call_index);
  |#
 (define-av av-stop-call (_fun [av : _ToxAv-pointer]
-                              [call-index : _int32_t] -> _int)
+                              [call-index : _int32] -> _int)
   #:c-id toxav_stop_call)
 
 #|
@@ -298,7 +286,7 @@
  # int toxav_prepare_transmission(ToxAv *av, int32_t call_index, int support_video);
  |#
 (define-av prepare-transmission (_fun [av : _ToxAv-pointer]
-                                      [call-index : _int32_t]
+                                      [call-index : _int32]
                                       [support-video? : _bool] -> _int)
   #:c-id toxav_prepare_transmission)
 
@@ -308,7 +296,7 @@
  # int toxav_kill_transmission(ToxAv *av, int32_t call_index);
  |#
 (define-av kill-transmission (_fun [av : _ToxAv-pointer]
-                                   [call-index : _int32_t] -> _int)
+                                   [call-index : _int32] -> _int)
   #:c-id toxav_kill_transmission)
 
 #|
@@ -318,7 +306,7 @@
  #                                            vpx_image_t *input );
  |#
 (define-av prepare-video-frame (_fun [av : _ToxAv-pointer]
-                                     [call-index : _int32_t]
+                                     [call-index : _int32]
                                      [dest : _pointer]
                                      [dest-max : _int]
                                      [input : _bytes] -> _int)
@@ -338,7 +326,7 @@
  #                        unsigned int frame_size);
  |#
 (define-av send-video (_fun [av : _ToxAv-pointer]
-                            [call-index : _int32_t]
+                            [call-index : _int32]
                             [frame : _bytes]
                             [frame-size : _int] -> _int)
   #:c-id toxav_send_video)
@@ -350,7 +338,7 @@
  #                                            const int16_t *frame, int frame_size);
  |#
 (define-av prepare-audio-frame (_fun [av : _ToxAv-pointer]
-                                     [call-index : _int32_t]
+                                     [call-index : _int32]
                                      [dest : _pointer]
                                      [dest-max : _int]
                                      [frame : _bytes]
@@ -372,7 +360,7 @@
  # int toxav_send_audio ( ToxAv *av, int32_t call_index, const uint8_t *frame, int frame_size);
  |#
 (define-av send-audio (_fun [av : _ToxAv-pointer]
-                            [call-index : _int32_t]
+                            [call-index : _int32]
                             [frame : _pointer]
                             [frame-size : _int] -> _int)
   #:c-id toxav_send_audio)
@@ -390,7 +378,7 @@
  #                                ToxAvCodecSettings* dest );
  |#
 (define-av get-peer-csettings (_fun [av : _ToxAv-pointer]
-                                    [call-index : _int32_t]
+                                    [call-index : _int32]
                                     [peer : _int]
                                     [dest : (_ptr o _ToxAv-pointer)]
                                     -> (success : _int)
@@ -410,7 +398,7 @@
  # int toxav_get_peer_id ( ToxAv *av, int32_t call_index, int peer );
  |#
 (define-av get-peer-id (_fun [av : _ToxAv-pointer]
-                             [call-index : _int32_t]
+                             [call-index : _int32]
                              [peer : _int] -> _int)
   #:c-id toxav_get_peer_id)
 
@@ -419,7 +407,7 @@
  #
  # ToxAvCallState toxav_get_call_state ( ToxAv *av, int32_t call_index );
  |#
-(define-av get-call-state (_fun [av : _ToxAv-pointer] [call-index : _int32_t] -> _int)
+(define-av get-call-state (_fun [av : _ToxAv-pointer] [call-index : _int32] -> _int)
   #:c-id toxav_get_call_state)
 
 #|
@@ -434,7 +422,7 @@
  #                                  ToxAvCapabilities capability);
  |#
 (define-av capability-supported? (_fun [av : _ToxAv-pointer]
-                                       [call-index : _int32_t]
+                                       [call-index : _int32]
                                        [capability : _int] -> _bool) ; enum value
   #:c-id toxav_capability_supported)
 
@@ -475,7 +463,7 @@
                                 [peernumber : _int]
                                 [pcm : _bytes]
                                 [samples : _int]
-                                [channels : _uint8_t]
+                                [channels : _uint8]
                                 [sample-rate : _int]
                                 [userdata : _pointer] -> _void)]
         [userdata : _pointer = #f] -> _int)
@@ -503,15 +491,15 @@
  |#
 (define-av join-av-groupchat
   (_fun [tox : _Tox-pointer]
-        [friendnumber : _int32_t]
+        [friendnumber : _int32]
         [data : _bytes]
-        [data-len : _uint16_t]
+        [data-len : _uint16]
         [audio-callback : (_fun [tox : _Tox-pointer]
                                 [groupnumber : _int]
                                 [peernumber : _int]
                                 [pcm : _bytes]
                                 [samples : _int]
-                                [channels : _uint8_t]
+                                [channels : _uint8]
                                 [sample-rate : _int]
                                 [userdata : _pointer] -> _void)]
         [userdata : _pointer = #f] -> _int)
@@ -539,7 +527,7 @@
                                   [groupnumber : _int]
                                   [pcm : _bytes]
                                   [samples : _int]
-                                  [channels : _uint8_t]
+                                  [channels : _uint8]
                                   [sample-rate : _int] -> _int)
   #:c-id toxav_group_send_audio)
 )
