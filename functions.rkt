@@ -39,24 +39,13 @@
 (define TOX_HASH_LENGTH TOX_AVATAR_HASH_LENGTH)
 
 (define-cstruct _Tox-Options
- #|
-  # The type of UDP socket created depends on ipv6enabled:
-  # If set to 0 (zero), creates an IPv4 socket which subsequently only allows
-  # IPv4 communication
-  # If set to anything else (default), creates an IPv6 socket which allows both IPv4 AND
-  # IPv6 communication
-  |#
- ([ipv6-enabled? _bool]
-
- #|
-  # Set to 1 to disable udp support. (default: 0)
-  # This will force Tox to use TCP only which may slow things down.
-  # Disabling udp support is necessary when using proxies or Tor.
-  |#
- [udp-disabled? _bool]
- [proxy-type _uint8] ; a value from TOX_PROXY_TYPE
- [proxy-address _string] ; proxy IP or domain
- [proxy-port _uint16])) ; proxy port in host byte order
+  ([ipv6? _bool]
+   [udp? _bool]
+   [proxy-type _uint8]
+   [proxy-host _string]
+   [proxy-port _uint16]
+   [start-port _uint16]
+   [end-port _uint16]))
 
 #|
  # Return the major version number of the library. Can be used to display the
@@ -74,7 +63,7 @@
  # uint32_t tox_version_minor(void);
  |#
 (define-tox tox-version-minor (_fun -> _uint32)
-  #:c-id tox_version-minor)
+  #:c-id tox_version_minor)
 
 #|
  # Return the patch number of the library.

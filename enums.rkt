@@ -55,22 +55,19 @@
                ((enum-set-indexer enum) sym)
                #f))
          
-         
-         
-         ; TODO: everything below here
-         
-         
-         
+         (define (_TOX_PROXY_TYPE sym)
+           (define enum (make-enumeration '(NONE HTTP SOCKS5)))
+           (if (enum-set-member? sym enum)
+               ((enum-set-indexer enum) sym)
+                 #f))
          
          (define (_TOX_CHAT_CHANGE_PEER sym)
-           (let ([enum (make-enumeration
-                        '(ADD
-                          DEL
-                          NAME))])
-             (if (enum-set-member? sym enum)
-                 (let ([i (enum-set-indexer enum)])
-                   (i sym))
-                 #f)))
+           (define enum (make-enumeration '(ADD
+                                            DEL
+                                            NAME)))
+           (if (enum-set-member? sym enum)
+               ((enum-set-indexer enum) sym)
+               #f))
          
          ; improvised from line 521-ish of tox.h
          (define (_TOX_FILECONTROL sym)
@@ -101,22 +98,14 @@
                    (i sym))
                  #f)))
          
-         (define (_TOX_PROXY_TYPE sym)
-           (let ([enum (make-enumeration '(NONE SOCKS5 HTTP))])
-             (if (enum-set-member? sym enum)
-                 (let ([i (enum-set-indexer enum)])
-                   (i sym))
-                 #f)))
-         
          (define (_TOX_ERR_OPTIONS_NEW sym)
-           (let ([enum (make-enumeration '(OK MALLOC))])
+           (define enum (make-enumeration '(OK MALLOC)))
              (if (enum-set-member? sym enum)
-                 (let ([i (enum-set-indexer enum)])
-                   (i sym))
-                 #f)))
+                 ((enum-set-indexer enum) sym)
+                 #f))
          
          (define (_TOX_ERR_ENCRYPTED_NEW sym)
-           (let ([enum (make-enumeration
+           (define enum (make-enumeration
                         '(OK
                           NULL
                           #|
