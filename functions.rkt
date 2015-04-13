@@ -203,7 +203,7 @@
 #
 # size_t tox_get_savedata_size(const Tox *tox);
 |#
-(define-tox get-savedata-size (_fun [tox : _Tox-pointer] -> _size)
+(define-tox savedata-size (_fun [tox : _Tox-pointer] -> _size)
   #:c-id tox_get_savedata_size)
 
 
@@ -216,7 +216,7 @@
 #
 # void tox_get_savedata(const Tox *tox, uint8_t *data);
 |#
-(define-tox get-savedata (_fun [tox : _Tox-pointer] [data : _bytes] -> _void)
+(define-tox savedata (_fun [tox : _Tox-pointer] [data : _bytes] -> _void)
   #:c-id tox_get_savedata)
 
 #|
@@ -275,7 +275,7 @@
 
 ; Return whether we are connected to the DHT. The return value is equal to the
 ; last value received through the `self_connection_status` callback.
-(define-tox get-self-connection-status (_fun [tox : _Tox-pointer] -> _int)
+(define-tox self-connection-status (_fun [tox : _Tox-pointer] -> _int)
   #:c-id tox_self_get_connection_status)
 
 #|
@@ -287,7 +287,7 @@
 # typedef void tox_self_connection_status_cb(Tox *tox, TOX_CONNECTION connection_status,
 #                                            void *user_data);
 |#
-(define get-self-connection-status-cb
+(define self-connection-status-cb
   (_fun [tox : _Tox-pointer]
         [connection-status : (_list io _int 1)]
         [user-data : _gcpointer] -> _void))
@@ -308,7 +308,7 @@
 |#
 (define-tox callback-self-connection-status
   (_fun [tox : _Tox-pointer]
-        [callback : get-self-connection-status-cb]
+        [callback : self-connection-status-cb]
         [userdata : _gcpointer] -> _void)
   #:c-id tox_callback_self_connection_status)
 
@@ -341,7 +341,7 @@
 #
 # void tox_get_address(Tox *tox, uint8_t *address);
 |#
-(define-tox get-self-address
+(define-tox self-address
   (_fun [tox : _Tox-pointer]
         [address : (_bytes o TOX_ADDRESS_SIZE)]
         -> _void
@@ -363,7 +363,7 @@
 #
 # uint32_t tox_self_get_nospam(const Tox *tox);
 |#
-(define-tox get-self-nospam (_fun [tox : _Tox-pointer] -> _uint32)
+(define-tox self-nospam (_fun [tox : _Tox-pointer] -> _uint32)
   #:c-id tox_self_get_nospam)
 
 #|
@@ -374,7 +374,7 @@
 #
 # void tox_self_get_public_key(const Tox *tox, uint8_t *public_key);
 |#
-(define-tox get-self-public-key
+(define-tox self-public-key
   (_fun [tox : _Tox-pointer]
         [public-key : (_bytes o TOX_PUBLIC_KEY_SIZE)]
         -> _void
@@ -389,7 +389,7 @@
 #
 # void tox_self_get_secret_key(const Tox *tox, uint8_t *secret_key);
 |#
-(define-tox get-self-secret-key
+(define-tox self-secret-key
   (_fun [tox : _Tox-pointer]
         [secret-key : (_bytes o TOX_SECRET_KEY_SIZE)] -> _void)
   #:c-id tox_self_get_secret_key)
@@ -425,7 +425,7 @@
 #
 size_t tox_self_get_name_size(const Tox *tox);
 |#
-(define-tox get-self-name-size (_fun [tox : _Tox-pointer] -> _size)
+(define-tox self-name-size (_fun [tox : _Tox-pointer] -> _size)
   #:c-id tox_self_get_name_size)
 
 #|
@@ -442,7 +442,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 #
 # void tox_self_get_name(const Tox *tox, uint8_t *name);
 |#
-(define-tox get-self-name
+(define-tox self-name
   (_fun [tox : _Tox-pointer]
         [name : (_bytes o TOX_MAX_NAME_LENGTH)]
         -> _void
@@ -477,7 +477,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 #
 # size_t tox_self_get_status_message_size(const Tox *tox);
 |#
-(define-tox get-self-status-message-size
+(define-tox self-status-message-size
   (_fun [tox : _Tox-pointer] -> _size)
   #:c-id tox_self_get_status_message_size)
 
@@ -495,7 +495,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 #
 # void tox_self_get_status_message(const Tox *tox, uint8_t *status);
 |#
-(define-tox get-self-status-message
+(define-tox self-status-message
   (_fun [tox : _Tox-pointer]
         [status : (_bytes o TOX_MAX_STATUS_MESSAGE_LENGTH)]
         -> _void)
@@ -518,6 +518,1262 @@ size_t tox_self_get_name_size(const Tox *tox);
 #
 # TOX_USER_STATUS tox_self_get_status(const Tox *tox);
 |#
-(define-tox get-self-status (_fun [tox : _Tox-pointer] -> _int)
+(define-tox self-status (_fun [tox : _Tox-pointer] -> _int)
   #:c-id tox_self_get_status)
+
+#|
+# Add a friend to the friend list and send a friend request.
+# 
+# A friend request message must be at least 1 byte long and at most
+# TOX_MAX_FRIEND_REQUEST_LENGTH.
+# 
+# Friend numbers are unique identifiers used in all functions that operate on
+# friends. Once added, a friend number is stable for the lifetime of the Tox
+# object. After saving the state and reloading it, the friend numbers may not
+# be the same as before. Deleting a friend creates a gap in the friend number
+# set, which is filled by the next adding of a friend. Any pattern in friend
+# numbers should not be relied on.
+# 
+# If more than INT32_MAX friends are added, this function causes undefined
+# behaviour.
+# 
+# @param address The address of the friend (returned by tox_self_get_address of
+#   the friend you wish to add) it must be TOX_ADDRESS_SIZE bytes.
+# @param message The message that will be sent along with the friend request.
+# @param length The length of the data byte array.
+# 
+# @return the friend number on success, UINT32_MAX on failure.
+# 
+# uint32_t tox_friend_add(Tox *tox, const uint8_t *address, const uint8_t *message,
+#                         size_t length, TOX_ERR_FRIEND_ADD *error);
+|#
+(define-tox friend-add
+  (_fun [tox : _Tox-pointer]
+        [address : _bytes] ; could maybe be _string
+        [message : _bytes]
+        [message-len : _size = (bytes-length message)]
+        [err : (_list io _int 1)] -> _uint32)
+  #:c-id tox_friend_add)
+
+#|
+# Add a friend without sending a friend request.
+# 
+# This function is used to add a friend in response to a friend request. If the
+# client receives a friend request, it can be reasonably sure that the other
+# client added this client as a friend, eliminating the need for a friend
+# request.
+# 
+# This function is also useful in a situation where both instances are
+# controlled by the same entity, so that this entity can perform the mutual
+# friend adding. In this case, there is no need for a friend request, either.
+# 
+# @param public_key A byte array of length TOX_PUBLIC_KEY_SIZE containing the
+#   Public Key (not the Address) of the friend to add.
+# 
+# @return the friend number on success, UINT32_MAX on failure.
+# @see tox_friend_add for a more detailed description of friend numbers.
+# 
+# uint32_t tox_friend_add_norequest(Tox *tox, const uint8_t *public_key,
+#                                   TOX_ERR_FRIEND_ADD *error);
+|#
+(define-tox friend-add-norequest
+  (_fun [tox : _Tox-pointer]
+        [public-key : _bytes]
+        [err : (_list io _int 1)] -> _uint32)
+  #:c-id tox_friend_add_norequest)
+
+#|
+# Remove a friend from the friend list.
+# Other friend numbers are unchanged.
+# The friend_number can be reused by toxcore as a friend number for a new friend.
+# 
+# This does not notify the friend of their deletion. After calling this
+# function, this client will appear offline to the friend and no communication
+# can occur between the two.
+# 
+# @friend_number Friend number for the friend to be deleted.
+# 
+# @return true on success.
+# see tox_friend_add for detailed description of friend numbers.
+# 
+# bool tox_friend_delete(Tox *tox, uint32_t friend_number, TOX_ERR_FRIEND_DELETE *error);
+|#
+(define-tox friend-delete
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_friend_delete)
+
+#|
+# Return the friend number associated with that Public Key.
+# 
+# @return the friend number on success, UINT32_MAX on failure.
+# @param public_key A byte array containing the Public Key.
+# 
+# uint32_t tox_friend_by_public_key(const Tox *tox, const uint8_t *public_key,
+#                                   TOX_ERR_FRIEND_BY_PUBLIC_KEY *error);
+|#
+(define-tox friend-by-public-key
+  (_fun [tox : _Tox-pointer]
+        [public-key : _bytes]
+        [err : (_list io _int 1)] -> _uint32)
+  #:c-id tox_friend_by_public_key)
+
+#|
+# Copies the Public Key associated with a given friend number to a byte array.
+# 
+# @param friend_number The friend number you want the Public Key of.
+# @param public_key A memory region of at least TOX_PUBLIC_KEY_SIZE bytes. If
+#   this parameter is NULL, this function has no effect.
+# 
+# @return true on success.
+# 
+# bool tox_friend_get_public_key(const Tox *tox, uint32_t friend_number, uint8_t *public_key,
+#                                TOX_ERR_FRIEND_GET_PUBLIC_KEY *error);
+|#
+(define-tox friend-public-key
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [public-key : _bytes]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_friend_get_public_key)
+
+#|
+# Checks if a friend with the given friend number exists and returns true if
+# it does.
+# 
+# bool tox_friend_exists(const Tox *tox, uint32_t friend_number);
+|#
+(define-tox friend-exists?
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32] -> _bool)
+  #:c-id tox_friend_exists)
+  
+#|
+# Return a unix-time timestamp of the last time the friend associated with a given
+# friend number was seen online. This function will return UINT64_MAX on error.
+# 
+# @param friend_number The friend number you want to query.
+# 
+# uint64_t tox_friend_get_last_online(const Tox *tox, uint32_t friend_number,
+#                                     TOX_ERR_FRIEND_GET_LAST_ONLINE *error);
+|#
+(define-tox friend-last-online
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [err : (_list io _int 1)] -> _uint64)
+  #:c-id tox_friend_get_last_online)
+
+#|
+# Return the number of friends on the friend list.
+# 
+# This function can be used to determine how much memory to allocate for
+# tox_self_get_friend_list.
+# 
+# size_t tox_self_get_friend_list_size(const Tox *tox);
+|#
+(define-tox self-friend-list-size
+  (_fun [tox : _Tox-pointer] -> _size)
+  #:c-id tox_self_get_friend_list_size)
+
+#|
+# Copy a list of valid friend numbers into an array.
+#
+# Call tox_self_get_friend_list_size to determine the number of elements to allocate.
+#
+# @param list A memory region with enough space to hold the friend list. If
+#   this parameter is NULL, this function has no effect.
+#
+# void tox_self_get_friend_list(const Tox *tox, uint32_t *list);
+|#
+(define-tox self-friend-list
+  (_fun [tox : _Tox-pointer]
+        [lst : _bytes] -> _void)
+  #:c-id tox_self_get_friend_list)
+
+
+#|
+# Return the length of the friend's name. If the friend number is invalid, the
+# return value is SIZE_MAX.
+#
+# The return value is equal to the `length` argument received by the last
+# `friend_name` callback.
+#
+# size_t tox_friend_get_name_size(const Tox *tox, uint32_t friend_number,
+#                                 TOX_ERR_FRIEND_QUERY *error);
+|#
+(define-tox friend-name-size
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [err : (_list io _int 1)] -> _size)
+  #:c-id tox_friend_get_name_size)
+
+#|
+# Write the name of the friend designated by the given friend number to a byte
+# array.
+# 
+# Call tox_friend_get_name_size to determine the allocation size for the `name`
+# parameter.
+# 
+# The data written to `name` is equal to the data received by the last
+# `friend_name` callback.
+# 
+# @param name A valid memory region large enough to store the friend's name.
+# 
+# @return true on success.
+# 
+# bool tox_friend_get_name(const Tox *tox, uint32_t friend_number, uint8_t *name,
+#                          TOX_ERR_FRIEND_QUERY *error);
+|#
+(define-tox friend-name
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [name : _bytes]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_friend_get_name)
+
+#|
+# The function type for the `friend_name` callback.
+# 
+# @param friend_number The friend number of the friend whose name changed.
+# @param name A byte array containing the same data as
+#   tox_friend_get_name would write to its `name` parameter.
+# @param length A value equal to the return value of
+#   tox_friend_get_name_size.
+# 
+# typedef void tox_friend_name_cb(Tox *tox, uint32_t friend_number, const uint8_t *name,
+#                                 size_t length, void *user_data);
+|#
+(define friend-name-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [name : _bytes]
+        [name-len : _size = (bytes-length name)]
+        [userdata : _gcpointer] -> _void))
+
+#|
+# Set the callback for the `friend_name` event. Pass NULL to unset.
+# 
+# This event is triggered when a friend changes their name.
+# 
+# void tox_callback_friend_name(Tox *tox, tox_friend_name_cb *function, void *user_data);
+|#
+(define-tox callback-friend-name
+  (_fun [tox : _Tox-pointer]
+        [function : friend-name-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_friend_name)
+
+
+#|
+# Return the length of the friend's status message. If the friend number is
+# invalid, the return value is SIZE_MAX.
+# 
+# size_t tox_friend_get_status_message_size(const Tox *tox, uint32_t friend_number,
+#                                           TOX_ERR_FRIEND_QUERY *error);
+|#
+(define-tox friend-status-message-size
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [err : (_list io _int 1)] -> _size)
+  #:c-id tox_friend_get_status_message_size)
+
+#|
+# Write the name of the friend designated by the given friend number to a byte
+# array.
+# 
+# Call tox_friend_get_name_size to determine the allocation size for the `name`
+# parameter.
+# 
+# The data written to `message` is equal to the data received by the last
+# `friend_status_message` callback.
+# 
+# @param name A valid memory region large enough to store the friend's name.
+# 
+# bool tox_friend_get_status_message(const Tox *tox, uint32_t friend_number, uint8_t *message,
+#                                    TOX_ERR_FRIEND_QUERY *error);
+|#
+(define-tox friend-status-message
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [message : _bytes]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_friend_get_status_message)
+
+#|
+# The function type for the `friend_status_message` callback.
+# 
+# @param friend_number The friend number of the friend whose status message
+#   changed.
+# @param message A byte array containing the same data as
+#   tox_friend_get_status_message would write to its `message` parameter.
+# @param length A value equal to the return value of
+#   tox_friend_get_status_message_size.
+# 
+# typedef void tox_friend_status_message_cb(Tox *tox, uint32_t friend_number,
+#                                           const uint8_t *message, size_t length,
+#                                           void *user_data);
+|#
+(define friend-status-message-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [message : _bytes]
+        [message-len : _size = (bytes-length message)]
+        [userdata : _gcpointer] -> _void))
+
+#|
+# Set the callback for the `friend_status_message` event. Pass NULL to unset.
+# 
+# This event is triggered when a friend changes their status message.
+# 
+# void tox_callback_friend_status_message(Tox *tox, tox_friend_status_message_cb *function,
+#                                         void *user_data);
+|#
+(define-tox callback-friend-status-message
+  (_fun [tox : _Tox-pointer]
+        [function : friend-status-message-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_friend_status_message)
+
+#|
+# Return the friend's user status (away/busy/...). If the friend number is
+# invalid, the return value is unspecified.
+# 
+# The status returned is equal to the last status received through the
+# `friend_status` callback.
+# 
+# TOX_USER_STATUS tox_friend_get_status(const Tox *tox, uint32_t friend_number,
+#                                       TOX_ERR_FRIEND_QUERY *error);
+|#
+(define-tox friend-status
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [err : (_list io _int 1)] -> _int)
+  #:c-id tox_friend_get_status)
+
+#|
+# The function type for the `friend_status` callback.
+# 
+# @param friend_number The friend number of the friend whose user status
+#   changed.
+# @param status The new user status.
+# 
+# typedef void tox_friend_status_cb(Tox *tox, uint32_t friend_number,
+#                                   TOX_USER_STATUS status, void *user_data);
+|#
+(define friend-status-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [status : _int]
+        [userdata : _gcpointer] -> _void))
+
+#|
+# Set the callback for the `friend_status` event. Pass NULL to unset.
+# 
+# This event is triggered when a friend changes their user status.
+# 
+# void tox_callback_friend_status(Tox *tox, tox_friend_status_cb *function, void *user_data);
+|#
+(define-tox callback-friend-status
+  (_fun [tox : _Tox-pointer]
+        [function : friend-status-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_friend_status)
+
+#|
+# Check whether a friend is currently connected to this client.
+# 
+# The result of this function is equal to the last value received by the
+# `friend_connection_status` callback.
+# 
+# @param friend_number The friend number for which to query the connection
+#   status.
+# 
+# @return the friend's connection status as it was received through the
+#   `friend_connection_status` event.
+# 
+# TOX_CONNECTION tox_friend_get_connection_status(const Tox *tox, uint32_t friend_number,
+#                                                 TOX_ERR_FRIEND_QUERY *error);
+|#
+(define-tox friend-connection-status
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [err : (_list io _int 1)] -> _int)
+  #:c-id tox_friend_get_connection_status)
+
+#|
+# The function type for the `friend_connection_status` callback.
+# 
+# @param friend_number The friend number of the friend whose connection status
+#   changed.
+# @param connection_status The result of calling
+#   tox_friend_get_connection_status on the passed friend_number.
+# 
+# typedef void tox_friend_connection_status_cb(Tox *tox, uint32_t friend_number,
+#                                              TOX_CONNECTION connection_status,
+#                                              void *user_data);
+|#
+(define friend-connection-status-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [connection-status : _int]
+        [userdata : _gcpointer] -> _void))
+
+#|
+# Set the callback for the `friend_connection_status` event. Pass NULL to
+# unset.
+# 
+# This event is triggered when a friend goes offline after having been online,
+# or when a friend goes online.
+# 
+# This callback is not called when adding friends. It is assumed that when
+# adding friends, their connection status is offline.
+# 
+# void tox_callback_friend_connection_status(Tox *tox,
+#                  tox_friend_connection_status_cb *function, void *user_data);
+|#
+(define-tox callback-friend-connection-status
+  (_fun [tox : _Tox-pointer]
+        [function : friend-connection-status-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_friend_connection_status)
+
+#|
+# Check whether a friend is currently typing a message.
+# 
+# @param friend_number The friend number for which to query the typing status.
+# 
+# @return true if the friend is typing.
+# @return false if the friend is not typing, or the friend number was
+#   invalid. Inspect the error code to determine which case it is.
+# 
+# bool tox_friend_get_typing(const Tox *tox, uint32_t friend_number,
+#                            TOX_ERR_FRIEND_QUERY *error);
+|#
+(define-tox friend-typing?
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_friend_get_typing)
+
+#|
+# The function type for the `friend_typing` callback.
+# 
+# @param friend_number The friend number of the friend who started or stopped
+#   typing.
+# @param is_typing The result of calling tox_friend_get_typing on the passed
+#   friend_number.
+# 
+# typedef void tox_friend_typing_cb(Tox *tox, uint32_t friend_number, bool is_typing,
+#                                   void *user_data);
+|#
+(define friend-typing-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [typing? : _bool]
+        [userdata : _gcpointer] -> _void))
+
+#|
+# Set the callback for the `friend_typing` event. Pass NULL to unset.
+# 
+# This event is triggered when a friend starts or stops typing.
+# 
+# void tox_callback_friend_typing(Tox *tox, tox_friend_typing_cb *function, void *user_data);
+|#
+(define-tox callback-friend-typing
+  (_fun [tox : _Tox-pointer]
+        [function : friend-typing-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_friend_typing)
+
+#|
+# Set the client's typing status for a friend.
+# 
+# The client is responsible for turning it on or off.
+# 
+# @param friend_number The friend to which the client is typing a message.
+# @param is_typing The typing status. True means the client is typing.
+# 
+# @return true on success.
+# 
+# bool tox_self_set_typing(Tox *tox, uint32_t friend_number, bool is_typing,
+#                          TOX_ERR_SET_TYPING *error);
+|#
+(define-tox set-self-typing
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [typing? : _bool]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_self_set_typing)
+
+#|
+# Send a text chat message to an online friend.
+# 
+# This function creates a chat message packet and pushes it into the send
+# queue.
+# 
+# Type corresponds to the message type, for a list of valid types see TOX_MESSAGE_TYPE.
+# 
+# The message length may not exceed TOX_MAX_MESSAGE_LENGTH. Larger messages
+# must be split by the client and sent as separate messages. Other clients can
+# then reassemble the fragments. Messages may not be empty.
+# 
+# The return value of this function is the message ID. If a read receipt is
+# received, the triggered `read_receipt` event will be passed this message ID.
+# 
+# Message IDs are unique per friend. The first message ID is 0. Message IDs are
+# incremented by 1 each time a message is sent. If UINT32_MAX messages were
+# sent, the next message ID is 0.
+# 
+# uint32_t tox_friend_send_message(Tox *tox, uint32_t friend_number, TOX_MESSAGE_TYPE type,
+#                                  const uint8_t *message, size_t length,
+#                                  TOX_ERR_FRIEND_SEND_MESSAGE *error);
+|#
+
+#|
+# The function type for the `read_receipt` callback.
+# 
+# @param friend_number The friend number of the friend who received the message.
+# @param message_id The message ID as returned from tox_friend_send_message
+#   corresponding to the message sent.
+# 
+# typedef void tox_friend_read_receipt_cb(Tox *tox, uint32_t friend_number,
+#                                         uint32_t message_id, void *user_data);
+|#
+
+#|
+# Set the callback for the `read_receipt` event. Pass NULL to unset.
+# 
+# This event is triggered when the friend receives the message sent with
+# tox_friend_send_message with the corresponding message ID.
+# 
+# void tox_callback_friend_read_receipt(Tox *tox, tox_friend_read_receipt_cb *function,
+#                                       void *user_data);
+|#
+
+
+#|
+# The function type for the `friend_request` callback.
+# 
+# @param public_key The Public Key of the user who sent the friend request.
+# @param message The message they sent along with the request.
+# @param length The size of the message byte array.
+# 
+# typedef void tox_friend_request_cb(Tox *tox, const uint8_t *public_key,
+#                                    const uint8_t *message, size_t length, void *user_data);
+|#
+
+#|
+# Set the callback for the `friend_request` event. Pass NULL to unset.
+# 
+# This event is triggered when a friend request is received.
+# 
+# void tox_callback_friend_request(Tox *tox, tox_friend_request_cb *function, void *user_data);
+|#
+
+
+#|
+# The function type for the `friend_message` callback.
+# 
+# @param friend_number The friend number of the friend who sent the message.
+# @param type The message type, for a list of valid types see TOX_MESSAGE_TYPE.
+# @param message The message data they sent.
+# @param length The size of the message byte array.
+# 
+# typedef void tox_friend_message_cb(Tox *tox, uint32_t friend_number, TOX_MESSAGE_TYPE type,
+#                                    const uint8_t *message, size_t length, void *user_data);
+|#
+
+#|
+# Set the callback for the `friend_message` event. Pass NULL to unset.
+# 
+# This event is triggered when a message from a friend is received.
+# 
+# void tox_callback_friend_message(Tox *tox, tox_friend_message_cb *function, void *user_data);
+|#
+
+
+#|
+# Generates a cryptographic hash of the given data.
+# 
+# This function may be used by clients for any purpose, but is provided
+# primarily for validating cached avatars. This use is highly recommended to
+# avoid unnecessary avatar updates.
+# 
+# If hash is NULL or data is NULL while length is not 0 the function returns false,
+# otherwise it returns true.
+# 
+# This function is a wrapper to internal message-digest functions.
+# 
+# @param hash A valid memory location the hash data. It must be at least
+#   TOX_HASH_LENGTH bytes in size.
+# @param data Data to be hashed or NULL.
+# @param length Size of the data array or 0.
+# 
+# @return true if hash was not NULL.
+# 
+# bool tox_hash(uint8_t *hash, const uint8_t *data, size_t length);
+|#
+
+#|
+# Sends a file control command to a friend for a given file transfer.
+# 
+# @param friend_number The friend number of the friend the file is being
+#   transferred to or received from.
+# @param file_number The friend-specific identifier for the file transfer.
+# @param control The control command to send.
+# 
+# @return true on success.
+# 
+# bool tox_file_control(Tox *tox, uint32_t friend_number, uint32_t file_number,
+#                       TOX_FILE_CONTROL control, TOX_ERR_FILE_CONTROL *error);
+|#
+
+
+#|
+# The function type for the `file_control` callback.
+# 
+# When receiving TOX_FILE_CONTROL_CANCEL, the client should release the
+# resources associated with the file number and consider the transfer failed.
+# 
+# @param friend_number The friend number of the friend who is sending the file.
+# @param file_number The friend-specific file number the data received is
+#   associated with.
+# @param control The file control command received.
+# 
+# typedef void tox_file_recv_control_cb(Tox *tox, uint32_t friend_number,
+#                                       uint32_t file_number, TOX_FILE_CONTROL control,
+#                                       void *user_data);
+|#
+(define file-recv-control-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [file-number : _uint32]
+        [control : _int]
+        [userdata : _gcpointer] -> _void))
+
+#|
+# Set the callback for the `file_control` event. Pass NULL to unset.
+# 
+# This event is triggered when a file control command is received from a
+# friend.
+# 
+# void tox_callback_file_recv_control(Tox *tox, tox_file_recv_control_cb *function,
+#                                     void *user_data);
+|#
+(define-tox callback-file-recv-control
+  (_fun [tox : _Tox-pointer]
+        [function : file-recv-control-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_file_recv_control)
+
+#|
+# Sends a file seek control command to a friend for a given file transfer.
+# 
+# This function can only be called to resume a file transfer right before
+# TOX_FILE_CONTROL_RESUME is sent.
+# 
+# @param friend_number The friend number of the friend the file is being
+#   received from.
+# @param file_number The friend-specific identifier for the file transfer.
+# @param position The position that the file should be seeked to.
+# 
+# bool tox_file_seek(Tox *tox, uint32_t friend_number, uint32_t file_number, uint64_t position,
+#                    TOX_ERR_FILE_SEEK *error);
+|#
+(define-tox file-seek
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [file-number : _uint32]
+        [position : _uint64]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_file_seek)
+
+#|
+# Copy the file id associated to the file transfer to a byte array.
+# 
+# @param friend_number The friend number of the friend the file is being
+#   transferred to.
+# @param file_number The friend-specific identifier for the file transfer.
+# @param file_id A memory region of at least TOX_FILE_ID_LENGTH bytes. If
+#   this parameter is NULL, this function has no effect.
+# 
+# @return true on success.
+# 
+# bool tox_file_get_file_id(const Tox *tox, uint32_t friend_number, uint32_t file_number,
+#                           uint8_t *file_id, TOX_ERR_FILE_GET *error);
+|#
+(define-tox file-id
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [file-number : _uint32]
+        [file-id : _bytes]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_file_get_file_id)
+
+#|
+# Send a file transmission request.
+# 
+# Maximum filename length is TOX_MAX_FILENAME_LENGTH bytes. The filename should generally
+# just be a file name, not a path with directory names.
+# 
+# If a non-zero file size is provided, this can be used by both sides to
+# determine the sending progress. File size can be set to zero for streaming
+# data of unknown size.
+# 
+# File transmission occurs in chunks, which are requested through the
+# `file_chunk_request` event.
+# 
+# When a friend goes offline, all file transfers associated with the friend are
+# purged from core.
+# 
+# If the file contents change during a transfer, the behaviour is unspecified
+# in general. What will actually happen depends on the mode in which the file
+# was modified and how the client determines the file size.
+# 
+# - If the file size was increased
+#   - and sending mode was streaming (file_size = UINT64_MAX), the behaviour will be as
+#     expected.
+#   - and sending mode was file (file_size != UINT64_MAX), the file_chunk_request
+#     callback will receive length = 0 when Core thinks the file transfer has
+#     finished. If the client remembers the file size as it was when sending
+#     the request, it will terminate the transfer normally. If the client
+#     re-reads the size, it will think the friend cancelled the transfer.
+# - If the file size was decreased
+#   - and sending mode was streaming, the behaviour is as expected.
+#   - and sending mode was file, the callback will return 0 at the new
+#     (earlier) end-of-file, signalling to the friend that the transfer was
+#     cancelled.
+# - If the file contents were modified
+#   - at a position before the current read, the two files (local and remote)
+#     will differ after the transfer terminates.
+#   - at a position after the current read, the file transfer will succeed as
+#     expected.
+#   - In either case, both sides will regard the transfer as complete and
+#     successful.
+# 
+# @param friend_number The friend number of the friend the file send request
+#   should be sent to.
+# @param kind The meaning of the file to be sent.
+# @param file_size Size in bytes of the file the client wants to send, UINT64_MAX if
+#   unknown or streaming.
+# @param file_id A file identifier of length TOX_FILE_ID_LENGTH that can be used to
+#   uniquely identify file transfers across core restarts. If NULL, a random one will
+#   be generated by core. It can then be obtained by using tox_file_get_file_id().
+# @param filename Name of the file. Does not need to be the actual name. This
+#   name will be sent along with the file send request.
+# @param filename_length Size in bytes of the filename.
+# 
+# @return A file number used as an identifier in subsequent callbacks. This
+#   number is per friend. File numbers are reused after a transfer terminates.
+#   on failure, this function returns UINT32_MAX. Any pattern in file numbers
+#   should not be relied on.
+# 
+# uint32_t tox_file_send(Tox *tox, uint32_t friend_number, uint32_t kind, uint64_t file_size,
+#                        const uint8_t *file_id, const uint8_t *filename,
+#                        size_t filename_length, TOX_ERR_FILE_SEND *error);
+|#
+(define-tox file-send
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [kind : _uint32]
+        [file-size : _uint64]
+        [file-id : _bytes]
+        [filename : _bytes]
+        [filename-len : _size = (bytes-length filename)]
+        [err : (_list io _int 1)] -> _uint32)
+  #:c-id tox_file_send)
+
+#|
+# Send a chunk of file data to a friend.
+# 
+# This function is called in response to the `file_chunk_request` callback. The
+# length parameter should be equal to the one received though the callback.
+# If it is zero, the transfer is assumed complete. For files with known size,
+# Core will know that the transfer is complete after the last byte has been
+# received, so it is not necessary (though not harmful) to send a zero-length
+# chunk to terminate. For streams, core will know that the transfer is finished
+# if a chunk with length less than the length requested in the callback is sent.
+# 
+# @param friend_number The friend number of the receiving friend for this file.
+# @param file_number The file transfer identifier returned by tox_file_send.
+# @param position The file or stream position from which to continue reading.
+# @return true on success.
+# 
+# bool tox_file_send_chunk(Tox *tox, uint32_t friend_number, uint32_t file_number,
+#                          uint64_t position, const uint8_t *data, size_t length,
+#                          TOX_ERR_FILE_SEND_CHUNK *error);
+|#
+(define-tox file-send-chunk
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [file-number : _uint32]
+        [position : _uint64]
+        [data : _bytes]
+        [len : _size = (bytes-length data)]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_file_send_chunk)
+
+#|
+# The function type for the `file_chunk_request` callback.
+# 
+# If the length parameter is 0, the file transfer is finished, and the client's
+# resources associated with the file number should be released. After a call
+# with zero length, the file number can be reused for future file transfers.
+# 
+# If the requested position is not equal to the client's idea of the current
+# file or stream position, it will need to seek. In case of read-once streams,
+# the client should keep the last read chunk so that a seek back can be
+# supported. A seek-back only ever needs to read from the last requested chunk.
+# This happens when a chunk was requested, but the send failed. A seek-back
+# request can occur an arbitrary number of times for any given chunk.
+# 
+# In response to receiving this callback, the client should call the function
+# `tox_file_send_chunk` with the requested chunk. If the number of bytes sent
+# through that function is zero, the file transfer is assumed complete. A
+# client must send the full length of data requested with this callback.
+# 
+# @param friend_number The friend number of the receiving friend for this file.
+# @param file_number The file transfer identifier returned by tox_file_send.
+# @param position The file or stream position from which to continue reading.
+# @param length The number of bytes requested for the current chunk.
+# 
+# typedef void tox_file_chunk_request_cb(Tox *tox, uint32_t friend_number,
+#                                        uint32_t file_number, uint64_t position,
+#                                        size_t length, void *user_data);
+|#
+(define file-chunk-request-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [file-number : _uint32]
+        [position : _uint64]
+        [len : _size]
+        [userdata : _gcpointer] -> _void))
+
+#|
+# Set the callback for the `file_chunk_request` event. Pass NULL to unset.
+# 
+# void tox_callback_file_chunk_request(Tox *tox, tox_file_chunk_request_cb *function,
+#                                      void *user_data);
+|#
+(define-tox callback-file-chunk-request
+  (_fun [tox : _Tox-pointer]
+        [function : file-chunk-request-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_file_chunk_request)
+
+#|
+# The function type for the `file_receive` callback.
+# 
+# Maximum filename length is TOX_MAX_FILENAME_LENGTH bytes. The filename should generally
+# just be a file name, not a path with directory names.
+# 
+# The client should acquire resources to be associated with the file transfer.
+# Incoming file transfers start in the PAUSED state. After this callback
+# returns, a transfer can be rejected by sending a TOX_FILE_CONTROL_CANCEL
+# control command before any other control commands. It can be accepted by
+# sending TOX_FILE_CONTROL_RESUME.
+# 
+# @param friend_number The friend number of the friend who is sending the file
+#   transfer request.
+# @param file_number The friend-specific file number the data received is
+#   associated with.
+# @param kind The meaning of the file to be sent.
+# @param file_size Size in bytes of the file about to be received from the client,
+#   UINT64_MAX if unknown or streaming.
+# @param filename_length Size in bytes of the filename.
+# 
+# typedef void tox_file_recv_cb(Tox *tox, uint32_t friend_number, uint32_t file_number,
+#                               uint32_t kind, uint64_t file_size, const uint8_t *filename,
+#                               size_t filename_length, void *user_data);
+|#
+(define file-recv-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [file-number : _uint32]
+        [kind : _uint32]
+        [file-size : _uint64]
+        [filename : _bytes]
+        [filename-len : _bytes = (bytes-length filename)]
+        [userdata : _gcpointer] -> _void))
+
+#|
+# Set the callback for the `file_receive` event. Pass NULL to unset.
+# 
+# This event is triggered when a file transfer request is received.
+# 
+# void tox_callback_file_recv(Tox *tox, tox_file_recv_cb *function, void *user_data);
+|#
+(define-tox callback-file-recv
+  (_fun [tox : _Tox-pointer]
+        [function : file-recv-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_file_recv)
+
+#|
+# The function type for the `file_receive_chunk` callback.
+# 
+# This function is first called when a file transfer request is received, and
+# subsequently when a chunk of file data for an accepted request was received.
+# 
+# When length is 0, the transfer is finished and the client should release the
+# resources it acquired for the transfer. After a call with length = 0, the
+# file number can be reused for new file transfers.
+# 
+# If position is equal to file_size (received in the file_receive callback)
+# when the transfer finishes, the file was received completely. Otherwise, if
+# file_size was UINT64_MAX, streaming ended successfully when length is 0.
+# 
+# @param friend_number The friend number of the friend who is sending the file.
+# @param file_number The friend-specific file number the data received is
+#   associated with.
+# @param position The file position of the first byte in data.
+# @param data A byte array containing the received chunk.
+# @param length The length of the received chunk.
+# 
+# typedef void tox_file_recv_chunk_cb(Tox *tox, uint32_t friend_number, uint32_t file_number,
+#                                     uint64_t position, const uint8_t *data, size_t length,
+#                                     void *user_data);
+|#
+(define file-recv-chunk-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-num : _uint32]
+        [file-num : _uint32]
+        [position : _uint64]
+        [data : _bytes]
+        [len : _size]
+        [userdata : _gcpointer] -> _void))
+
+#|
+# Set the callback for the `file_receive_chunk` event. Pass NULL to unset.
+# 
+# void tox_callback_file_recv_chunk(Tox *tox, tox_file_recv_chunk_cb *function,
+#                                   void *user_data);
+|#
+(define-tox callback-file-recv-chunk
+  (_fun [tox : _Tox-pointer]
+        [function : file-recv-chunk-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_file_recv_chunk)
+
+#|
+# Send a custom lossy packet to a friend.
+# 
+# The first byte of data must be in the range 200-254. Maximum length of a
+# custom packet is TOX_MAX_CUSTOM_PACKET_SIZE.
+# 
+# Lossy packets behave like UDP packets, meaning they might never reach the
+# other side or might arrive more than once (if someone is messing with the
+# connection) or might arrive in the wrong order.
+# 
+# Unless latency is an issue, it is recommended that you use lossless custom
+# packets instead.
+# 
+# @param friend_number The friend number of the friend this lossy packet
+#   should be sent to.
+# @param data A byte array containing the packet data.
+# @param length The length of the packet data byte array.
+# 
+# @return true on success.
+# 
+# bool tox_friend_send_lossy_packet(Tox *tox, uint32_t friend_number, const uint8_t *data,
+#                                   size_t length, TOX_ERR_FRIEND_CUSTOM_PACKET *error);
+|#
+
+#|
+# The function type for the `friend_lossy_packet` callback.
+# 
+# @param friend_number The friend number of the friend who sent a lossy packet.
+# @param data A byte array containing the received packet data.
+# @param length The length of the packet data byte array.
+# 
+# typedef void tox_friend_lossy_packet_cb(Tox *tox, uint32_t friend_number,
+#                                         const uint8_t *data, size_t length,
+#                                         void *user_data);
+|#
+
+#|
+# Set the callback for the `friend_lossy_packet` event. Pass NULL to unset.
+# 
+# void tox_callback_friend_lossy_packet(Tox *tox, tox_friend_lossy_packet_cb *function,
+#                                       void *user_data);
+|#
+
+
+#|
+# Send a custom lossless packet to a friend.
+# 
+# The first byte of data must be in the range 160-191. Maximum length of a
+# custom packet is TOX_MAX_CUSTOM_PACKET_SIZE.
+# 
+# Lossless packet behaviour is comparable to TCP (reliability, arrive in order)
+# but with packets instead of a stream.
+# 
+# @param friend_number The friend number of the friend this lossless packet
+#   should be sent to.
+# @param data A byte array containing the packet data.
+# @param length The length of the packet data byte array.
+# 
+# @return true on success.
+# 
+# bool tox_friend_send_lossless_packet(Tox *tox, uint32_t friend_number, const uint8_t *data,
+#                                      size_t length, TOX_ERR_FRIEND_CUSTOM_PACKET *error);
+|#
+
+#|
+# The function type for the `friend_lossless_packet` callback.
+# 
+# @param friend_number The friend number of the friend who sent the packet.
+# @param data A byte array containing the received packet data.
+# @param length The length of the packet data byte array.
+# 
+# typedef void tox_friend_lossless_packet_cb(Tox *tox, uint32_t friend_number,
+#                                            const uint8_t *data, size_t length,
+#                                            void *user_data);
+|#
+
+#|
+# Set the callback for the `friend_lossless_packet` event. Pass NULL to unset.
+# 
+# void tox_callback_friend_lossless_packet(Tox *tox, tox_friend_lossless_packet_cb *function,
+#                                          void *user_data);
+|#
+
+
+
+#|
+# Writes the temporary DHT public key of this instance to a byte array.
+# 
+# This can be used in combination with an externally accessible IP address and
+# the bound port (from tox_get_udp_port) to run a temporary bootstrap node.
+# 
+# Be aware that every time a new instance is created, the DHT public key
+# changes, meaning this cannot be used to run a permanent bootstrap node.
+# 
+# @param dht_id A memory region of at least TOX_PUBLIC_KEY_SIZE bytes. If this
+#   parameter is NULL, this function has no effect.
+# 
+# void tox_self_get_dht_id(const Tox *tox, uint8_t *dht_id);
+|#
+
+#|
+# Return the UDP port this Tox instance is bound to.
+# 
+uint16_t tox_self_get_udp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
+|#
+
+#|
+# Return the TCP port this Tox instance is bound to. This is only relevant if
+# the instance is acting as a TCP relay.
+# 
+uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
+|#
+
+
+
+
+
+
+
+
+
+#| ##################### See: tox_old.h for now. ###################### |#
+
+#|
+# Set the callback for group invites.
+#
+#  Function(Tox *tox, int32_t friendnumber, uint8_t type, const uint8_t *data, uint16_t length, void *userdata)
+#
+# data of length is what needs to be passed to join_groupchat().
+#
+# for what type means see the enum right above this comment.
+#
+# void tox_callback_group_invite(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t,
+#                                const uint8_t *, uint16_t, void *), void *userdata);
+|#
+
+#|
+# Set the callback for group messages.
+#
+#  Function(Tox *tox, int groupnumber, int peernumber, const uint8_t * message, uint16_t length, void *userdata)
+#
+# void tox_callback_group_message(Tox *tox, void (*function)(Tox *tox, int, int,
+#                                 const uint8_t *, uint16_t, void *), void *userdata);
+|#
+
+#|
+# Set the callback for group actions.
+#
+#  Function(Tox *tox, int groupnumber, int peernumber, const uint8_t * action, uint16_t length, void *userdata)
+#
+# void tox_callback_group_action(Tox *tox, void (*function)(Tox *tox, int, int,
+#                                const uint8_t *, uint16_t, void *), void *userdata);
+|#
+
+#|
+# Set callback function for title changes.
+#
+# Function(Tox *tox, int groupnumber, int peernumber, uint8_t * title, uint8_t length, void *userdata)
+# if peernumber == -1, then author is unknown (e.g. initial joining the group)
+#
+# void tox_callback_group_title(Tox *tox, void (*function)(Tox *tox, int, int,
+#                               const uint8_t *, uint8_t, void *), void *userdata);
+|#
+
+#|
+# Set callback function for peer name list changes.
+#
+# It gets called every time the name list changes(new peer/name, deleted peer)
+#  Function(Tox *tox, int groupnumber, int peernumber, TOX_CHAT_CHANGE change, void *userdata)
+#
+# void tox_callback_group_namelist_change(Tox *tox, void (*function)(Tox *tox, int, int,
+#                                         uint8_t, void *), void *userdata);
+|#
+
+
+#|
+# Creates a new groupchat and puts it in the chats array.
+#
+# return group number on success.
+# return -1 on failure.
+#
+# int tox_add_groupchat(Tox *tox);
+|#
+
+#|
+# Delete a groupchat from the chats array.
+#
+# return 0 on success.
+# return -1 if failure.
+#
+# int tox_del_groupchat(Tox *tox, int groupnumber);
+|#
+
+#|
+# Copy the name of peernumber who is in groupnumber to name.
+# name must be at least TOX_MAX_NAME_LENGTH long.
+#
+# return length of name if success
+# return -1 if failure
+#
+# int tox_group_peername(const Tox *tox, int groupnumber, int peernumber, uint8_t *name);
+|#
+
+#| Copy the public key of peernumber who is in groupnumber to public_key.
+# public_key must be TOX_PUBLIC_KEY_SIZE long.
+#
+# returns 0 on success
+# returns -1 on failure
+#
+# int tox_group_peer_pubkey(const Tox *tox, int groupnumber, int peernumber,
+#                           uint8_t *public_key);
+|#
+
+#|
+# invite friendnumber to groupnumber
+# return 0 on success
+# return -1 on failure
+#
+# int tox_invite_friend(Tox *tox, int32_t friendnumber, int groupnumber);
+|#
+
+#|
+# Join a group (you need to have been invited first.) using data of length obtained
+# in the group invite callback.
+#
+# returns group number on success
+# returns -1 on failure.
+#
+# int tox_join_groupchat(Tox *tox, int32_t friendnumber, const uint8_t *data, uint16_t length);
+|#
+
+#|
+# send a group message
+# return 0 on success
+# return -1 on failure
+#
+# int tox_group_message_send(Tox *tox, int groupnumber, const uint8_t *message,
+#                            uint16_t length);
+|#
+
+#|
+# send a group action
+# return 0 on success
+# return -1 on failure
+#
+# int tox_group_action_send(Tox *tox, int groupnumber, const uint8_t *action, uint16_t length);
+|#
+
+#|
+# set the group's title, limited to MAX_NAME_LENGTH
+# return 0 on success
+# return -1 on failure
+#
+# int tox_group_set_title(Tox *tox, int groupnumber, const uint8_t *title, uint8_t length);
+|#
+
+#|
+# Get group title from groupnumber and put it in title.
+# title needs to be a valid memory location with a max_length size of at least MAX_NAME_LENGTH (128) bytes.
+#
+#  return length of copied title if success.
+#  return -1 if failure.
+#
+# int tox_group_get_title(Tox *tox, int groupnumber, uint8_t *title, uint32_t max_length);
+|#
+
+#|
+# Check if the current peernumber corresponds to ours.
+#
+# return 1 if the peernumber corresponds to ours.
+# return 0 on failure.
+#
+# unsigned int tox_group_peernumber_is_ours(const Tox *tox, int groupnumber, int peernumber);
+|#
+
+#|
+# Return the number of peers in the group chat on success.
+# return -1 on failure
+#
+# int tox_group_number_peers(const Tox *tox, int groupnumber);
+|#
+
+#| List all the peers in the group chat.
+#
+# Copies the names of the peers to the name[length][TOX_MAX_NAME_LENGTH] array.
+#
+# Copies the lengths of the names to lengths[length]
+#
+# returns the number of peers on success.
+#
+# return -1 on failure.
+#
+# int tox_group_get_names(const Tox *tox, int groupnumber,
+#                         uint8_t names[][TOX_MAX_NAME_LENGTH], uint16_t lengths[],
+#                         uint16_t length);
+|#
+
+#|
+# Return the number of chats in the instance m.
+# You should use this to determine how much memory to allocate
+# for copy_chatlist. */
+# uint32_t tox_count_chatlist(const Tox *tox);
+|#
+
+#|
+# Copy a list of valid chat IDs into the array out_list.
+# If out_list is NULL, returns 0.
+# Otherwise, returns the number of elements copied.
+# If the array was too small, the contents
+# of out_list will be truncated to list_size. */
+# uint32_t tox_get_chatlist(const Tox *tox, int32_t *out_list, uint32_t list_size);
+|#
+
+#| return the type of groupchat (TOX_GROUPCHAT_TYPE_) that groupnumber is.
+#
+# return -1 on failure.
+# return type on success.
+#
+# int tox_group_get_type(const Tox *tox, int groupnumber);
+|#
 )

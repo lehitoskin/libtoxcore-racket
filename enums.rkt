@@ -36,6 +36,9 @@
                  _TOX_ERR_ENCRYPTION
                  _TOX_ERR_DECRYPTION
                  
+                 _TOX_GROUPCHAT_TYPE
+                 _TOX_CHAT_CHANGE_PEER
+                 
                  _ToxAvCallbackID
                  _ToxAvCallType
                  _ToxAvCallState
@@ -366,6 +369,20 @@
          (define (_TOX_ERR_DECRYPTION sym)
            (define enum (make-enumeration
                          '(OK NULL INVALID_LENGTH BAD_FORMAT KEY_DERIVATION_FAILED FAILED)))
+           (if (enum-set-member? sym enum)
+                 ((enum-set-indexer enum) sym)
+                 #f))
+         
+         #| ############### tox_old.h groupchat stuff ######### |#
+         
+         (define (_TOX_GROUPCHAT_TYPE sym)
+           (define enum (make-enumeration '(TEXT AV)))
+           (if (enum-set-member? sym enum)
+                 ((enum-set-indexer enum) sym)
+                 #f))
+         
+         (define (_TOX_CHAT_CHANGE_PEER sym)
+           (define enum (make-enumeration '(ADD DEL NAME)))
            (if (enum-set-member? sym enum)
                  ((enum-set-indexer enum) sym)
                  #f))
