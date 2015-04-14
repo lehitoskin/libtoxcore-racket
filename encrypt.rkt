@@ -22,21 +22,13 @@
 
 (define _Tox-pointer (_cpointer 'Tox))
 
-; these functions provice access to these defines in toxencryptsave.c, which
-; otherwise aren't actually available in clients
-(define-encrypt pass-encryption-extra-length (_fun -> _int)
-  #:c-id tox_pass_encryption_extra_length)
+(define-cstruct _Tox-Pass-Key
+  ([salt _bytes]
+   [key _bytes]))
 
-(define-encrypt pass-key-length (_fun -> _int)
-  #:c-id tox_pass_key_length)
-
-(define-encrypt pass-salt-length (_fun -> _int)
-  #:c-id tox_pass_salt_length)
-
-; return size of the messenger data (for encrypted Messenger saving).
-; uint32_t tox_encrypted_size(const Tox *tox);
-(define-encrypt encrypted-size (_fun [tox : _Tox-pointer] -> _uint32)
-  #:c-id tox_encrypted_size)
+(define TOX_PASS_SALT_LENGTH 32)
+(define TOX_PASS_KEY_LENGTH 3)
+(define TOX_PASS_ENCRYPTION_EXTRA_LENGTH 80)
 
 #|
  # This "module" provides functions analogous to tox_load and tox_save in toxcore,
@@ -70,16 +62,13 @@
 
 #|
  # Encrypts the given data with the given passphrase. The output array must be
- # at least data_len + tox_pass_encryption_extra_length() bytes long. This delegates
+ # at least data_len + TOX_PASS_ENCRYPTION_EXTRA_LENGTH bytes long. This delegates
  # to tox_derive_key_from_pass and tox_pass_key_encrypt.
  #
- # tox_encrypted_save() is a good example of how to use this function.
+ # returns true on success
  #
- # returns 0 on success
- # returns -1 on failure
- #
- # int tox_pass_encrypt(const uint8_t *data, uint32_t data_len, uint8_t *passphrase,
- #                      uint32_t pplength, uint8_t *out);
+ # bool tox_pass_encrypt(const uint8_t *data, size_t data_len, uint8_t *passphrase,
+ #                       size_t pplength, uint8_t *out, TOX_ERR_ENCRYPTION *error);
  |#
 (define-encrypt pass-encrypt
   (_fun (data passphrase) ::
@@ -87,77 +76,34 @@
         [data-len : _uint32 = (bytes-length data)]
         [passphrase : _string]
         [pplength : _uint32 = (string-length passphrase)]
-        [out : (_bytes o (+ data-len (pass-encryption-extra-length)))]
-        -> (success : _int)
-        -> (if (= -1 success)
-               #f
-               out))
+        [out : (_bytes o (+ data-len (TOX_PASS_ENCRYPTION_EXTRA_LENGTH)))]
+        [err : (_bytes o 1)]
+        -> (success : _bool)
+        -> (list success err out))
   #:c-id tox_pass_encrypt)
 
 #|
- # Save the messenger data encrypted with the given password.
- # data must be at least tox_encrypted_size().
- #
- # returns 0 on success
- # returns -1 on failure
- #
- # int tox_encrypted_save(const Tox *tox, uint8_t *data, uint8_t *passphrase,
- #                        uint32_t pplength);
- |#
-(define-encrypt encrypted-save!
-  (_fun (tox data passphrase) ::
-        [tox : _Tox-pointer]
-        [data : _bytes]
-        [passphrase : _string]
-        [pplength : _uint32 = (string-length passphrase)]
-        -> (success : _int)
-        -> (zero? success))
-  #:c-id tox_encrypted_save)
-
-#|
  # Decrypts the given data with the given passphrase. The output array must be
- # at least data_len - tox_pass_encryption_extra_length() bytes long. This delegates
+ # at least data_len - TOX_PASS_ENCRYPTION_EXTRA_LENGTH bytes long. This delegates
  # to tox_pass_key_decrypt.
  #
- # tox_encrypted_load() is a good example of how to use this function.
+ # the output data has size data_length - TOX_PASS_ENCRYPTION_EXTRA_LENGTH
  #
- # returns the length of the output data (== data_len - tox_pass_encryption_extra_length())
- #   on success
- # returns -1 on failure
- # int tox_pass_decrypt(const uint8_t *data, uint32_t length, uint8_t *passphrase,
- #                      uint32_t pplength, uint8_t *out);
+ # returns true on success
+ #
+ # bool tox_pass_decrypt(const uint8_t *data, size_t length, uint8_t *passphrase,
+ #                       size_t pplength, uint8_t *out, TOX_ERR_DECRYPTION *error);
  |#
 (define-encrypt pass-decrypt
   (_fun [data : _bytes]
         [len : _uint32 = (bytes-length data)]
         [passphrase : _string]
         [pplength : _uint32 = (string-length passphrase)]
-        [out : (_bytes o (- len (pass-encryption-extra-length)))]
-        -> (success : _int)
-        -> (if (= -1 success)
-               #f
-               (subbytes out - success)))
+        [out : (_bytes o (- len (TOX_PASS_ENCRYPTION_EXTRA_LENGTH)))]
+        [err : (_bytes o 1)]
+        -> (success : _bool)
+        -> (list success err out))
   #:c-id tox_pass_decrypt)
-
-#|
- # Load the new messenger from encrypted data of size length.
- # All other arguments are like toxcore/tox_new().
- #
- # returns NULL on failure; see the documentation in toxcore/tox.h.
- #
- # Tox *tox_encrypted_new(const struct Tox_Options *options, const uint8_t *data,
- #                        size_t length, uint8_t *passphrase, size_t pplength,
- #                        TOX_ERR_ENCRYPTED_NEW *error);
- |#
-(define-encrypt encrypted-new
-  (_fun (options data passphrase err) ::
-        [options : _pointer]
-        [data : _bytes]
-        [len : _size = (bytes-length data)]
-        [passphrase : _string]
-        [pplength : _size = (string-length passphrase)]
-        [err : (_list io _int 1)] -> _Tox-pointer)
-  #:c-id tox_encrypted_new)
 
 #|
  ############################### BEGIN PART 1 ###############################
@@ -167,7 +113,7 @@
 
 #|
  # Generates a secret symmetric key from the given passphrase. out_key must be at least
- # tox_pass_key_length() bytes long.
+ # TOX_PASS_KEY_LENGTH bytes long.
  # Be sure to not compromise the key! Only keep it in memory, do not write to disk.
  # The password is zeroed after key derivation.
  # The key should only be used with the other functions in this module, as it
@@ -175,37 +121,31 @@
  # Note that this function is not deterministic; to derive the same key from a
  # password, you also must know the random salt that was used. See below.
  #
- # returns 0 on success
- # returns -1 on failure
+ # returns true on success
  #
- # int tox_derive_key_from_pass(uint8_t *passphrase, uint32_t pplength, uint8_t *out_key);
+ # bool tox_derive_key_from_pass(uint8_t *passphrase, size_t pplength, TOX_PASS_KEY *out_key,
+ #                               TOX_ERR_KEY_DERIVATION *error);
  |#
 (define-encrypt derive-key-from-pass
   (_fun [passphrase : _string]
         [pplength : _uint32 = (string-length passphrase)]
-        [out-key : (_bytes o (pass-key-length))]
-        -> (success : _int)
-        -> (if (= success -1)
-               #f
-               out-key))
+        [out-key : _Tox-Pass-Key-pointer]
+        [err : _bytes] -> _bool)
   #:c-id tox_derive_key_from_pass)
 
 #|
- # Same as above, except with use the given salt for deterministic key derivation.
- # The salt must be tox_salt_length() bytes in length.
+ # Same as above, except use the given salt for deterministic key derivation.
+ # The salt must be TOX_PASS_SALT_LENGTH bytes in length.
  #
- # int tox_derive_key_with_salt(uint8_t *passphrase, uint32_t pplength, uint8_t *salt,
- #                              uint8_t *out_key);
+ # bool tox_derive_key_with_salt(uint8_t *passphrase, size_t pplength, uint8_t *salt,
+ #                               TOX_PASS_KEY *out_key, TOX_ERR_KEY_DERIVATION *error);
  |#
 (define-encrypt derive-key-with-salt
   (_fun [passphrase : _string]
         [pplength : _uint32 = (string-length passphrase)]
         [salt : _bytes]
-        [out-key : (_bytes o (pass-key-length))]
-        -> (success : _int)
-        -> (if (= success -1)
-               #f
-               out-key))
+        [out-key : _Tox-Pass-Key-pointer]
+        [err : _bytes] -> _bool)
   #:c-id tox_derive_key_with_salt)
 
 #|
@@ -213,107 +153,64 @@
  # derive_key_with_salt to produce the same key as was previously used. Any encrpyted
  # data with this module can be used as input.
  #
- # returns -1 if the magic number is wrong
- # returns 0 otherwise (no guarantee about validity of data)
+ # returns true if magic number matches
+ # success does not say anything about the validity of the data, only that data of
+ # the appropriate size was copied
  #
- # int tox_get_salt(uint8_t *data, uint8_t *salt);
+ # bool tox_get_salt(const uint8_t *data, uint8_t *salt);
  |#
-(define-encrypt get-salt
+(define-encrypt salt
   (_fun [data : _bytes]
         [salt : (_bytes o 256)]
-        -> (success : _int)
-        -> (if (= success -1)
-               #f
-               salt))
+        -> (success : _bool)
+        -> (values success salt))
   #:c-id tox_get_salt)
 
 #|
- # Now come the functions that are analogous to the part 2 functions.
- # Encrypt arbitrary with a key produced by tox_derive_key_. The output
- # array must be at least data_len + tox_pass_encryption_extra_length() bytes long.
- # key must be tox_pass_key_length() bytes.
+ # Encrypt arbitrary with a key produced by tox_derive_key_*. The output
+ # array must be at least data_len + TOX_PASS_ENCRYPTION_EXTRA_LENGTH bytes long.
+ # key must be TOX_PASS_KEY_LENGTH bytes.
  # If you already have a symmetric key from somewhere besides this module, simply
  # call encrypt_data_symmetric in toxcore/crypto_core directly.
  #
- # returns 0 on success
- # returns -1 on failure
+ # returns true on success
  #
- # int tox_pass_key_encrypt(const uint8_t *data, uint32_t data_len, const uint8_t *key,
- #                          uint8_t *out);
+ # bool tox_pass_key_encrypt(const uint8_t *data, size_t data_len, const TOX_PASS_KEY *key,
+ #                           uint8_t *out, TOX_ERR_ENCRYPTION *error);
  |#
-(define-encrypt pass-key-encrypt
+(define-encrypt pass-key-encrypt!
   (_fun [data : _bytes]
-        [data-len : _uint32]
-        [key : _bytes]
-        [out : _bytes] -> _int)
+        [data-len : _uint32 = (bytes-length data)]
+        [key : _Tox-Pass-Key-pointer]
+        [out : _bytes]
+        [err : _bytes] -> _bool)
   #:c-id tox_pass_key_encrypt)
-
-#|
- # Save the messenger data encrypted with the given key from tox_derive_key.
- # data must be at least tox_encrypted_size().
- #
- # returns 0 on success
- # returns -1 on failure
- #
- # int tox_encrypted_key_save(const Tox *tox, uint8_t *data, uint8_t *key);
- |#
-(define-encrypt encrypted-key-save!
-  (_fun [tox : _Tox-pointer]
-        [data : _bytes]
-        [key : _bytes] -> _int)
-  #:c-id tox_encrypted_key_save)
 
 #|
  # This is the inverse of tox_pass_key_encrypt, also using only keys produced by
  # tox_derive_key_from_pass.
  #
- # returns the length of the output data (== data_len - tox_pass_encryption_extra_length())
- # on success
- # returns -1 on failure
+ # the output data has size data_length - TOX_PASS_ENCRYPTION_EXTRA_LENGTH
  #
- # int tox_pass_key_decrypt(const uint8_t *data, uint32_t length, const uint8_t *key,
- #                          uint8_t *out);
+ # returns true on success
+ #
+ # bool tox_pass_key_decrypt(const uint8_t *data, size_t length, const TOX_PASS_KEY *key,
+ #                           uint8_t *out, TOX_ERR_DECRYPTION *error);
  |#
 (define-encrypt pass-key-decrypt
   (_fun [data : _bytes]
-        [len : _uint32 = (bytes-length data)]
-        [key : _bytes]
-        [out : (_bytes o 256)]
-        -> (success : _int)
-        -> (if (= success -1)
-               #f
-               (subbytes out 0 success)))
+        [data-len : _uint32 = (bytes-length data)]
+        [key : _Tox-Pass-Key-pointer]
+        [out : (_bytes o (- data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
+        [err : _bytes]
+        -> (success : _bool)
+        -> (values success out))
   #:c-id tox_pass_key_decrypt)
-
-#|
- # Load the messenger from encrypted data of size length, with key from tox_derive_key.
- # All other arguments are like toxcore/tox_new().
- #
- # returns 0 on success
- # returns -1 on failure
- #
- # Tox *tox_encrypted_key_new(const struct Tox_Options *options, const uint8_t *data,
- #                            size_t length, uint8_t *key, TOX_ERR_ENCRYPTED_NEW *error);
- |#
-(define-encrypt encrypted-key-new
-  (_fun [options : _pointer]
-        [data : _bytes]
-        [len : _uint32]
-        [key : _bytes]
-        [err : (_list io _int 1)]
-        -> (success : _int)
-        -> (if (= success -1)
-               err
-               #t))
-  #:c-id tox_encrypted_key_new)
 
 #|
  # Determines whether or not the given data is encrypted (by checking the magic number)
  #
- # returns 1 if it is encrypted
- # returns 0 otherwise
- #
- # int tox_is_data_encrypted(const uint8_t *data);
+ # bool tox_is_data_encrypted(const uint8_t *data);
  |#
 (define-encrypt data-encrypted? (_fun [data : _bytes] -> _bool)
   #:c-id tox_is_data_encrypted)
