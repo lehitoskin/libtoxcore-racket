@@ -4,9 +4,9 @@ libtoxcore-racket
 libtoxcore-racket is a Racket wrapper to the Tox library.
 
 ## Dependencies
-* Toxcore (with AV enabled)
+* Racket version 6.0.1 (or greater)
 
-* OpenAL (for libblight)
+* Toxcore (with AV enabled)
 
 ## Installation
 * Open a terminal and enter the following:
