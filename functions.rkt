@@ -181,7 +181,7 @@
 (define-tox tox-new
   (_fun [options : _Tox-Options-pointer]
         [data : _bytes]
-        [len : _size = (bytes-length data)]
+        [data-len : _size = (bytes-length data)]
         [error : (_list io _int 1)]
         -> _Tox-pointer)
   #:c-id tox_new)
@@ -265,7 +265,7 @@
 # bool tox_add_tcp_relay(Tox *tox, const char *host, uint16_t port,
 #                        const uint8_t *public_key, TOX_ERR_BOOTSTRAP *error);
 |#
-(define-tox tox-add-tcp-relay
+(define-tox add-tcp-relay
   (_fun [tox : _Tox-pointer]
         [host : _string]
         [port : _uint16]
@@ -318,7 +318,7 @@
 #
 # uint32_t tox_iteration_interval(const Tox *tox);
 |#
-(define-tox tox-iteration-interval (_fun [tox : _Tox-pointer] -> _uint32)
+(define-tox iteration-interval (_fun [tox : _Tox-pointer] -> _uint32)
   #:c-id tox_iteration_interval)
 
 #|
@@ -327,7 +327,7 @@
 #
 # void tox_iterate(Tox *tox);
 |#
-(define-tox tox-iterate (_fun [tox : _Tox-pointer] -> _void)
+(define-tox iterate (_fun [tox : _Tox-pointer] -> _void)
   #:c-id tox_iterate)
 
 #|
@@ -405,13 +405,14 @@
 #
 # @return true on success.
 #
-# bool tox_self_set_name(Tox *tox, const uint8_t *name, size_t length, TOX_ERR_SET_INFO *error);
+# bool tox_self_set_name(Tox *tox, const uint8_t *name, size_t length,
+#                        TOX_ERR_SET_INFO *error);
 |#
 (define-tox set-self-name
   (_fun (tox name err) ::
         [tox : _Tox-pointer]
         [name : _bytes]
-        [len : _int = (bytes-length name)]
+        [name-len : _size = (bytes-length name)]
         [err : (_list io _int 1)] -> _bool)
   #:c-id tox_self_set_name)
 
@@ -462,7 +463,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox set-self-status-message
   (_fun [tox : _Tox-pointer]
         [status : _bytes]
-        [len : _int = (bytes-length status)]
+        [status-len : _size = (bytes-length status)]
         [err : (_list io _int 1)] -> _bool)
   #:c-id tox_self_set_status_message)
 
@@ -748,7 +749,7 @@ size_t tox_self_get_name_size(const Tox *tox);
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
         [name : _bytes]
-        [name-len : _size = (bytes-length name)]
+        [name-len : _size]
         [userdata : _gcpointer] -> _void))
 
 #|
@@ -818,7 +819,7 @@ size_t tox_self_get_name_size(const Tox *tox);
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
         [message : _bytes]
-        [message-len : _size = (bytes-length message)]
+        [message-len : _size]
         [userdata : _gcpointer] -> _void))
 
 #|
@@ -1029,6 +1030,14 @@ size_t tox_self_get_name_size(const Tox *tox);
 #                                  const uint8_t *message, size_t length,
 #                                  TOX_ERR_FRIEND_SEND_MESSAGE *error);
 |#
+(define-tox friend-send-message
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [type : _int]
+        [message : _bytes]
+        [message-len : _size = (bytes-length message)]
+        [err : (_list io _int 1)] -> _uint32)
+  #:c-id tox_friend_send_message)
 
 #|
 # The function type for the `read_receipt` callback.
@@ -1040,6 +1049,11 @@ size_t tox_self_get_name_size(const Tox *tox);
 # typedef void tox_friend_read_receipt_cb(Tox *tox, uint32_t friend_number,
 #                                         uint32_t message_id, void *user_data);
 |#
+(define friend-read-receipt-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [message-id : _uint32]
+        [userdata : _gcpointer] -> _void))
 
 #|
 # Set the callback for the `read_receipt` event. Pass NULL to unset.
@@ -1050,7 +1064,11 @@ size_t tox_self_get_name_size(const Tox *tox);
 # void tox_callback_friend_read_receipt(Tox *tox, tox_friend_read_receipt_cb *function,
 #                                       void *user_data);
 |#
-
+(define-tox callback-friend-read-receipt
+  (_fun [tox : _Tox-pointer]
+        [function : friend-read-receipt-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_friend_read_receipt)
 
 #|
 # The function type for the `friend_request` callback.
@@ -1062,6 +1080,12 @@ size_t tox_self_get_name_size(const Tox *tox);
 # typedef void tox_friend_request_cb(Tox *tox, const uint8_t *public_key,
 #                                    const uint8_t *message, size_t length, void *user_data);
 |#
+(define friend-request-cb
+  (_fun [tox : _Tox-pointer]
+        [public-key : _bytes]
+        [message : _bytes]
+        [message-len : _size]
+        [userdata : _gcpointer] -> _void))
 
 #|
 # Set the callback for the `friend_request` event. Pass NULL to unset.
@@ -1070,7 +1094,11 @@ size_t tox_self_get_name_size(const Tox *tox);
 # 
 # void tox_callback_friend_request(Tox *tox, tox_friend_request_cb *function, void *user_data);
 |#
-
+(define-tox callback-friend-request
+  (_fun [tox : _Tox-pointer]
+        [function : friend-request-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_friend_request)
 
 #|
 # The function type for the `friend_message` callback.
@@ -1083,6 +1111,13 @@ size_t tox_self_get_name_size(const Tox *tox);
 # typedef void tox_friend_message_cb(Tox *tox, uint32_t friend_number, TOX_MESSAGE_TYPE type,
 #                                    const uint8_t *message, size_t length, void *user_data);
 |#
+(define friend-message-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [type : (_list io _int 1)]
+        [message : _bytes]
+        [message-len : _size]
+        [userdata : _gcpointer] -> _void))
 
 #|
 # Set the callback for the `friend_message` event. Pass NULL to unset.
@@ -1091,7 +1126,11 @@ size_t tox_self_get_name_size(const Tox *tox);
 # 
 # void tox_callback_friend_message(Tox *tox, tox_friend_message_cb *function, void *user_data);
 |#
-
+(define-tox callback-friend-message
+  (_fun [tox : _Tox-pointer]
+        [function : friend-message-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_friend_message)
 
 #|
 # Generates a cryptographic hash of the given data.
@@ -1114,6 +1153,11 @@ size_t tox_self_get_name_size(const Tox *tox);
 # 
 # bool tox_hash(uint8_t *hash, const uint8_t *data, size_t length);
 |#
+(define-tox tox-hash
+  (_fun [hash : _bytes]
+        [data : _bytes]
+        [data-len : _size = (bytes-length data)] -> _bool)
+  #:c-id tox_hash)
 
 #|
 # Sends a file control command to a friend for a given file transfer.
@@ -1128,7 +1172,13 @@ size_t tox_self_get_name_size(const Tox *tox);
 # bool tox_file_control(Tox *tox, uint32_t friend_number, uint32_t file_number,
 #                       TOX_FILE_CONTROL control, TOX_ERR_FILE_CONTROL *error);
 |#
-
+(define-tox file-control
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [file-number : _uint32]
+        [control : _int]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_file_control)
 
 #|
 # The function type for the `file_control` callback.
@@ -1310,7 +1360,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [file-number : _uint32]
         [position : _uint64]
         [data : _bytes]
-        [len : _size = (bytes-length data)]
+        [data-len : _size = (bytes-length data)]
         [err : (_list io _int 1)] -> _bool)
   #:c-id tox_file_send_chunk)
 
@@ -1394,7 +1444,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [kind : _uint32]
         [file-size : _uint64]
         [filename : _bytes]
-        [filename-len : _bytes = (bytes-length filename)]
+        [filename-len : _size]
         [userdata : _gcpointer] -> _void))
 
 #|
@@ -1479,6 +1529,13 @@ size_t tox_self_get_name_size(const Tox *tox);
 # bool tox_friend_send_lossy_packet(Tox *tox, uint32_t friend_number, const uint8_t *data,
 #                                   size_t length, TOX_ERR_FRIEND_CUSTOM_PACKET *error);
 |#
+(define-tox friend-send-lossy-packet
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [data : _bytes]
+        [data-len : _size = (bytes-length data)]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_friend_send_lossy_packet)
 
 #|
 # The function type for the `friend_lossy_packet` callback.
@@ -1491,6 +1548,12 @@ size_t tox_self_get_name_size(const Tox *tox);
 #                                         const uint8_t *data, size_t length,
 #                                         void *user_data);
 |#
+(define friend-lossy-packet-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [data : _bytes]
+        [data-len : _size]
+        [userdata : _gcpointer] -> _void))
 
 #|
 # Set the callback for the `friend_lossy_packet` event. Pass NULL to unset.
@@ -1498,7 +1561,11 @@ size_t tox_self_get_name_size(const Tox *tox);
 # void tox_callback_friend_lossy_packet(Tox *tox, tox_friend_lossy_packet_cb *function,
 #                                       void *user_data);
 |#
-
+(define-tox callback-friend-lossy-packet
+  (_fun [tox : _Tox-pointer]
+        [function : friend-lossy-packet-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_friend_lossy_packet)
 
 #|
 # Send a custom lossless packet to a friend.
@@ -1519,6 +1586,13 @@ size_t tox_self_get_name_size(const Tox *tox);
 # bool tox_friend_send_lossless_packet(Tox *tox, uint32_t friend_number, const uint8_t *data,
 #                                      size_t length, TOX_ERR_FRIEND_CUSTOM_PACKET *error);
 |#
+(define-tox friend-send-lossless-packet
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [data : _bytes]
+        [data-len : _size = (bytes-length data)]
+        [err : (_list io _int 1)] -> _bool)
+  #:c-id tox_friend_send_lossless_packet)
 
 #|
 # The function type for the `friend_lossless_packet` callback.
@@ -1531,6 +1605,12 @@ size_t tox_self_get_name_size(const Tox *tox);
 #                                            const uint8_t *data, size_t length,
 #                                            void *user_data);
 |#
+(define friend-lossless-packet-cb
+  (_fun [tox : _Tox-pointer]
+        [friend-number : _uint32]
+        [data : _bytes]
+        [data-len : _size]
+        [userdata : _gcpointer] -> _void))
 
 #|
 # Set the callback for the `friend_lossless_packet` event. Pass NULL to unset.
@@ -1538,8 +1618,11 @@ size_t tox_self_get_name_size(const Tox *tox);
 # void tox_callback_friend_lossless_packet(Tox *tox, tox_friend_lossless_packet_cb *function,
 #                                          void *user_data);
 |#
-
-
+(define-tox callback-friend-lossless-packet
+  (_fun [tox : _Tox-pointer]
+        [function : friend-lossless-packet-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_friend_lossless_packet)
 
 #|
 # Writes the temporary DHT public key of this instance to a byte array.
@@ -1555,20 +1638,33 @@ size_t tox_self_get_name_size(const Tox *tox);
 # 
 # void tox_self_get_dht_id(const Tox *tox, uint8_t *dht_id);
 |#
+(define-tox self-dht-id
+  (_fun [tox : _Tox-pointer]
+        [dht-id : (_bytes o TOX_PUBLIC_KEY_SIZE)]
+        -> _void
+        -> dht-id)
+  #:c-id tox_self_get_dht_id)
 
 #|
 # Return the UDP port this Tox instance is bound to.
 # 
-uint16_t tox_self_get_udp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
+# uint16_t tox_self_get_udp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 |#
+(define-tox self-udp-port
+  (_fun [tox : _Tox-pointer]
+        [err : (_list io _int 1)] -> _uint16)
+  #:c-id tox_self_get_udp_port)
 
 #|
 # Return the TCP port this Tox instance is bound to. This is only relevant if
 # the instance is acting as a TCP relay.
 # 
-uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
+# uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 |#
-
+(define-tox self-tcp-port
+  (_fun [tox : _Tox-pointer]
+        [err : (_list io _int 1)] -> _uint16)
+  #:c-id tox_self_get_tcp_port)
 
 
 
@@ -1579,10 +1675,12 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 
 #| ##################### See: tox_old.h for now. ###################### |#
 
+
 #|
 # Set the callback for group invites.
 #
-#  Function(Tox *tox, int32_t friendnumber, uint8_t type, const uint8_t *data, uint16_t length, void *userdata)
+#  Function(Tox *tox, int32_t friendnumber, uint8_t type, const uint8_t *data,
+#           uint16_t length, void *userdata)
 #
 # data of length is what needs to be passed to join_groupchat().
 #
@@ -1591,34 +1689,83 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 # void tox_callback_group_invite(Tox *tox, void (*function)(Tox *tox, int32_t, uint8_t,
 #                                const uint8_t *, uint16_t, void *), void *userdata);
 |#
+(define group-invite-cb
+  (_fun [tox : _Tox-pointer]
+        [friendnumber : _int32]
+        [type : _uint8]
+        [data : _bytes]
+        [data-len : _uint16]
+        [userdata : _gcpointer] -> _void))
+
+(define-tox callback-group-invite
+  (_fun [tox : _Tox-pointer]
+        [function : group-invite-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_group_invite)
 
 #|
 # Set the callback for group messages.
 #
-#  Function(Tox *tox, int groupnumber, int peernumber, const uint8_t * message, uint16_t length, void *userdata)
+#  Function(Tox *tox, int groupnumber, int peernumber, const uint8_t * message,
+#           uint16_t length, void *userdata)
 #
 # void tox_callback_group_message(Tox *tox, void (*function)(Tox *tox, int, int,
 #                                 const uint8_t *, uint16_t, void *), void *userdata);
 |#
+(define group-message-cb
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [peernumber : _int]
+        [message : _bytes]
+        [message-len : _uint16]
+        [userdata : _gcpointer] -> _void))
+
+(define-tox callback-group-message
+  (_fun [tox : _Tox-pointer]
+        [function : group-message-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_group_message)
 
 #|
 # Set the callback for group actions.
 #
-#  Function(Tox *tox, int groupnumber, int peernumber, const uint8_t * action, uint16_t length, void *userdata)
+#  Function(Tox *tox, int groupnumber, int peernumber, const uint8_t * action,
+#           uint16_t length, void *userdata)
 #
 # void tox_callback_group_action(Tox *tox, void (*function)(Tox *tox, int, int,
 #                                const uint8_t *, uint16_t, void *), void *userdata);
 |#
+(define group-action-cb
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [peernumber : _int]
+        [action : _bytes]
+        [action-len : _uint16]
+        [userdata : _gcpointer] -> _void))
 
 #|
 # Set callback function for title changes.
 #
-# Function(Tox *tox, int groupnumber, int peernumber, uint8_t * title, uint8_t length, void *userdata)
+# Function(Tox *tox, int groupnumber, int peernumber, uint8_t * title, uint8_t length,
+#          void *userdata)
 # if peernumber == -1, then author is unknown (e.g. initial joining the group)
 #
 # void tox_callback_group_title(Tox *tox, void (*function)(Tox *tox, int, int,
 #                               const uint8_t *, uint8_t, void *), void *userdata);
 |#
+(define group-title-cb
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [peernumber : _int]
+        [title : _bytes]
+        [title-len : _uint8]
+        [userdata : _gcpointer] -> _void))
+
+(define-tox callback-group-title
+  (_fun [tox : _Tox-pointer]
+        [function : group-title-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_group_title)
 
 #|
 # Set callback function for peer name list changes.
@@ -1629,7 +1776,18 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 # void tox_callback_group_namelist_change(Tox *tox, void (*function)(Tox *tox, int, int,
 #                                         uint8_t, void *), void *userdata);
 |#
+(define group-namelist-change-cb
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [peernumber : _int]
+        [change : _int]
+        [userdata : _gcpointer] -> _void))
 
+(define-tox callback-group-namelist-change
+  (_fun [tox : _Tox-pointer]
+        [function : group-namelist-change-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_group_namelist_change)
 
 #|
 # Creates a new groupchat and puts it in the chats array.
@@ -1639,6 +1797,11 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 #
 # int tox_add_groupchat(Tox *tox);
 |#
+(define-tox add-groupchat!
+  (_fun [tox : _Tox-pointer]
+        -> (success : _int)
+        -> (if (= -1 success) #f success))
+  #:c-id tox_add_groupchat)
 
 #|
 # Delete a groupchat from the chats array.
@@ -1648,6 +1811,12 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 #
 # int tox_del_groupchat(Tox *tox, int groupnumber);
 |#
+(define-tox del-groupchat!
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        -> (success : _int)
+        -> (zero? success))
+  #:c-id tox_del_groupchat)
 
 #|
 # Copy the name of peernumber who is in groupnumber to name.
@@ -1658,8 +1827,17 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 #
 # int tox_group_peername(const Tox *tox, int groupnumber, int peernumber, uint8_t *name);
 |#
+(define-tox group-peername
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [peernumber : _int]
+        [name : (_bytes o TOX_MAX_NAME_LENGTH)]
+        -> (success : _int)
+        -> (if (= -1 success) #f (subbytes name 0 success)))
+  #:c-id tox_group_peername)
 
-#| Copy the public key of peernumber who is in groupnumber to public_key.
+#|
+# Copy the public key of peernumber who is in groupnumber to public_key.
 # public_key must be TOX_PUBLIC_KEY_SIZE long.
 #
 # returns 0 on success
@@ -1668,6 +1846,14 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 # int tox_group_peer_pubkey(const Tox *tox, int groupnumber, int peernumber,
 #                           uint8_t *public_key);
 |#
+(define-tox group-peer-pubkey
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [peernumber : _int]
+        [public-key : (_bytes o TOX_PUBLIC_KEY_SIZE)]
+        -> (success : _int)
+        -> (if (zero? success) public-key #f))
+  #:c-id tox_group_peer_pubkey)
 
 #|
 # invite friendnumber to groupnumber
@@ -1676,6 +1862,13 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 #
 # int tox_invite_friend(Tox *tox, int32_t friendnumber, int groupnumber);
 |#
+(define-tox invite-friend
+  (_fun [tox : _Tox-pointer]
+        [friendnumber : _int32]
+        [groupnumber : _int]
+        -> (success : _int)
+        -> (zero? success))
+  #:c-id tox_invite_friend)
 
 #|
 # Join a group (you need to have been invited first.) using data of length obtained
@@ -1684,8 +1877,17 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 # returns group number on success
 # returns -1 on failure.
 #
-# int tox_join_groupchat(Tox *tox, int32_t friendnumber, const uint8_t *data, uint16_t length);
+# int tox_join_groupchat(Tox *tox, int32_t friendnumber, const uint8_t *data,
+#                        uint16_t length);
 |#
+(define-tox join-groupchat
+  (_fun [tox : _Tox-pointer]
+        [friendnumber : _int32]
+        [data : _bytes]
+        [data-len : _uint16 = (bytes-length data)]
+        -> (success : _int)
+        -> (if (= -1 success) #f success))
+  #:c-id tox_join_groupchat)
 
 #|
 # send a group message
@@ -1695,6 +1897,14 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 # int tox_group_message_send(Tox *tox, int groupnumber, const uint8_t *message,
 #                            uint16_t length);
 |#
+(define-tox group-message-send
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [message : _bytes]
+        [message-len : _uint16 = (bytes-length message)]
+        -> (success : _int)
+        -> (zero? success))
+  #:c-id tox_group_message_send)
 
 #|
 # send a group action
@@ -1703,6 +1913,14 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 #
 # int tox_group_action_send(Tox *tox, int groupnumber, const uint8_t *action, uint16_t length);
 |#
+(define-tox group-action-send
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [action : _bytes]
+        [action-len : _uint16 = (bytes-length action)]
+        -> (success : _int)
+        -> (zero? success))
+  #:c-id tox_group_action_send)
 
 #|
 # set the group's title, limited to MAX_NAME_LENGTH
@@ -1711,16 +1929,33 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 #
 # int tox_group_set_title(Tox *tox, int groupnumber, const uint8_t *title, uint8_t length);
 |#
+(define-tox set-group-title
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [title : _bytes]
+        [title-len : _uint8 = (bytes-length title)]
+        -> (success : _int)
+        -> (zero? success))
+  #:c-id tox_group_set_title)
 
 #|
 # Get group title from groupnumber and put it in title.
-# title needs to be a valid memory location with a max_length size of at least MAX_NAME_LENGTH (128) bytes.
+# title needs to be a valid memory location with a max_length size of at least
+# MAX_NAME_LENGTH (128) bytes.
 #
 #  return length of copied title if success.
 #  return -1 if failure.
 #
 # int tox_group_get_title(Tox *tox, int groupnumber, uint8_t *title, uint32_t max_length);
 |#
+(define-tox group-title
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [title : (_bytes o TOX_MAX_NAME_LENGTH)]
+        [max-len : _uint32 = TOX_MAX_NAME_LENGTH]
+        -> (success : _int)
+        -> (if (= -1 success) #f (subbytes title 0 success)))
+  #:c-id tox_group_get_title)
 
 #|
 # Check if the current peernumber corresponds to ours.
@@ -1730,6 +1965,11 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 #
 # unsigned int tox_group_peernumber_is_ours(const Tox *tox, int groupnumber, int peernumber);
 |#
+(define-tox group-peer-number-ours?
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [peernumber : _int] -> _bool)
+  #:c-id tox_group_peernumber_is_ours)
 
 #|
 # Return the number of peers in the group chat on success.
@@ -1737,6 +1977,12 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 #
 # int tox_group_number_peers(const Tox *tox, int groupnumber);
 |#
+(define-tox group-number-peers
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        -> (success : _int)
+        -> (if (= -1 success) #f success))
+  #:c-id tox_group_number_peers)
 
 #| List all the peers in the group chat.
 #
@@ -1752,22 +1998,38 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 #                         uint8_t names[][TOX_MAX_NAME_LENGTH], uint16_t lengths[],
 #                         uint16_t length);
 |#
+(define-tox group-names
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        [names : (_list io _bytes TOX_MAX_NAME_LENGTH)]
+        [name-lengths : _bytes]
+        [len : _uint16] -> _int)
+  #:c-id tox_group_get_names)
 
 #|
 # Return the number of chats in the instance m.
 # You should use this to determine how much memory to allocate
-# for copy_chatlist. */
+# for copy_chatlist.
+#
 # uint32_t tox_count_chatlist(const Tox *tox);
 |#
+(define-tox count-chatlist (_fun [tox : _Tox-pointer] -> _uint32)
+  #:c-id tox_count_chatlist)
 
 #|
 # Copy a list of valid chat IDs into the array out_list.
 # If out_list is NULL, returns 0.
 # Otherwise, returns the number of elements copied.
 # If the array was too small, the contents
-# of out_list will be truncated to list_size. */
+# of out_list will be truncated to list_size.
+#
 # uint32_t tox_get_chatlist(const Tox *tox, int32_t *out_list, uint32_t list_size);
 |#
+(define-tox tox-chatlist!
+  (_fun [tox : _Tox-pointer]
+        [out-list : _bytes]
+        [list-size : _uint32] -> _uint32)
+  #:c-id tox_get_chatlist)
 
 #| return the type of groupchat (TOX_GROUPCHAT_TYPE_) that groupnumber is.
 #
@@ -1776,4 +2038,10 @@ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
 #
 # int tox_group_get_type(const Tox *tox, int groupnumber);
 |#
+(define-tox group-type
+  (_fun [tox : _Tox-pointer]
+        [groupnumber : _int]
+        -> (success : _int)
+        -> (if (= -1 success) #f success))
+  #:c-id tox_group_get_type)
 )
