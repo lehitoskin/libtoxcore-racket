@@ -130,7 +130,9 @@
   (_fun [passphrase : _string]
         [pplength : _uint32 = (string-length passphrase)]
         [out-key : _Tox-Pass-Key-pointer]
-        [err : _bytes] -> _bool)
+        [err : (_bytes o 1)]
+        -> (success : _bool)
+        -> (list success err))
   #:c-id tox_derive_key_from_pass)
 
 #|
@@ -145,7 +147,9 @@
         [pplength : _uint32 = (string-length passphrase)]
         [salt : _bytes]
         [out-key : _Tox-Pass-Key-pointer]
-        [err : _bytes] -> _bool)
+        [err : (_bytes o 1)]
+        -> (success : _bool)
+        -> (list success err))
   #:c-id tox_derive_key_with_salt)
 
 #|
@@ -163,7 +167,7 @@
   (_fun [data : _bytes]
         [salt : (_bytes o 256)]
         -> (success : _bool)
-        -> (values success salt))
+        -> (list success salt))
   #:c-id tox_get_salt)
 
 #|
@@ -179,11 +183,14 @@
  #                           uint8_t *out, TOX_ERR_ENCRYPTION *error);
  |#
 (define-encrypt pass-key-encrypt!
-  (_fun [data : _bytes]
+  (_fun (data key) ::
+        [data : _bytes]
         [data-len : _uint32 = (bytes-length data)]
         [key : _Tox-Pass-Key-pointer]
-        [out : _bytes]
-        [err : _bytes] -> _bool)
+        [out : (_bytes o (+ data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
+        [err : (_bytes o 1)]
+        -> (success : _bool)
+        -> (list success err out))
   #:c-id tox_pass_key_encrypt)
 
 #|
@@ -202,9 +209,9 @@
         [data-len : _uint32 = (bytes-length data)]
         [key : _Tox-Pass-Key-pointer]
         [out : (_bytes o (- data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
-        [err : _bytes]
+        [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (values success out))
+        -> (list success err out))
   #:c-id tox_pass_key_decrypt)
 
 #|

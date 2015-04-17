@@ -1157,7 +1157,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define friend-message-cb
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
-        [type : _bytes]
+        [type : _int]
         [message : _bytes]
         [message-len : _size]
         [userdata : _gcpointer] -> _void))
@@ -1304,10 +1304,10 @@ size_t tox_self_get_name_size(const Tox *tox);
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
         [file-number : _uint32]
-        [file-id : _bytes]
+        [file-id : (_bytes o TOX_FILE_ID_LENGTH)]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (list success err file-id))
   #:c-id tox_file_get_file_id)
 
 #|
