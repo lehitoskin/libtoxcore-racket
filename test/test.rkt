@@ -50,10 +50,14 @@
         (dec->bin (hex->dec x))
         (raise-argument-error 'hex->bin "string?" x))))
 
+; initialize and set to default the options
+(define my-opts (car (tox-options-new)))
+(tox-options-default my-opts)
+
 ; initialize a new Tox with the default settings
-(define my-tox (tox-new #f))
-(define my-name "Wrapper Tester")
-(define my-status-message "Testing the Racket wrapper")
+(define my-tox (car (tox-new my-opts #"")))
+(define my-name #"Wrapper Tester")
+(define my-status-message #"Testing the Racket wrapper")
 ;(tox_isconnected my-tox)
 ; set nick name
 (display "Setting my name\n")
@@ -93,4 +97,5 @@ name-length
 (string-upcase (bytes->hex-string (self-address my-tox)))
 
 (displayln "This kills the Tox...")
+(tox-options-free my-opts)
 (tox-kill! my-tox)

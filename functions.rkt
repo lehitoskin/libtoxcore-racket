@@ -185,8 +185,9 @@
   (_fun [options : _Tox-Options-pointer]
         [data : _bytes]
         [data-len : _size = (bytes-length data)]
-        [error : _bytes]
-        -> _Tox-pointer)
+        [err : (_bytes o 1)]
+        -> (success : _Tox-pointer)
+        -> (list success err))
   #:c-id tox_new)
 
 #|
@@ -250,7 +251,7 @@
   (_fun [tox : _Tox-pointer]
         [host : _string]
         [port : _uint16]
-        [public-key : _bytes]
+        [public-key : _string]
         [err : (_bytes o 1)]
         -> (success : _bool)
         -> (list success err))
@@ -418,7 +419,7 @@
 #                        TOX_ERR_SET_INFO *error);
 |#
 (define-tox set-self-name!
-  (_fun (tox name err) ::
+  (_fun (tox name) ::
         [tox : _Tox-pointer]
         [name : _bytes]
         [name-len : _size = (bytes-length name)]
