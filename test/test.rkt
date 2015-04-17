@@ -3,7 +3,7 @@
 ; libtoxcore-racket-test.rkt
 ; not exactly supposed to be exhaustive,
 ; just testing out the wrapper
-(require "../main.rkt"
+(require "../main.rkt" "../functions.rkt"
          file/sha1)
 
 ; takes a number, returns a number
@@ -57,25 +57,25 @@
 ;(tox_isconnected my-tox)
 ; set nick name
 (display "Setting my name\n")
-(set-name! my-tox my-name)
+(set-self-name! my-tox my-name)
 
 ; set status message
 (display "Setting my status\n")
-(set-status-message! my-tox my-status-message)
+(set-self-status-message! my-tox my-status-message)
 
 (display "How long is my name?\n")
 ; returns length of my-name
-(define name-length (get-self-name-size my-tox))
+(define name-length (self-name-size my-tox))
 name-length
 
 (displayln "Obtaining name")
-(get-self-name my-tox)
+(self-name my-tox)
 
 (display "How long is my status message?\n")
-(get-self-status-message-size my-tox)
+(self-status-message-size my-tox)
 
 (displayln "How many friends do I have?")
-(friendlist-length my-tox)
+(self-friend-list-size my-tox)
 
 ; connect to DHT
 (displayln "Connection to DHT...")
@@ -83,14 +83,14 @@ name-length
 (define dht-port 33445)
 ; does dht-public-key need to be bytes? a string?
 (define dht-public-key "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074")
-(bootstrap-from-address my-tox dht-address dht-port dht-public-key)
+(tox-bootstrap my-tox dht-address dht-port dht-public-key)
 
 (define on-connection-change
   (λ (mtox pub-key data length userdata)
     (displayln "There's been a change in connection")))
 
 (displayln "my tox id")
-(string-upcase (bytes->hex-string (get-self-address my-tox)))
+(string-upcase (bytes->hex-string (self-address my-tox)))
 
 (displayln "This kills the Tox...")
 (tox-kill! my-tox)
