@@ -657,10 +657,10 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox friend-public-key
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
-        [public-key : _bytes]
+        [public-key : (_bytes o TOX_PUBLIC_KEY_SIZE)]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (list success err public-key))
   #:c-id tox_friend_get_public_key)
 
 #|
@@ -778,7 +778,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define friend-name-cb
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
-        [name : _bytes]
+        [name : _string]
         [name-len : _size]
         [userdata : _gcpointer] -> _void))
 
@@ -1159,7 +1159,7 @@ size_t tox_self_get_name_size(const Tox *tox);
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
         [type : _int]
-        [message : _bytes]
+        [message : _string]
         [message-len : _size]
         [userdata : _gcpointer] -> _void))
 
@@ -1198,9 +1198,11 @@ size_t tox_self_get_name_size(const Tox *tox);
 # bool tox_hash(uint8_t *hash, const uint8_t *data, size_t length);
 |#
 (define-tox tox-hash
-  (_fun [hash : _bytes]
+  (_fun [hash : (_bytes o TOX_HASH_LENGTH)]
         [data : _bytes]
-        [data-len : _size = (bytes-length data)] -> _bool)
+        [data-len : _size = (bytes-length data)]
+        -> (success : _bool)
+        -> (list success hash))
   #:c-id tox_hash)
 
 #|
@@ -1497,7 +1499,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [file-number : _uint32]
         [kind : _uint32]
         [file-size : _uint64]
-        [filename : _bytes]
+        [filename : _string]
         [filename-len : _size]
         [userdata : _gcpointer] -> _void))
 
@@ -1804,6 +1806,12 @@ size_t tox_self_get_name_size(const Tox *tox);
         [action : _bytes]
         [action-len : _uint16]
         [userdata : _gcpointer] -> _void))
+
+(define-tox callback-group-action
+  (_fun [tox : _Tox-pointer]
+        [function : group-action-cb]
+        [userdata : _gcpointer] -> _void)
+  #:c-id tox_callback_group_action)
 
 #|
 # Set callback function for title changes.
