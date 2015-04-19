@@ -76,7 +76,7 @@
         [data-len : _uint32 = (bytes-length data)]
         [passphrase : _string]
         [pplength : _uint32 = (string-length passphrase)]
-        [out : (_bytes o (+ data-len (TOX_PASS_ENCRYPTION_EXTRA_LENGTH)))]
+        [out : (_bytes o (+ data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
         [err : (_bytes o 1)]
         -> (success : _bool)
         -> (list success err out))
@@ -95,11 +95,12 @@
  #                       size_t pplength, uint8_t *out, TOX_ERR_DECRYPTION *error);
  |#
 (define-encrypt pass-decrypt
-  (_fun [data : _bytes]
+  (_fun (data passphrase) ::
+        [data : _bytes]
         [len : _uint32 = (bytes-length data)]
         [passphrase : _string]
-        [pplength : _uint32 = (string-length passphrase)]
-        [out : (_bytes o (- len (TOX_PASS_ENCRYPTION_EXTRA_LENGTH)))]
+        [pplength : _size = (string-length passphrase)]
+        [out : (_bytes o (- len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
         [err : (_bytes o 1)]
         -> (success : _bool)
         -> (list success err out))

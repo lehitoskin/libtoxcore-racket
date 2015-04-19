@@ -55,7 +55,8 @@
    [proxy-host _string]
    [proxy-port _uint16]
    [start-port _uint16]
-   [end-port _uint16]))
+   [end-port _uint16])
+  #:malloc-mode 'atomic)
 
 #|#######################
  # function definitions #
@@ -299,7 +300,7 @@
 |#
 (define self-connection-status-cb
   (_fun [tox : _Tox-pointer]
-        [connection-status : _bytes]
+        [connection-status : _int]
         [user-data : _gcpointer] -> _void))
 
 #|
@@ -319,7 +320,7 @@
 (define-tox callback-self-connection-status
   (_fun [tox : _Tox-pointer]
         [callback : self-connection-status-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_self_connection_status)
 
 #|
@@ -757,7 +758,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox friend-name
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
-        [name : (_bytes o (car (friend-name-size tox)))]
+        [name : (_bytes o (car (friend-name-size tox friend-number)))]
         [err : (_bytes o 1)]
         -> (success : _bool)
         -> (list success err name))
@@ -792,7 +793,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-friend-name
   (_fun [tox : _Tox-pointer]
         [function : friend-name-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_friend_name)
 
 
@@ -829,7 +830,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox friend-status-message
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
-        [message : (_bytes o (car (friend-status-message-size tox)))]
+        [message : (_bytes o (car (friend-status-message-size tox friend-number)))]
         [err : (_bytes o 1)]
         -> (success : _bool)
         -> (list success err message))
@@ -867,7 +868,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-friend-status-message
   (_fun [tox : _Tox-pointer]
         [function : friend-status-message-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_friend_status_message)
 
 #|
@@ -914,7 +915,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-friend-status
   (_fun [tox : _Tox-pointer]
         [function : friend-status-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_friend_status)
 
 #|
@@ -974,7 +975,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-friend-connection-status
   (_fun [tox : _Tox-pointer]
         [function : friend-connection-status-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_friend_connection_status)
 
 #|
@@ -1024,7 +1025,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-friend-typing
   (_fun [tox : _Tox-pointer]
         [function : friend-typing-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_friend_typing)
 
 #|
@@ -1111,7 +1112,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-friend-read-receipt
   (_fun [tox : _Tox-pointer]
         [function : friend-read-receipt-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_friend_read_receipt)
 
 #|
@@ -1141,7 +1142,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-friend-request
   (_fun [tox : _Tox-pointer]
         [function : friend-request-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_friend_request)
 
 #|
@@ -1173,7 +1174,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-friend-message
   (_fun [tox : _Tox-pointer]
         [function : friend-message-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_friend_message)
 
 #|
@@ -1198,11 +1199,11 @@ size_t tox_self_get_name_size(const Tox *tox);
 # bool tox_hash(uint8_t *hash, const uint8_t *data, size_t length);
 |#
 (define-tox tox-hash
-  (_fun [hash : (_bytes o TOX_HASH_LENGTH)]
+  (_fun [data-hash : (_bytes o TOX_HASH_LENGTH)]
         [data : _bytes]
         [data-len : _size = (bytes-length data)]
         -> (success : _bool)
-        -> (list success hash))
+        -> (list success data-hash))
   #:c-id tox_hash)
 
 #|
@@ -1262,7 +1263,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-file-recv-control
   (_fun [tox : _Tox-pointer]
         [function : file-recv-control-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_file_recv_control)
 
 #|
@@ -1312,6 +1313,8 @@ size_t tox_self_get_name_size(const Tox *tox);
         -> (success : _bool)
         -> (list success err file-id))
   #:c-id tox_file_get_file_id)
+
+#| ################ FILE SENDING ################ |#
 
 #|
 # Send a file transmission request.
@@ -1453,7 +1456,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [friend-number : _uint32]
         [file-number : _uint32]
         [position : _uint64]
-        [len : _size]
+        [chunk-len : _size]
         [userdata : _gcpointer] -> _void))
 
 #|
@@ -1465,8 +1468,12 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-file-chunk-request
   (_fun [tox : _Tox-pointer]
         [function : file-chunk-request-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_file_chunk_request)
+
+#| ################ END FILE SENDING ################ |#
+
+#| ################ FILE RECEIVING ################ |#
 
 #|
 # The function type for the `file_receive` callback.
@@ -1513,7 +1520,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-file-recv
   (_fun [tox : _Tox-pointer]
         [function : file-recv-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_file_recv)
 
 #|
@@ -1559,8 +1566,10 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-file-recv-chunk
   (_fun [tox : _Tox-pointer]
         [function : file-recv-chunk-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_file_recv_chunk)
+
+#| ################ END FILE RECEIVING ################ |#
 
 #|
 # Send a custom lossy packet to a friend.
@@ -1622,7 +1631,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-friend-lossy-packet
   (_fun [tox : _Tox-pointer]
         [function : friend-lossy-packet-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_friend_lossy_packet)
 
 #|
@@ -1681,7 +1690,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-friend-lossless-packet
   (_fun [tox : _Tox-pointer]
         [function : friend-lossless-packet-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_friend_lossless_packet)
 
 #|
@@ -1764,7 +1773,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-group-invite
   (_fun [tox : _Tox-pointer]
         [function : group-invite-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_group_invite)
 
 #|
@@ -1787,7 +1796,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-group-message
   (_fun [tox : _Tox-pointer]
         [function : group-message-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_group_message)
 
 #|
@@ -1810,7 +1819,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-group-action
   (_fun [tox : _Tox-pointer]
         [function : group-action-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_group_action)
 
 #|
@@ -1834,7 +1843,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-group-title
   (_fun [tox : _Tox-pointer]
         [function : group-title-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_group_title)
 
 #|
@@ -1856,7 +1865,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox callback-group-namelist-change
   (_fun [tox : _Tox-pointer]
         [function : group-namelist-change-cb]
-        [userdata : _gcpointer] -> _void)
+        [userdata : _gcpointer = #f] -> _void)
   #:c-id tox_callback_group_namelist_change)
 
 #|
