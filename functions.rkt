@@ -22,7 +22,7 @@
 (default-_string-type _string*/utf-8)
 
 ; define Tox struct
-(define _Tox-pointer (_cpointer 'Tox))
+(define _Tox-pointer (_cpointer/null 'Tox))
 
 ; the size of a Tox public key in bytes
 (define TOX_PUBLIC_KEY_SIZE 32)
@@ -51,7 +51,7 @@
 (define-cstruct _Tox-Options
   ([ipv6? _bool]
    [udp? _bool]
-   [proxy-type _uint8]
+   [proxy-type _int]
    [proxy-host _string]
    [proxy-port _uint16]
    [start-port _uint16]
@@ -127,7 +127,8 @@
  #
  # void tox_options_default(struct Tox_Options *options);
  |#
-(define-tox tox-options-default (_fun [options : _Tox-Options-pointer] -> _void)
+(define-tox tox-options-default
+  (_fun [options : _Tox-Options-pointer] -> _void)
   #:c-id tox_options_default)
 
 #|
@@ -211,7 +212,6 @@
 (define-tox savedata-size (_fun [tox : _Tox-pointer] -> _size)
   #:c-id tox_get_savedata_size)
 
-
 #|
 # Store all information associated with the tox instance to a byte array.
 #
@@ -223,7 +223,9 @@
 |#
 (define-tox savedata
   (_fun [tox : _Tox-pointer]
-        [data : (_bytes o (savedata-size tox))] -> _void)
+        [data : (_bytes o (savedata-size tox))]
+        -> _void
+        -> data)
   #:c-id tox_get_savedata)
 
 #|
@@ -853,7 +855,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define friend-status-message-cb
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
-        [message : _bytes]
+        [message : _string]
         [message-len : _size]
         [userdata : _gcpointer] -> _void))
 
@@ -1128,7 +1130,7 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define friend-request-cb
   (_fun [tox : _Tox-pointer]
         [public-key : _bytes]
-        [message : _bytes]
+        [message : _string]
         [message-len : _size]
         [userdata : _gcpointer] -> _void))
 
