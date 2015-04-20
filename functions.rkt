@@ -516,7 +516,8 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox self-status-message
   (_fun [tox : _Tox-pointer]
         [status : (_bytes o (self-status-message-size tox))]
-        -> _void)
+        -> _void
+        -> status)
   #:c-id tox_self_get_status_message)
 
 #|
