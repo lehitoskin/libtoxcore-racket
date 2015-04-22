@@ -49,14 +49,14 @@
 (define TOX_MAX_FILENAME_LENGTH 255)
 
 (define-cstruct _Tox-Options
-  ([ipv6? _bool]
-   [udp? _bool]
-   [proxy-type _int]
-   [proxy-host _string]
-   [proxy-port _uint16]
+  ([ipv6? _bool] ; verified 0
+   [proxy-type _int] ; verified 1
+   [proxy-host _string] ; verified 2
+   [proxy-port _uint16] ; the only one that seems to matter for the ports
    [start-port _uint16]
-   [end-port _uint16])
-  #:malloc-mode 'atomic)
+   [end-port _uint16]
+   [udp? _bool])
+  #:malloc-mode 'nonatomic)
 
 #|#######################
  # function definitions #
@@ -1792,7 +1792,7 @@ size_t tox_self_get_name_size(const Tox *tox);
   (_fun [tox : _Tox-pointer]
         [groupnumber : _int]
         [peernumber : _int]
-        [message : _bytes]
+        [message : _string]
         [message-len : _uint16]
         [userdata : _gcpointer] -> _void))
 
@@ -1815,7 +1815,7 @@ size_t tox_self_get_name_size(const Tox *tox);
   (_fun [tox : _Tox-pointer]
         [groupnumber : _int]
         [peernumber : _int]
-        [action : _bytes]
+        [action : _string]
         [action-len : _uint16]
         [userdata : _gcpointer] -> _void))
 
@@ -1966,7 +1966,7 @@ size_t tox_self_get_name_size(const Tox *tox);
   (_fun [tox : _Tox-pointer]
         [friendnumber : _int32]
         [data : _bytes]
-        [data-len : _uint16 = (bytes-length data)]
+        [data-len : _uint16]
         -> (success : _int)
         -> (if (= -1 success) #f success))
   #:c-id tox_join_groupchat)
