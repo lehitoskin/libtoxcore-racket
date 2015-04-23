@@ -62,6 +62,16 @@
  # function definitions #
  ###################### |#
 
+; NOTE ABOUT RETURN VALUES
+; In situations where a function returns more than one value,
+; the first value will always be the return value of the C function,
+; the second value will be the Tox error enumeration, with the third
+; value being any byte string that is modified by the function
+; (where applicable). Functions will always return the same number
+; of values on success or fail.
+;
+; e.g. (friend-public-key tox num) -> (values success err public-key)
+
 #|
  # Return the major version number of the library. Can be used to display the
  # Tox library version or to check whether the client is compatible with the
@@ -146,7 +156,7 @@
 (define-tox tox-options-new
   (_fun [err : (_bytes o 1)]
         -> (opts : _Tox-Options-pointer)
-        -> (list opts err))
+        -> (values opts (bytes-ref err 0)))
   #:c-id tox_options_new)
 
 #|
@@ -189,7 +199,7 @@
         [data-len : _size = (bytes-length data)]
         [err : (_bytes o 1)]
         -> (success : _Tox-pointer)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_new)
 
 #|
@@ -257,7 +267,7 @@
         [public-key : _string]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_bootstrap)
 
 #|
@@ -283,7 +293,7 @@
         [public-key : _bytes]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_add_tcp_relay)
 
 ; Return whether we are connected to the DHT. The return value is equal to the
@@ -428,7 +438,7 @@
         [name-len : _size = (bytes-length name)]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_self_set_name)
 
 #|
@@ -481,7 +491,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [status-len : _size = (bytes-length status)]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_self_set_status_message)
 
 #|
@@ -573,7 +583,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [message-len : _size = (bytes-length message)]
         [err : (_bytes o 1)]
         -> (success : _uint32)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_add)
 
 #|
@@ -602,7 +612,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [public-key : _bytes]
         [err : (_bytes o 1)]
         -> (success : _uint32)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_add_norequest)
 
 #|
@@ -626,7 +636,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [friend-number : _uint32]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_delete)
 
 #|
@@ -643,7 +653,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [public-key : _bytes]
         [err : (_bytes o 1)]
         -> (success : _uint32)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_by_public_key)
 
 #|
@@ -664,7 +674,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [public-key : (_bytes o TOX_PUBLIC_KEY_SIZE)]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err public-key))
+        -> (values success (bytes-ref err 0) public-key))
   #:c-id tox_friend_get_public_key)
 
 #|
@@ -692,7 +702,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [friend-number : _uint32]
         [err : (_bytes o 1)]
         -> (success : _uint64)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_get_last_online)
 
 #|
@@ -738,7 +748,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [friend-number : _uint32]
         [err : (_bytes o 1)]
         -> (success : _size)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_get_name_size)
 
 #|
@@ -761,10 +771,12 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox friend-name
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
-        [name : (_bytes o (car (friend-name-size tox friend-number)))]
+        [name : (_bytes o (let-values
+                              ([(size err) (friend-name-size tox friend-number)])
+                            size))]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err name))
+        -> (values success (bytes-ref err 0) name))
   #:c-id tox_friend_get_name)
 
 #|
@@ -812,7 +824,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [friend-number : _uint32]
         [err : (_bytes o 1)]
         -> (success : _size)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_get_status_message_size)
 
 #|
@@ -833,10 +845,13 @@ size_t tox_self_get_name_size(const Tox *tox);
 (define-tox friend-status-message
   (_fun [tox : _Tox-pointer]
         [friend-number : _uint32]
-        [message : (_bytes o (car (friend-status-message-size tox friend-number)))]
+        [message : (_bytes o (let-values
+                                 ([(size err)
+                                   (friend-status-message-size tox friend-number)])
+                               size))]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err message))
+        -> (values success (bytes-ref err 0) message))
   #:c-id tox_friend_get_status_message)
 
 #|
@@ -889,7 +904,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [friend-number : _uint32]
         [err : (_bytes o 1)]
         -> (success : _int)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_get_status)
 
 #|
@@ -941,7 +956,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [friend-number : _uint32]
         [err : (_bytes o 1)]
         -> (success : _int)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_get_connection_status)
 
 #|
@@ -998,7 +1013,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [friend-number : _uint32]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_get_typing)
 
 #|
@@ -1050,7 +1065,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [typing? : _bool]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_self_set_typing)
 
 #|
@@ -1084,7 +1099,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [message-len : _size = (bytes-length message)]
         [err : (_bytes o 1)]
         -> (success : _uint32)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_send_message)
 
 #|
@@ -1206,7 +1221,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [data : _bytes]
         [data-len : _size = (bytes-length data)]
         -> (success : _bool)
-        -> (list success data-hash))
+        -> (values success data-hash))
   #:c-id tox_hash)
 
 #|
@@ -1229,7 +1244,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [control : _int]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_file_control)
 
 #|
@@ -1290,7 +1305,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [position : _uint64]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_file_seek)
 
 #|
@@ -1314,7 +1329,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [file-id : (_bytes o TOX_FILE_ID_LENGTH)]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err file-id))
+        -> (values success (bytes-ref err 0) file-id))
   #:c-id tox_file_get_file_id)
 
 #| ################ FILE SENDING ################ |#
@@ -1391,7 +1406,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [filename-len : _size = (bytes-length filename)]
         [err : (_bytes o 1)]
         -> (success : _uint32)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_file_send)
 
 #|
@@ -1423,7 +1438,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [data-len : _size = (bytes-length data)]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_file_send_chunk)
 
 #|
@@ -1604,7 +1619,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [data-len : _size = (bytes-length data)]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_send_lossy_packet)
 
 #|
@@ -1663,7 +1678,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [data-len : _size = (bytes-length data)]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_friend_send_lossless_packet)
 
 #|
@@ -1726,7 +1741,7 @@ size_t tox_self_get_name_size(const Tox *tox);
   (_fun [tox : _Tox-pointer]
         [err : (_bytes o 1)]
         -> (success : _uint16)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_self_get_udp_port)
 
 #|
@@ -1739,7 +1754,7 @@ size_t tox_self_get_name_size(const Tox *tox);
   (_fun [tox : _Tox-pointer]
         [err : (_bytes o 1)]
         -> (success : _uint16)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_self_get_tcp_port)
 
 

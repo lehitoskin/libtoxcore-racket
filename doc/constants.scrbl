@@ -9,30 +9,30 @@ with the enums, especially.
 
 @section[#:tag "constants"]{Constants}
 
+@defthing[TOX_PUBLIC_KEY_SIZE 32]
+
+@defthing[TOX_SECRET_KEY_SIZE 32]
+
+@defthing[TOX_ADDRESS_SIZE (+ TOX_PUBLIC_KEY_SIZE
+                                     (ctype-sizeof _uint32_t) (ctype-sizeof _uint16_t))]
+
 @defthing[TOX_MAX_NAME_LENGTH 128]
 
-@defthing[TOX_MAX_MESSAGE_LENGTH 1368]{
+@defthing[TOX_MAX_STATUS_MESSAGE_LENGTH 1007]
+
+@defthing[TOX_MAX_FRIEND_REQUEST_LENGTH 1016]
+
+@defthing[TOX_MAX_MESSAGE_LENGTH 1372]{
   Maximum length a message can be before it must be split.
 }
 
-@defthing[TOX_MAX_STATUSMESSAGE_LENGTH 1007]
+@defthing[TOX_MAX_CUSTOM_PACKET_SIZE 1373]
 
-@defthing[TOX_MAX_FRIENDREQUEST_LENGTH 1016]
+@defthing[TOX_HASH_LENGTH 32]
 
-@defthing[TOX_PUBLIC_KEY_SIZE 32]
+@defthing[TOX_FILE_ID_LENGTH 32]
 
-@defthing[TOX_FRIEND_ADDRESS_SIZE (+ TOX_PUBLIC_KEY_SIZE
-                                     (ctype-sizeof _uint32_t) (ctype-sizeof _uint16_t))]
-
-@defthing[TOX_ENABLE_IPV6_DEFAULT #t]
-
-@defthing[RTP_PAYLOAD_SIZE 65535]
-
-@defthing[TOX_AVATAR_MAX_DATA_LENGTH 16384]
-
-@defthing[TOX_AVATAR_HASH_LENGTH 32]
-
-@defthing[TOX_HASH_LENGTH TOX_AVATAR_HASH_LENGTH]
+@defthing[TOX_MAX_FILENAME_LENGTH 255]
 
 @defthing[TOXDNS_MAX_RECOMMENDED_NAME_LENGTH 32]
 

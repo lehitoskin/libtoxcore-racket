@@ -434,7 +434,7 @@ for the functions found in libtoxcore.
   @racket[TOX_MAX_FRIENDREQUEST_LENGTH] length in bytes.
   
   @racket[address] is the address of the friend (returned by getaddress of the friend
-  you wish to add) it must be @racket[TOX_FRIEND_ADDRESS_SIZE] bytes.
+  you wish to add) it must be @racket[TOX_ADDRESS_SIZE] bytes.
   
   @racket[message] is the friend request message and @racket[message-length] is the length
   of the message being sent.

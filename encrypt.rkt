@@ -79,7 +79,7 @@
         [out : (_bytes o (+ data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err out))
+        -> (values success (bytes-ref err 0) out))
   #:c-id tox_pass_encrypt)
 
 #|
@@ -103,7 +103,7 @@
         [out : (_bytes o (- len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err out))
+        -> (values success (bytes-ref err 0) out))
   #:c-id tox_pass_decrypt)
 
 #|
@@ -133,7 +133,7 @@
         [out-key : _Tox-Pass-Key-pointer]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_derive_key_from_pass)
 
 #|
@@ -150,7 +150,7 @@
         [out-key : _Tox-Pass-Key-pointer]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err))
+        -> (values success (bytes-ref err 0)))
   #:c-id tox_derive_key_with_salt)
 
 #|
@@ -191,7 +191,7 @@
         [out : (_bytes o (+ data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err out))
+        -> (values success (bytes-ref err 0) out))
   #:c-id tox_pass_key_encrypt)
 
 #|
@@ -212,7 +212,7 @@
         [out : (_bytes o (- data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
         [err : (_bytes o 1)]
         -> (success : _bool)
-        -> (list success err out))
+        -> (values success (bytes-ref err 0) out))
   #:c-id tox_pass_key_decrypt)
 
 #|
