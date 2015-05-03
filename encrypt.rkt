@@ -2,7 +2,8 @@
   racket/base
 ; libtoxcore-racket/encrypt.rkt
 (require ffi/unsafe
-         ffi/unsafe/define)
+         ffi/unsafe/define
+         "enums.rkt")
 
 (provide (except-out (all-defined-out)
                      define-encrypt
@@ -77,9 +78,9 @@
         [passphrase : _string]
         [pplength : _uint32 = (string-length passphrase)]
         [out : (_bytes o (+ data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
-        [err : (_bytes o 1)]
+        [err : _TOX-ERR-ENCRYPTION = 'ok]
         -> (success : _bool)
-        -> (values success (bytes-ref err 0) out))
+        -> (values success err out))
   #:c-id tox_pass_encrypt)
 
 #|
@@ -101,9 +102,9 @@
         [passphrase : _string]
         [pplength : _size = (string-length passphrase)]
         [out : (_bytes o (- len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
-        [err : (_bytes o 1)]
+        [err : _TOX-ERR-DECRYPTION = 'ok]
         -> (success : _bool)
-        -> (values success (bytes-ref err 0) out))
+        -> (values success err out))
   #:c-id tox_pass_decrypt)
 
 #|
@@ -131,9 +132,9 @@
   (_fun [passphrase : _string]
         [pplength : _uint32 = (string-length passphrase)]
         [out-key : _Tox-Pass-Key-pointer]
-        [err : (_bytes o 1)]
+        [err : _TOX-ERR-KEY-DERIVATION = 'ok]
         -> (success : _bool)
-        -> (values success (bytes-ref err 0)))
+        -> (values success err))
   #:c-id tox_derive_key_from_pass)
 
 #|
@@ -148,9 +149,9 @@
         [pplength : _uint32 = (string-length passphrase)]
         [salt : _bytes]
         [out-key : _Tox-Pass-Key-pointer]
-        [err : (_bytes o 1)]
+        [err : _TOX-ERR-KEY-DERIVATION = 'ok]
         -> (success : _bool)
-        -> (values success (bytes-ref err 0)))
+        -> (values success err))
   #:c-id tox_derive_key_with_salt)
 
 #|
@@ -189,9 +190,9 @@
         [data-len : _uint32 = (bytes-length data)]
         [key : _Tox-Pass-Key-pointer]
         [out : (_bytes o (+ data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
-        [err : (_bytes o 1)]
+        [err : _TOX-ERR-ENCRYPTION = 'ok]
         -> (success : _bool)
-        -> (values success (bytes-ref err 0) out))
+        -> (values success err out))
   #:c-id tox_pass_key_encrypt)
 
 #|
@@ -210,9 +211,9 @@
         [data-len : _uint32 = (bytes-length data)]
         [key : _Tox-Pass-Key-pointer]
         [out : (_bytes o (- data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
-        [err : (_bytes o 1)]
+        [err : _TOX-ERR-DECRYPTION = 'ok]
         -> (success : _bool)
-        -> (values success (bytes-ref err 0) out))
+        -> (values success err out))
   #:c-id tox_pass_key_decrypt)
 
 #|

@@ -27,7 +27,7 @@
 (define RTP_PAYLOAD_SIZE 65535)
 
 (define-cstruct _ToxAvCSettings
-  ([call-type _int] ; _ToxAvCallType enum value
+  ([call-type _ToxAvCallType] ; _ToxAvCallType enum value
    
    [video-bitrate _uint32] ; In kbits/s
    [video-width _uint16] ; In px
@@ -42,7 +42,7 @@
 ; defaults copied from astonex:
 ; https://github.com/Tox/jToxcore/blob/master/src/im/tox/jtoxcore/ToxCodecSettings.java
 (define DefaultCSettings
-  (let ([type (_ToxAvCallType 'Audio)]
+  (let ([type 'audio] ; _ToxAvCallType 'Audio
         [video-bitrate 500] ; in kbits/s
         [video-width 1280]
         [video-height 720]
@@ -91,7 +91,7 @@
  # ToxAv *toxav_new(Tox *messenger, int32_t max_calls);
  |#
 (define-av av-new (_fun [messenger : _Tox-pointer]
-                        [max_calls : _int32] -> _ToxAv-pointer)
+                        [max-calls : _int32] -> _ToxAv-pointer)
   #:c-id toxav_new)
 
 #|
@@ -136,7 +136,7 @@
  |#
 (define-av callback-callstate (_fun [av : _ToxAv-pointer]
                                     [callback : ToxAVCallback]
-                                    [cb-id : _int] ; _ToxAVCallbackID enum value
+                                    [cb-id : _ToxAvCallbackID]
                                     [userdata : _pointer = #f] -> _void)
   #:c-id toxav_register_callstate_callback)
 
@@ -172,7 +172,7 @@
 (define-av av-call (_fun [av : _ToxAv-pointer]
                          [call-index : _bytes]
                          [friend-id : _int]
-                         [csettings : _pointer]
+                         [csettings : _ToxAvCSettings-pointer]
                          [ringing-seconds : _int] -> _int)
   #:c-id toxav_call)
 
@@ -187,10 +187,7 @@
  # int toxav_hangup(ToxAv *av, int32_t call_index);
  |#
 (define-av av-hangup (_fun [av : _ToxAv-pointer]
-                           [call-index : _int32]
-                           -> (err : _int)
-                           -> (cond [(zero? err)]
-                                    [else err]))
+                           [call-index : _int32] -> _ToxAvError)
   #:c-id toxav_hangup)
 
 #|
@@ -206,10 +203,7 @@
  |#
 (define-av av-answer (_fun [av : _ToxAv-pointer]
                            [call-index : _int32]
-                           [csettings : _pointer]
-                           -> (err : _int)
-                           -> (cond [(zero? err)]
-                                    [else err]))
+                           [csettings : _pointer] -> _ToxAvError)
   #:c-id toxav_answer)
 
 #|
@@ -225,10 +219,7 @@
  |#
 (define-av av-reject (_fun [av : _ToxAv-pointer]
                            [call-index : _int32]
-                           [reason : _string]
-                           -> (err : _int)
-                           -> (cond [(zero? err)]
-                                    [else err]))
+                           [reason : _string] -> _ToxAvError)
   #:c-id toxav_reject)
 
 #|
@@ -246,7 +237,7 @@
 (define-av av-cancel (_fun [av : _ToxAv-pointer]
                            [call-index : _int32]
                            [peer-id : _int]
-                           [reason : _string] -> _int)
+                           [reason : _string] -> _ToxAvError)
   #:c-id toxav_cancel)
 
 #|
@@ -261,7 +252,7 @@
  |#
 (define-av av-change-settings (_fun [av : _ToxAv-pointer]
                                     [call-index : _int32]
-                                    [csettings : _pointer] -> _int)
+                                    [csettings : _pointer] -> _ToxAvError)
   #:c-id toxav_change_settings)
 
 #|
@@ -276,7 +267,7 @@
  # int toxav_stop_call(ToxAv *av, int32_t call_index);
  |#
 (define-av av-stop-call (_fun [av : _ToxAv-pointer]
-                              [call-index : _int32] -> _int)
+                              [call-index : _int32] -> _ToxAvError)
   #:c-id toxav_stop_call)
 
 #|
@@ -328,7 +319,7 @@
 (define-av send-video (_fun [av : _ToxAv-pointer]
                             [call-index : _int32]
                             [frame : _bytes]
-                            [frame-size : _int] -> _int)
+                            [frame-size : _int] -> _ToxAvError)
   #:c-id toxav_send_video)
 
 #|
@@ -362,7 +353,7 @@
 (define-av send-audio (_fun [av : _ToxAv-pointer]
                             [call-index : _int32]
                             [frame : _pointer]
-                            [frame-size : _int] -> _int)
+                            [frame-size : _int] -> _ToxAvError)
   #:c-id toxav_send_audio)
 
 #|
@@ -382,9 +373,7 @@
                                     [peer : _int]
                                     [dest : (_ptr o _ToxAv-pointer)]
                                     -> (success : _int)
-                                    -> (if (< success 0)
-                                         (list success dest)
-                                         (list success)))
+                                    -> (values success dest))
   #:c-id toxav_get_peer_csettings)
 
 #|
@@ -423,7 +412,7 @@
  |#
 (define-av capability-supported? (_fun [av : _ToxAv-pointer]
                                        [call-index : _int32]
-                                       [capability : _int] -> _bool) ; enum value
+                                       [capability : _ToxAvCapabilities] -> _bool)
   #:c-id toxav_capability_supported)
 
 ; Tox *toxav_get_tox(ToxAv *av);
@@ -502,7 +491,9 @@
                                 [channels : _uint8]
                                 [sample-rate : _int]
                                 [userdata : _pointer] -> _void)]
-        [userdata : _pointer = #f] -> _int)
+        [userdata : _pointer = #f]
+        -> (success : _int)
+        -> (if (= -1 success) #f success))
   #:c-id toxav_join_av_groupchat)
 
 #|
@@ -528,6 +519,8 @@
                                   [pcm : _bytes]
                                   [samples : _int]
                                   [channels : _uint8]
-                                  [sample-rate : _int] -> _int)
+                                  [sample-rate : _int]
+                                  -> (success : _int)
+                                  -> (zero? success))
   #:c-id toxav_group_send_audio)
 )
