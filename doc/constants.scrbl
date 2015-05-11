@@ -38,54 +38,58 @@ with the enums, especially.
 
 @section[#:tag "enums"]{Enums}
 
-The enums that Tox uses should be accessed through the following procedures.
+Tox uses various enumerations in many of its functions and they are
+explained below.
 
-@defproc[(_TOX_FAERR [sym (or/c 'TOOLONG
-                                'NOMESSAGE
-                                'OWNKEY
-                                'ALREADYSENT
-                                'UNKNOWN
-                                'BADCHECKSUM
-                                'SETNEWNOSPAM
-                                'NOMEM)]) (or/c false? integer?)]{
-  FAERR - friend add errors.
-}
+@defthing[_TOX-USER-STATUS '(available away busy)]
 
-@defproc[(_TOX_USERSTATUS [sym (or/c 'NONE
-                                     'AWAY
-                                     'BUSY
-                                     'INVALID)]) (or/c false? integer?)]{
-  Represents the types of statuses a user can have.
-}
+@defthing[_TOX-MESSAGE-TYPE '(normal action)]
 
-@defproc[(_TOX_CHAT_CHANGE_PEER [sym (or/c 'ADD
-                                           'DEL
-                                           'NAME)]) (or/c false? integer?)]
+@defthing[_TOX-PROXY-TYPE '(none http socks5)]
 
-@defproc[(_TOX_FILECONTROL [sym (or/c 'ACCEPT
-                                      'PAUSE
-                                      'KILL
-                                      'FINISHED
-                                      'RESUME_BROKEN)]) (or/c false? integer?)]{
-  Types allowed in filecontrols.
-}
+@defthing[_TOX-ERR-OPTIONS-NEW '(ok malloc)]
 
-@defproc[(_TOX_AVATAR_FORMAT [sym (or/c 'None 'PNG)]) (or/c false? integer?)]{
-  Represents the format of the avatar.
-}
-
-@defproc[(_TOX_GROUPCHAT_TYPE [sym (or/c 'TEXT 'AV)]) (or/c false? integer?)]{
-  Represents the type of the groupchat.
+@defthing[_TOX-ERR-NEW '(ok
+                         null
+                         malloc
+                         port-alloc
+                         proxy-bad-type
+                         proxy-bad-host
+                         proxy-bad-port
+                         proxy-not-found
+                         load-encrypted
+                         load-bad-format)]{
+  @racket['malloc] is returned when the function was unable to allocate enough memory to
+  store the internal structures for the Tox object.
   
-  @racket[TOX_GROUPCHAT_TYPE_TEXT] groupchats must be accepted with the
-  @racket[join-groupchat] function.
+  @racket['port-alloc] is returned when the function was unable to bind to a port. This may
+  mean that all ports have already been bound, e.g. by other Tox instances, or it may mean
+  a permission error.
   
-  The function to accept @racket[TOX_GROUPCHAT_TYPE_AV] is in toxav.
+  @racket['proxy-bad-type] is returned when the proxy-type variable was invalid.
+  
+  @racket['proxy-bad-host] is returned when the proxy-type variable was valid, but the
+  proxy-host had an invalid format or was NULL.
+  
+  @racket['proxy-bad-port] is returned when the proxy-type was valid, but the proxy-port was
+  invalid.
+  
+  @racket['proxy-not-found] is returned when the proxy host passed could not be resolved.
+  
+  @racket['load-encrypted] is returned when the bytes loaded into the function contained an
+  encrypted save.
+  
+  @racket['load-bad-format] is returned when the data format was invalid. This can happen when
+  loading data that was saved by an older version of Tox, or when the data has been corrupted.
+  When loading from badly formatted data, some data may have been loaded, and the rest is
+  discarded.
 }
 
-@defproc[(_TOX_PROXY_TYPE [sym (or/c 'NONE 'SOCKS5 'HTTP)]) (or/c false? integer?)]{
-  Represents the type of proxy being used.
-}
+@defthing[_TOX-ERR-BOOTSTRAP '(ok null bad-host bad-port)]
+
+@defthing[_TOX-CONNECTION '(none tcp udp)]
+
+@defthing[_TOX-ERR-SET-INFO '(ok null too-long)]
 
 @defproc[(_ToxAvCallbackID [sym (or/c 'Invite
                                       'Ringing
