@@ -91,6 +91,140 @@ explained below.
 
 @defthing[_TOX-ERR-SET-INFO '(ok null too-long)]
 
+@defthing[_TOX-ERR-FRIEND-SEND-MESSAGE '(ok
+                                         null
+                                         friend-not-found
+                                         friend-not-connected
+                                         sendq
+                                         too-long
+                                         empty)]{
+  @racket['sendq] is returned when an allocation error occurred while increasing the send
+  queue size
+}
+
+@defthing[_TOX-FILE-KIND '(data avatar)]{
+  @racket['data] is used when sending arbitrary file data. Clients can choose to handle it
+  based on the file name or magic or any other way.
+  
+  @racket['avatar] is used when sending avatar data. Avatars can be sent at any time the
+  client wishes. Generally, a client will send the avatar to a friend when that friend
+  comes online, and to all friends when the avatar changed. A client can save some traffic
+  by remembering which friend received the updated avatar already and only send it if the
+  friend has an out of date avatar. Clients who receive avatar send requests can reject it
+  (by sending TOX_FILE_CONTROL_CANCEL before any other controls), or accept it (by sending
+  TOX_FILE_CONTROL_RESUME). The file_id of length TOX_HASH_LENGTH bytes (same length as
+  TOX_FILE_ID_LENGTH) will contain the hash. A client can compare this hash with a saved
+  hash and send TOX_FILE_CONTROL_CANCEL to terminate the avatar transfer if it matches.
+  When file_size is set to 0 in the transfer request it means that the client has no avatar.
+}
+
+@defthing[_TOX-FILE-CONTROL '(resume pause cancel)]{
+  @racket['resume] is used when accepting a file transfer or when resuming a paused transfer.
+   
+  @racket['pause] is sent by clients to pause the file transfer. The initial state of a file
+  transfer is always paused on the receiving side and running on the sending side. If both
+  the sending and receiving side pause the transfer, then both need to send
+  TOX_FILE_CONTROL_RESUME for the transfer to resume.
+  
+  @racket['cancel] is sent by the receiving client to reject a file send request before
+  any other commands are sent. Also sent by either side to terminate a file transfer.
+}
+
+@defthing[_TOX-ERR-FILE-CONTROL '(ok
+                                  friend-not-found
+                                  friend-not-connected
+                                  not-found
+                                  not-paused
+                                  denied
+                                  already-paused
+                                  sendq)]{
+  @racket['not-found] is returned when ; no file transfer with the given file number was
+  found for the given friend.
+  
+  @racket['denied] is returned when a @racket['resume] control was sent, but the file
+  transfer was paused by the other party. Only the party that paused the transfar can
+  resume it.
+  
+  @racket['senq] is returned when the packet queue is full.
+}
+
+@defthing[_TOX-ERR-FILE-SEEK '(ok
+                               friend-not-found
+                               friend-not-connected
+                               transfer-not-found
+                               seek-denied
+                               invalid-position
+                               sendq)]{
+  @racket['transfer-not-found] is returned when no transfer with the given file number was
+  found for the given friend.
+  
+  @racket['seek-denied] is returned when the file was not in a state where it could be seeked.
+  
+  @racket['invalid-position] is returned when the seek position was invalid.
+  
+  @racket['senq] is returned when the packet queue is full.
+}
+
+@defthing[_TOX-ERR-FILE-GET '(ok friend-not-found transfer-not-found)]
+
+@defthing[_TOX-ERR-FILE-SEND '(ok
+                               null
+                               friend-not-found
+                               friend-not-connected
+                               name-too-long
+                               too-many)]
+
+@defthing[_TOX-ERR-FILE-SEND-CHUNK '(ok
+                                     null
+                                     friend-not-found
+                                     friend-not-connected
+                                     not-found
+                                     not-transferring
+                                     invalid-length
+                                     senq
+                                     wrong-position)]
+
+@defthing[_TOX-ERR-FRIEND-CUSTOM-PACKET '(ok
+                                          null
+                                          friend-not-found
+                                          friend-not-connected
+                                          invalid
+                                          empty
+                                          too-long
+                                          sendq)]
+
+@defthing[_TOX-ERR-KEY-DERIVATION '(ok null failed)]
+
+@defthing[_TOX-ERR-ENCRYPTION '(ok
+                                null
+                                key-derivation-failed
+                                encryption-failed)]{
+  @racket['null] is returned when some input data, or maybe the output pointer, was null.
+  
+  @racket['key-derivation-failed] is returned when the crypto lib was unable to derive a
+  key from the given passphrase, which is usually a lack of memory issue. The functions
+  accepting keys do not produce this error.
+  
+  @racket['encryption-failed] is returned when the encryption itself failed.
+}
+
+@defthing[_TOX-ERR-DECRYPTION '(ok
+                                null
+                                invalid-length
+                                bad-format
+                                key-derivation-failed
+                                decryption-failed)]
+
+@defthing[_TOX-GROUPCHAT-TYPE '(text av)]
+
+@defthing[_TOX-CHAT-CHANGE-PEER '(add del name)]{
+  @racket['add] is for when a new peer has joined the groupchat.
+  
+  @racket['del] is for when a peer has left the groupchat.
+  
+  @racket['name] is for when a peer has changed her nickname.
+}
+
 @defproc[(_ToxAvCallbackID [sym (or/c 'Invite
                                       'Ringing
                                       'Start
