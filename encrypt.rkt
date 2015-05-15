@@ -221,6 +221,9 @@
  #
  # bool tox_is_data_encrypted(const uint8_t *data);
  |#
-(define-encrypt data-encrypted? (_fun [data : _bytes] -> _bool)
+(define-encrypt data-encrypted?
+  (_fun [data : _bytes]
+        -> (success : _int)
+        -> (= 1 success)) ; returns -256 on false for some reason
   #:c-id tox_is_data_encrypted)
 )
