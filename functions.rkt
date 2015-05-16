@@ -51,7 +51,7 @@
 
 (define-cstruct _Tox-Options
   ([ipv6? _bool] ; verified 0
-   [proxy-type _int] ; verified 1
+   [proxy-type _TOX-PROXY-TYPE] ; verified 1
    [proxy-host _string] ; verified 2
    [proxy-port _uint16] ; the only one that seems to matter for the ports
    [start-port _uint16]
@@ -297,7 +297,7 @@
 
 ; Return whether we are connected to the DHT. The return value is equal to the
 ; last value received through the `self_connection_status` callback.
-(define-tox self-connection-status (_fun [tox : _Tox-pointer] -> _int)
+(define-tox self-connection-status (_fun [tox : _Tox-pointer] -> _TOX-CONNECTION)
   #:c-id tox_self_get_connection_status)
 
 #|
