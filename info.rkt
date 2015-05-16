@@ -15,3 +15,4 @@
 (define deps '("base"
                "scribble-lib"
                "r6rs-lib"))
+(define build-deps '("racket-doc"))
