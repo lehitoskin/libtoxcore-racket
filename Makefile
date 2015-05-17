@@ -3,6 +3,8 @@ DESTDIR=/usr/local
 lib: av.rkt dns.rkt encrypt.rkt enums.rkt functions.rkt main.rkt
 	raco make main.rkt
 
+all: lib
+
 install: all
 	mkdir -pv $(DESTDIR)/lib
 	mkdir -pv $(DESTDIR)/share/racket/pkgs/libtoxcore-racket
