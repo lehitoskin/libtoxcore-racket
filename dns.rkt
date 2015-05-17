@@ -6,9 +6,15 @@
 
 (provide (except-out (all-defined-out)
                      define-dns
-                     TOX_PUBLIC_KEY_SIZE))
+                     TOX_PUBLIC_KEY_SIZE
+                     libtoxdns-path))
 
-(define-ffi-definer define-dns (ffi-lib "libtoxdns"))
+(define libtoxdns-path
+  (if (eq? (system-type) 'windows)
+      "libtox"
+      "libtoxdns"))
+
+(define-ffi-definer define-dns (ffi-lib libtoxdns-path))
 
 ; The _string type supports conversion between Racket strings
 ; and char* strings using a parameter-determined conversion.

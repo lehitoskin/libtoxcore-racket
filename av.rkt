@@ -8,9 +8,15 @@
 
 (provide (except-out (all-defined-out)
                      define-av
-                     _Tox-pointer))
+                     _Tox-pointer
+                     libtoxav-path))
 
-(define-ffi-definer define-av (ffi-lib "libtoxav"))
+(define libtoxav-path
+  (if (eq? (system-type) 'windows)
+      "libtox"
+      "libtoxav"))
+
+(define-ffi-definer define-av (ffi-lib libtoxav-path))
 
 ; The _string type supports conversion between Racket strings
 ; and char* strings using a parameter-determined conversion.

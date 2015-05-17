@@ -6,9 +6,15 @@
          ffi/unsafe/define
          "enums.rkt")
 (provide (except-out (all-defined-out)
-                     define-tox))
+                     define-tox
+                     libtoxcore-path))
 
-(define-ffi-definer define-tox (ffi-lib "libtoxcore"))
+(define libtoxcore-path
+  (if (eq? (system-type) 'windows)
+      "libtox"
+      "libtoxcore"))
+
+(define-ffi-definer define-tox (ffi-lib libtoxcore-path))
 
 ; This version of the wrapper is synced with version 0.0.0 of toxcore
 

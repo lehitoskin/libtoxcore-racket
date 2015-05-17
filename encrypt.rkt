@@ -7,9 +7,15 @@
 
 (provide (except-out (all-defined-out)
                      define-encrypt
-                     _Tox-pointer))
+                     _Tox-pointer
+                     libtoxencryptsave-path))
 
-(define-ffi-definer define-encrypt (ffi-lib "libtoxencryptsave"))
+(define libtoxencryptsave-path
+  (if (eq? (system-type) 'windows)
+      "libtox"
+      "libtoxencryptsave"))
+
+(define-ffi-definer define-encrypt (ffi-lib libtoxencryptsave-path))
 
 #|###################
  # type definitions #
