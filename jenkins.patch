@@ -1,104 +1,84 @@
 diff -Naur a/av.rkt b/av.rkt
---- a/av.rkt	2015-01-11 19:37:21.323476726 -0800
-+++ b/av.rkt	2015-01-11 19:40:06.664490379 -0800
-@@ -12,9 +12,20 @@
-                      _int32_t
-                      _uint16_t
-                      _uint32_t
--                     _uint64_t))
-+                     _uint64_t
+--- a/av.rkt	2015-05-18 14:53:21.184491127 -0700
++++ b/av.rkt	2015-05-18 15:01:24.471452067 -0700
+@@ -9,12 +9,16 @@
+ (provide (except-out (all-defined-out)
+                      define-av
+                      _Tox-pointer
 +		     exe-path
-+		     lib-path))
+                      libtoxav-path))
  
--(define-ffi-definer define-av (ffi-lib "libtoxav"))
-+; jenkins junk
 +(define exe-path (path->string (find-system-path 'run-file)))
 +
-+; shenanigans to get the binary to be called from anywhere and still work
-+(define lib-path (string->path (string-append
-+                                (substring exe-path 0
-+                                           (- (string-length exe-path) 6))
-+                                "../lib/libtoxav")))
-+
-+(define-ffi-definer define-av (ffi-lib lib-path))
+ (define libtoxav-path
+   (if (eq? (system-type) 'windows)
+       "libtox"
+-      "libtoxav"))
++      (string-append (substring exe-path 0 (- (string-length exe-path) 6))
++		     "../lib/libtoxav")))
  
- ; The _string type supports conversion between Racket strings
- ; and char* strings using a parameter-determined conversion.
+ (define-ffi-definer define-av (ffi-lib libtoxav-path))
+ 
 diff -Naur a/dns.rkt b/dns.rkt
---- a/dns.rkt	2015-01-11 19:37:28.708477336 -0800
-+++ b/dns.rkt	2015-01-11 19:42:25.045501805 -0800
-@@ -8,9 +8,20 @@
+--- a/dns.rkt	2015-05-18 14:53:24.358490871 -0700
++++ b/dns.rkt	2015-05-18 15:01:28.540451738 -0700
+@@ -7,12 +7,16 @@
+ (provide (except-out (all-defined-out)
                       define-dns
-                      _uint8_t
-                      _uint16_t
--                     _uint32_t))
-+                     _uint32_t
+                      TOX_PUBLIC_KEY_SIZE
 +		     exe-path
-+		     lib-path))
+                      libtoxdns-path))
  
--(define-ffi-definer define-dns (ffi-lib "libtoxdns"))
-+; jenkins junk
 +(define exe-path (path->string (find-system-path 'run-file)))
 +
-+; shenanigans to get the binary to be called from anywhere and still work
-+(define lib-path (string->path (string-append
-+                                (substring exe-path 0
-+                                           (- (string-length exe-path) 6))
-+                                "../lib/libtoxdns")))
-+
-+(define-ffi-definer define-dns (ffi-lib lib-path))
+ (define libtoxdns-path
+   (if (eq? (system-type) 'windows)
+       "libtox"
+-      "libtoxdns"))
++      (string-append (substring exe-path 0 (- (string-length exe-path) 6))
++		     "../lib/libtoxdns")))
  
- (define _uint8_t _uint8)
- (define _uint16_t _uint16)
+ (define-ffi-definer define-dns (ffi-lib libtoxdns-path))
+ 
 diff -Naur a/encrypt.rkt b/encrypt.rkt
---- a/encrypt.rkt	2015-01-11 19:37:33.932477768 -0800
-+++ b/encrypt.rkt	2015-01-11 19:43:15.581505978 -0800
-@@ -7,9 +7,20 @@
+--- a/encrypt.rkt	2015-05-18 14:53:26.718490680 -0700
++++ b/encrypt.rkt	2015-05-18 15:01:32.683451403 -0700
+@@ -8,12 +8,16 @@
  (provide (except-out (all-defined-out)
                       define-encrypt
                       _Tox-pointer
--                     _uint32_t))
-+                     _uint32_t
 +		     exe-path
-+		     lib-path))
+                      libtoxencryptsave-path))
  
--(define-ffi-definer define-encrypt (ffi-lib "libtoxencryptsave"))
-+; jenkins junk
 +(define exe-path (path->string (find-system-path 'run-file)))
 +
-+; shenanigans to get the binary to be called from anywhere and still work
-+(define lib-path (string->path (string-append
-+                                (substring exe-path 0
-+                                           (- (string-length exe-path) 6))
-+                                "../lib/libtoxencryptsave")))
-+
-+(define-ffi-definer define-encrypt (ffi-lib lib-path))
+ (define libtoxencryptsave-path
+   (if (eq? (system-type) 'windows)
+       "libtox"
+-      "libtoxencryptsave"))
++      (string-append (substring exe-path 0 (- (string-length exe-path) 6))
++		     "../lib/libtoxencryptsave")))
  
- #|###################
-  # type definitions #
+ (define-ffi-definer define-encrypt (ffi-lib libtoxencryptsave-path))
+ 
 diff -Naur a/functions.rkt b/functions.rkt
---- a/functions.rkt	2015-01-11 19:37:43.101478525 -0800
-+++ b/functions.rkt	2015-01-11 19:43:55.524509276 -0800
-@@ -10,9 +10,20 @@
-                      _uint8_t
-                      _uint16_t
-                      _uint32_t
--                     _uint64_t))
-+                     _uint64_t
+--- a/functions.rkt	2015-05-18 14:53:29.935490420 -0700
++++ b/functions.rkt	2015-05-18 15:01:41.917450657 -0700
+@@ -7,12 +7,16 @@
+          "enums.rkt")
+ (provide (except-out (all-defined-out)
+                      define-tox
 +		     exe-path
-+		     lib-path))
+                      libtoxcore-path))
  
--(define-ffi-definer define-tox (ffi-lib "libtoxcore"))
-+; jenkins junk
 +(define exe-path (path->string (find-system-path 'run-file)))
 +
-+; shenanigans to get the binary to be called from anywhere and still work
-+(define lib-path (string->path (string-append
-+                                (substring exe-path 0
-+                                           (- (string-length exe-path) 6))
-+                                "../lib/libtoxcore")))
-+
-+(define-ffi-definer define-tox (ffi-lib lib-path))
+ (define libtoxcore-path
+   (if (eq? (system-type) 'windows)
+       "libtox"
+-      "libtoxcore"))
++      (string-append (substring exe-path 0 (- (string-length exe-path) 6))
++		     "../lib/libtoxcore")))
  
- #|###################
-  # type definitions #
+ (define-ffi-definer define-tox (ffi-lib libtoxcore-path))
+ 
