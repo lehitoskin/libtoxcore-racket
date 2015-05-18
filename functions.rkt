@@ -1529,7 +1529,7 @@ size_t tox_self_get_name_size(const Tox *tox);
         [file-number : _uint32]
         [kind : _uint32]
         [file-size : _uint64]
-        [filename : _string]
+        [filename : _bytes]
         [filename-len : _size]
         [userdata : _gcpointer] -> _void))
 
