@@ -7,7 +7,8 @@
          "enums.rkt")
 (provide (except-out (all-defined-out)
                      define-tox
-                     libtoxcore-path))
+                     libtoxcore-path
+                     _Bool))
 
 (define libtoxcore-path
   (if (eq? (system-type) 'windows)
@@ -55,14 +56,29 @@
 ; maximum file name length for file transfer
 (define TOX_MAX_FILENAME_LENGTH 255)
 
+; racket ctype to work with _Bool or stdbool.h's bool.
+; perhaps only necessary inside the struct...
+(define _Bool (make-ctype _byte (λ (r2c) (if r2c 1 0)) (λ (c2r) (= 1 c2r))))
+
 (define-cstruct _Tox-Options
-  ([ipv6? _bool] ; verified 0
-   [proxy-type _TOX-PROXY-TYPE] ; verified 1
-   [proxy-host _string] ; verified 2
-   [proxy-port _uint16] ; the only one that seems to matter for the ports
+  ([ipv6? _Bool]
+   [udp? _Bool]
+   [proxy-type _TOX-PROXY-TYPE]
+   ; null-terminated string
+   [proxy-host _string]
+   ; ports must be in the range (1, 65535).
+   [proxy-port _uint16]
+   ; If both start_port and end_port are 0, the default port range will be
+   ; used: [33445, 33545]
    [start-port _uint16]
    [end-port _uint16]
-   [udp? _bool])
+   ; port to use for the TCP server. if 0, the sever is disabled
+   [tcp-port _uint16]
+   ; type of savedata to load from
+   [save-type _TOX-SAVEDATA-TYPE]
+   ; the savedata
+   [save-data _bytes]
+   [save-length _size])
   #:malloc-mode 'nonatomic)
 
 #|#######################
@@ -200,8 +216,6 @@
  |#
 (define-tox tox-new
   (_fun [options : _Tox-Options-pointer]
-        [data : _bytes]
-        [data-len : _size = (bytes-length data)]
         [err : _TOX-ERR-NEW = 'ok]
         -> (success : _Tox-pointer)
         -> (values success err))

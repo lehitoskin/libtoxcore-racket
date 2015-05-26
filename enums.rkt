@@ -7,6 +7,7 @@
   (define _TOX-USER-STATUS (_enum '(available away busy)))
   (define _TOX-MESSAGE-TYPE (_enum '(normal action)))
   (define _TOX-PROXY-TYPE (_enum '(none http socks5)))
+  (define _TOX-SAVEDATA-TYPE (_enum '(none tox-save secret-key)))
   (define _TOX-ERR-OPTIONS-NEW (_enum '(ok malloc)))
   
   (define _TOX-ERR-NEW
