@@ -85,7 +85,7 @@
         [pplength : _uint32 = (string-length passphrase)]
         [out : (_bytes o (+ data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
         [err : _TOX-ERR-ENCRYPTION = 'ok]
-        -> (success : _bool)
+        -> (success : _stdbool)
         -> (values success err out))
   #:c-id tox_pass_encrypt)
 
@@ -109,7 +109,7 @@
         [pplength : _size = (string-length passphrase)]
         [out : (_bytes o (- len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
         [err : _TOX-ERR-DECRYPTION = 'ok]
-        -> (success : _bool)
+        -> (success : _stdbool)
         -> (values success err out))
   #:c-id tox_pass_decrypt)
 
@@ -139,7 +139,7 @@
         [pplength : _uint32 = (string-length passphrase)]
         [out-key : _Tox-Pass-Key-pointer]
         [err : _TOX-ERR-KEY-DERIVATION = 'ok]
-        -> (success : _bool)
+        -> (success : _stdbool)
         -> (values success err))
   #:c-id tox_derive_key_from_pass)
 
@@ -156,7 +156,7 @@
         [salt : _bytes]
         [out-key : _Tox-Pass-Key-pointer]
         [err : _TOX-ERR-KEY-DERIVATION = 'ok]
-        -> (success : _bool)
+        -> (success : _stdbool)
         -> (values success err))
   #:c-id tox_derive_key_with_salt)
 
@@ -174,7 +174,7 @@
 (define-encrypt salt
   (_fun [data : _bytes]
         [salt : (_bytes o 256)]
-        -> (success : _bool)
+        -> (success : _stdbool)
         -> (list success salt))
   #:c-id tox_get_salt)
 
@@ -197,7 +197,7 @@
         [key : _Tox-Pass-Key-pointer]
         [out : (_bytes o (+ data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
         [err : _TOX-ERR-ENCRYPTION = 'ok]
-        -> (success : _bool)
+        -> (success : _stdbool)
         -> (values success err out))
   #:c-id tox_pass_key_encrypt)
 
@@ -218,7 +218,7 @@
         [key : _Tox-Pass-Key-pointer]
         [out : (_bytes o (- data-len TOX_PASS_ENCRYPTION_EXTRA_LENGTH))]
         [err : _TOX-ERR-DECRYPTION = 'ok]
-        -> (success : _bool)
+        -> (success : _stdbool)
         -> (values success err out))
   #:c-id tox_pass_key_decrypt)
 
@@ -229,7 +229,6 @@
  |#
 (define-encrypt data-encrypted?
   (_fun [data : _bytes]
-        -> (success : _int)
-        -> (= 1 success)) ; returns -256 on false for some reason
+        -> (success : _stdbool))
   #:c-id tox_is_data_encrypted)
 )

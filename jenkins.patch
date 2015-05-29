@@ -69,8 +69,7 @@ diff -Naur a/functions.rkt b/functions.rkt
  (provide (except-out (all-defined-out)
                       define-tox
 +		     exe-path
-                      libtoxcore-path
-                      _Bool))
+                      libtoxcore-path))
  
 +(define exe-path (path->string (find-system-path 'run-file)))
 +

@@ -284,7 +284,7 @@
  |#
 (define-av prepare-transmission (_fun [av : _ToxAv-pointer]
                                       [call-index : _int32]
-                                      [support-video? : _bool] -> _int)
+                                      [support-video? : _stdbool] -> _int)
   #:c-id toxav_prepare_transmission)
 
 #|
@@ -418,7 +418,7 @@
  |#
 (define-av capability-supported? (_fun [av : _ToxAv-pointer]
                                        [call-index : _int32]
-                                       [capability : _ToxAvCapabilities] -> _bool)
+                                       [capability : _ToxAvCapabilities] -> _stdbool)
   #:c-id toxav_capability_supported)
 
 ; Tox *toxav_get_tox(ToxAv *av);
