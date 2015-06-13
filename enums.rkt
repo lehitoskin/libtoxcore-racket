@@ -149,7 +149,7 @@
              sendq)))
   
   (define _TOX-ERR-FILE-GET
-    (_enum '(ok friend-not-found transfer-not-found)))
+    (_enum '(ok null friend-not-found transfer-not-found)))
   
   (define _TOX-ERR-FILE-SEND
     (_enum '(ok null friend-not-found friend-not-connected name-too-long too-many)))
